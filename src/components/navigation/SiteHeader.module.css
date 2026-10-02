@@ -4,67 +4,6 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   Top Announcement Bar
-   -------------------------------------------------------------------------- */
-.topBar {
-  background-color: var(--bg-dark);
-  color: var(--text-light);
-  font-size: 0.76rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  padding: 8px 16px;
-  border-bottom: 1px solid rgba(250, 249, 245, 0.08);
-  position: relative;
-  z-index: 55;
-  transition: all var(--transition-fast);
-}
-
-.topBarInner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: var(--max-width);
-  margin: 0 auto;
-}
-
-.topBarCenter {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  width: 100%;
-  text-align: center;
-}
-
-.topBarDot {
-  display: inline-block;
-  width: 4px;
-  height: 4px;
-  background-color: var(--accent-terracotta);
-  border-radius: 0px;
-}
-
-.topBarHighlight {
-  color: var(--accent-warm-petal);
-  font-weight: 600;
-}
-
-.topBarTrackLink {
-  color: var(--text-light-muted);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.74rem;
-  transition: color var(--transition-fast);
-  white-space: nowrap;
-}
-
-.topBarTrackLink:hover {
-  color: var(--text-light);
-}
-
-/* --------------------------------------------------------------------------
    Main Sticky Header
    -------------------------------------------------------------------------- */
 .headerRoot {
@@ -865,15 +804,6 @@
     height: 34px;
     max-width: 155px;
   }
-
-  .topBar {
-    padding: 6px 12px;
-    font-size: 0.72rem;
-  }
-
-  .topBarTrackLink {
-    display: none;
-  }
 }
 
 /* Small Mobile Breakpoint (<= 640px) */
@@ -896,10 +826,5 @@
     width: 36px;
     height: 36px;
     padding: 6px;
-  }
-
-  .topBarCenter span:nth-child(2),
-  .topBarCenter span:nth-child(3) {
-    display: none;
   }
 }

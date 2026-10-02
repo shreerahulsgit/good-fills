@@ -115,26 +115,6 @@ export function SiteHeader() {
   return (
     <>
       {/* --------------------------------------------------------
-          TOP ANNOUNCEMENT BAR
-          -------------------------------------------------------- */}
-      <div className={styles.topBar}>
-        <div className={styles.topBarInner}>
-          <div className={styles.topBarCenter}>
-            <span>Bengaluru Kitchen · Made Fresh to Order</span>
-            <span className={styles.topBarDot} />
-            <span className={styles.topBarHighlight}>Free Shipping Over ₹999</span>
-            <span className={styles.topBarDot} />
-            <span>100% Traditional Care · 0% Preservatives</span>
-          </div>
-
-          <Link href="/track" className={styles.topBarTrackLink}>
-            <Truck size={13} />
-            <span>Track Order</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* --------------------------------------------------------
           MAIN STICKY HEADER
           -------------------------------------------------------- */}
       <header

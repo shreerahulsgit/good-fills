@@ -237,7 +237,7 @@ export function ContactView() {
                       name="orderId"
                       value={formData.orderId}
                       onChange={handleInputChange}
-                      placeholder="e.g. ORD-9639"
+                      placeholder="e.g. ORD-1001"
                       className={styles.inputControl}
                     />
                   </div>

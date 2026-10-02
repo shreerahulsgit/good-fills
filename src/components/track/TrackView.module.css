@@ -190,58 +190,6 @@
   cursor: not-allowed;
 }
 
-/* QUICK DEMO CHIPS */
-.demoChipsRow {
-  margin-top: var(--space-4);
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.demoLabel {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-right: 4px;
-}
-
-.demoChip {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
-  font-family: var(--font-sans);
-  font-size: 0.78rem;
-  font-weight: 500;
-  padding: 6px 12px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all var(--transition-fast);
-  border-radius: 0;
-}
-
-.demoChip:hover {
-  background-color: var(--bg-cream);
-  border-color: var(--accent-terracotta);
-  color: var(--accent-terracotta);
-  transform: translateY(-1px);
-}
-
-.demoChipActive {
-  background-color: var(--bg-dark);
-  border-color: var(--bg-dark);
-  color: var(--text-light);
-}
-
-.demoChipActive:hover {
-  background-color: var(--accent-terracotta);
-  border-color: var(--accent-terracotta);
-  color: var(--text-light);
-}
 
 /* ERROR NOTIFICATION BANNER */
 .errorBanner {

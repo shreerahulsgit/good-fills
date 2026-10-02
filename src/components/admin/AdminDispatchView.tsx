@@ -1000,7 +1000,7 @@ export function AdminDispatchView() {
                             <input
                               type="text"
                               className={styles.awbInput}
-                              placeholder="e.g. D62984105"
+                              placeholder="e.g. DTDC AWB / Consignment No."
                               value={edit.trackingNumber}
                               onChange={(e) =>
                                 setEditStates((prev) => ({

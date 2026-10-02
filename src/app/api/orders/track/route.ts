@@ -9,8 +9,7 @@ export async function GET(request: Request) {
     if (!query || !query.trim()) {
       return NextResponse.json(
         {
-          error: 'Please enter a valid Good Fills Order ID (e.g. ORD-2523) or 10-digit mobile number.',
-          demoSuggestions: ['ORD-2523', 'ORD-8431', 'ORD-9639', 'D62984105'],
+          error: 'Please enter a valid Good Fills Order ID or 10-digit mobile number.',
         },
         { status: 400 }
       );
@@ -22,7 +21,6 @@ export async function GET(request: Request) {
       return NextResponse.json(
         {
           error: `No consignment record located for query "${query.trim()}". Please verify your Order ID or mobile number.`,
-          demoSuggestions: ['ORD-2523', 'ORD-8431', 'ORD-9639', 'D62984105'],
         },
         { status: 404 }
       );

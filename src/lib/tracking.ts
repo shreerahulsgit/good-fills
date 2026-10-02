@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import { Order, ShippingAddress } from '@/types';
-import { PRODUCTS } from '@/data/products';
 
 export type MilestoneStatus = 'completed' | 'in_progress' | 'pending';
 
@@ -125,8 +124,8 @@ export function deriveActiveStage(order: Order): number {
  */
 export function buildTrackingTelemetry(order: Order, forcedStage?: number): TrackingTelemetryResult {
   const createdDate = new Date(order.createdAt || Date.now());
-  const orderId = order.id || 'ORD-2523';
-  const phoneClean = (order.customerPhone || '9876543210').replace(/\D/g, '');
+  const orderId = order.id || '';
+  const phoneClean = (order.customerPhone || '').replace(/\D/g, '');
 
   const activeStage = forcedStage !== undefined ? forcedStage : deriveActiveStage(order);
 
@@ -340,7 +339,7 @@ export async function searchTrackingOrder(query: string): Promise<TrackingTeleme
 
   const orders = loadOrdersFromDisk();
 
-  // 1. Direct match by Order ID (e.g. "ORD-2523")
+  // 1. Direct match by Order ID (e.g. "ORD-7776")
   const idMatch = orders.find(
     (o) =>
       o.id.toUpperCase() === cleanQuery ||
@@ -370,68 +369,5 @@ export async function searchTrackingOrder(query: string): Promise<TrackingTeleme
     }
   }
 
-  // 4. Fallback demo orders for instant exploration
-  if (cleanQuery === 'ORD-2523' || cleanQuery === '2523') {
-    return buildDemoOrder('ORD-2523', 'Shree Rahul', '9876543210', 'Indiranagar, Bengaluru', 1);
-  }
-  if (cleanQuery === 'ORD-8431' || cleanQuery === '8431') {
-    return buildDemoOrder('ORD-8431', 'Sandbox Patron', '9777777777', 'Koramangala, Bengaluru', 3, 'D62984105');
-  }
-  if (cleanQuery === 'ORD-9639' || cleanQuery === '9639') {
-    return buildDemoOrder('ORD-9639', 'Shree Rahul S', '6382543212', 'Jayanagar, Bengaluru', 2);
-  }
-  if (cleanQuery === 'D62984105') {
-    return buildDemoOrder('ORD-8431', 'Sandbox Patron', '9777777777', 'Koramangala, Bengaluru', 4, 'D62984105');
-  }
-
   return null;
-}
-
-function buildDemoOrder(
-  id: string,
-  name: string,
-  phone: string,
-  cityLine: string,
-  stage: number,
-  customAwb?: string
-): TrackingTelemetryResult {
-  const p1 = PRODUCTS[0];
-  const p2 = PRODUCTS[1] || PRODUCTS[0];
-
-  const mockOrder: Order = {
-    id,
-    createdAt: new Date(Date.now() - (stage === 4 ? 40 : stage === 3 ? 24 : 10) * 3600 * 1000).toISOString(),
-    customerId: `CUST-${phone.slice(-6)}`,
-    customerName: name,
-    customerEmail: `${name.toLowerCase().replace(/\s+/g, '.')}@goodfills.in`,
-    customerPhone: phone,
-    shippingAddress: {
-      fullName: name,
-      phone,
-      email: `${name.toLowerCase().replace(/\s+/g, '.')}@goodfills.in`,
-      addressLine1: 'Villa 14, Lotus Palms, 12th Main',
-      city: 'Bengaluru',
-      state: 'Karnataka',
-      pincode: '560038',
-      country: 'India',
-    },
-    items: [
-      { product: p1, quantity: 1 },
-      { product: p2, quantity: 1 },
-    ],
-    subtotal: p1.price + p2.price,
-    shippingCost: 100,
-    total: p1.price + p2.price + 100,
-    weightGrams: p1.productWeightGrams + p2.productWeightGrams,
-    paymentMethod: 'Razorpay',
-    paymentStatus: 'Paid',
-    orderStatus: stage === 5 ? 'Delivered' : stage >= 3 ? 'Shipped' : stage === 2 ? 'Processing' : 'Confirmed',
-    shipmentStatus: stage === 5 ? 'Delivered' : stage === 4 ? 'Out for Delivery' : stage === 3 ? 'In Transit' : 'Not Shipped',
-    courier: 'DTDC',
-    trackingNumber: customAwb,
-    estimatedDelivery: '2–4 days',
-    statusHistory: [],
-  };
-
-  return buildTrackingTelemetry(mockOrder, stage);
 }

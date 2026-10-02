@@ -24,18 +24,7 @@ import {
 import { TrackingTelemetryResult } from '@/lib/tracking';
 import styles from './TrackView.module.css';
 
-interface DemoChipConfig {
-  id: string;
-  label: string;
-  statusText: string;
-}
 
-const DEMO_CHIPS: DemoChipConfig[] = [
-  { id: 'ORD-2523', label: 'ORD-2523', statusText: 'Order Confirmed' },
-  { id: 'ORD-8431', label: 'ORD-8431', statusText: 'Dispatched via DTDC' },
-  { id: 'ORD-9639', label: 'ORD-9639', statusText: 'Prepared & Packed' },
-  { id: 'D62984105', label: 'D62984105', statusText: 'Out for Delivery' },
-];
 
 export function TrackView() {
   const searchParams = useSearchParams();
@@ -47,23 +36,19 @@ export function TrackView() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copiedAwb, setCopiedAwb] = useState(false);
 
-  // Auto-lookup on mount if query param present
+  // Auto-lookup on mount only if query param is present
   useEffect(() => {
     const qParam = searchParams.get('q') || searchParams.get('id') || searchParams.get('phone');
     if (qParam && qParam.trim()) {
       setSearchQuery(qParam.trim());
       executeTrackingLookup(qParam.trim());
-    } else {
-      // Default to ORD-2523 for instant preview
-      setSearchQuery('ORD-2523');
-      executeTrackingLookup('ORD-2523');
     }
   }, [searchParams]);
 
   const executeTrackingLookup = async (queryToSearch: string) => {
     const trimmed = queryToSearch.trim();
     if (!trimmed) {
-      setErrorMessage('Please enter your Order ID (e.g. ORD-2523) or mobile number.');
+      setErrorMessage('Please enter your Good Fills Order ID or 10-digit mobile number.');
       return;
     }
 
@@ -96,11 +81,7 @@ export function TrackView() {
     router.replace(`/track?q=${encodeURIComponent(searchQuery.trim())}`, { scroll: false });
   };
 
-  const handleChipClick = (id: string) => {
-    setSearchQuery(id);
-    executeTrackingLookup(id);
-    router.replace(`/track?q=${encodeURIComponent(id)}`, { scroll: false });
-  };
+
 
   const handleCopyAwb = (awb: string) => {
     if (awb === 'Assigned on Dispatch') return;
@@ -150,7 +131,7 @@ export function TrackView() {
             <input
               type="text"
               className={styles.searchInput}
-              placeholder="Enter Order ID (e.g. ORD-2523) or 10-digit mobile number..."
+              placeholder="Enter your Order ID (e.g. ORD-7776) or 10-digit mobile number..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Order ID or Mobile Number"
@@ -174,24 +155,7 @@ export function TrackView() {
             </button>
           </form>
 
-          {/* Quick Demo Search Chips */}
-          <div className={styles.demoChipsRow}>
-            <span className={styles.demoLabel}>Example Orders:</span>
-            {DEMO_CHIPS.map((chip) => {
-              const isActive = activeOrder?.orderId === chip.id;
-              return (
-                <button
-                  key={chip.id}
-                  type="button"
-                  className={`${styles.demoChip} ${isActive ? styles.demoChipActive : ''}`}
-                  onClick={() => handleChipClick(chip.id)}
-                >
-                  <strong>{chip.label}</strong>
-                  <span>({chip.statusText})</span>
-                </button>
-              );
-            })}
-          </div>
+
 
           {/* Error Message Banner */}
           {errorMessage && (

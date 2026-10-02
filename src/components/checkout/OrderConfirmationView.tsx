@@ -14,7 +14,7 @@ import {
   Package,
 } from 'lucide-react';
 import { Order } from '@/types';
-import { getOrderById } from '@/lib/orders';
+import { getOrderById, saveOrder } from '@/lib/orders';
 import { formatCurrency } from '@/lib/shipping';
 import styles from './OrderConfirmationView.module.css';
 
@@ -27,13 +27,45 @@ export function OrderConfirmationView({ orderId }: OrderConfirmationViewProps) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (orderId) {
-      const found = getOrderById(orderId);
-      if (found) {
-        setOrder(found);
+    let isMounted = true;
+
+    async function loadOrder() {
+      if (!orderId) {
+        setIsLoaded(true);
+        return;
+      }
+
+      // 1. Try local storage first for instant rendering
+      const localFound = getOrderById(orderId);
+      if (localFound && isMounted) {
+        setOrder(localFound);
+        setIsLoaded(true);
+      }
+
+      // 2. Fetch authoritative order from server
+      try {
+        const res = await fetch(`/api/orders/${encodeURIComponent(orderId)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.order && isMounted) {
+            setOrder(data.order);
+            saveOrder(data.order);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch order from server API:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoaded(true);
+        }
       }
     }
-    setIsLoaded(true);
+
+    loadOrder();
+
+    return () => {
+      isMounted = false;
+    };
   }, [orderId]);
 
   const atelierPhone = '9742068899';

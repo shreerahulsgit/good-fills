@@ -319,30 +319,10 @@ export function CheckoutView() {
         description: 'Bengaluru Artisanal Homemade Preparation',
         image: '/favicon.ico',
         order_id: orderData.razorpayOrderId,
-        config_id: process.env.NEXT_PUBLIC_RAZORPAY_CONFIG_ID || 'config_TisYGSQSNXrQse',
         prefill: {
           name: formData.fullName.trim(),
           email: formData.email.trim(),
           contact: formData.phone.trim(),
-          method: 'upi',
-        },
-        config: {
-          display: {
-            blocks: {
-              upi_only: {
-                name: 'Pay via UPI',
-                instruments: [
-                  {
-                    method: 'upi',
-                  },
-                ],
-              },
-            },
-            sequence: ['block.upi_only'],
-            preferences: {
-              show_default_blocks: false,
-            },
-          },
         },
         theme: {
           color: '#97411D', // Good Fills Artisanal Terracotta

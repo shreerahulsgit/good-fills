@@ -242,7 +242,11 @@ export function getOrderByRazorpayOrderId(razorpayOrderId: string): Order | null
 
 export function getServerOrderById(orderId: string): Order | null {
   initStore();
-  return ordersCache.get(orderId) || null;
+  const direct = ordersCache.get(orderId);
+  if (direct) return direct;
+  const upper = orderId.toUpperCase();
+  const allOrders = Array.from(ordersCache.values());
+  return allOrders.find((order) => order.id.toUpperCase() === upper) || null;
 }
 
 /**

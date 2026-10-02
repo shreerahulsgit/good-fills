@@ -1,0 +1,863 @@
+/* ========================================================
+   GOOD FILLS — OUR STORY (ATELIER PHILOSOPHY)
+   Architectural Luxury Editorial Design System
+   Square-Cut Heritage Silhouettes & Pure Atelier Motion
+   ======================================================== */
+
+.aboutPageWrapper {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ========================================================
+   HERO SECTION: THE ATELIER MANIFESTO
+   ======================================================== */
+.heroSection {
+  position: relative;
+  padding: calc(var(--header-height) + var(--space-12)) 0 var(--space-20);
+  background: radial-gradient(
+    circle at 50% 15%,
+    rgba(243, 236, 228, 0.85) 0%,
+    var(--bg-canvas) 70%
+  );
+  border-bottom: 1px solid var(--border-hairline);
+  overflow: hidden;
+}
+
+.heroAura {
+  position: absolute;
+  top: -150px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(212, 142, 56, 0.12) 0%, rgba(151, 65, 29, 0.04) 50%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.heroContent {
+  max-width: 980px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.heroStatusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(151, 65, 29, 0.08);
+  border: 1px solid rgba(151, 65, 29, 0.22);
+  padding: 8px 20px;
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--accent-terracotta);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin-bottom: var(--space-6);
+  backdrop-filter: blur(8px);
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 0;
+  background-color: var(--accent-terracotta);
+  box-shadow: 0 0 10px rgba(151, 65, 29, 0.7);
+  animation: beaconPulse 2s infinite ease-in-out;
+}
+
+@keyframes beaconPulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.35); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.heroTitle {
+  font-family: var(--font-serif);
+  font-size: clamp(2.6rem, 5.5vw, 4.4rem);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: var(--space-6);
+  text-wrap: balance;
+}
+
+.heroTitleEm {
+  font-style: italic;
+  color: var(--accent-terracotta);
+  font-weight: 400;
+  position: relative;
+  display: inline-block;
+}
+
+.heroSubtitle {
+  font-family: var(--font-sans);
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  color: var(--text-secondary);
+  line-height: 1.75;
+  max-width: 760px;
+  margin: 0 auto var(--space-12);
+  font-weight: 400;
+}
+
+/* Hero Stats Strip - Square Architectural Silhouette */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  width: 100%;
+  max-width: 960px;
+  background-color: #FFFFFF;
+  border: 1px solid rgba(151, 65, 29, 0.18);
+  border-radius: 0;
+  padding: 0;
+  box-shadow: 0 16px 40px rgba(34, 24, 19, 0.05);
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-6) var(--space-5);
+  position: relative;
+  transition: background-color 0.25s ease;
+}
+
+.statItem:hover {
+  background-color: #FAF7F2;
+}
+
+.statItem:not(:last-child) {
+  border-right: 1px solid var(--border-hairline);
+}
+
+.statValue {
+  font-family: var(--font-serif);
+  font-size: 2.6rem;
+  font-weight: 600;
+  color: var(--accent-terracotta);
+  line-height: 1;
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+
+.statLabel {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 768px) {
+  .statsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .statItem:nth-child(2) {
+    border-right: none;
+  }
+  .statItem:nth-child(1),
+  .statItem:nth-child(2) {
+    border-bottom: 1px solid var(--border-hairline);
+  }
+}
+
+/* ========================================================
+   CHAPTER 01: THE GENESIS (FOUNDER STORY)
+   ======================================================== */
+.genesisSection {
+  padding: var(--space-24) 0;
+  border-bottom: 1px solid var(--border-hairline);
+  position: relative;
+}
+
+.genesisGrid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: var(--space-16);
+  align-items: center;
+}
+
+@media (max-width: 992px) {
+  .genesisGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-10);
+  }
+}
+
+.genesisNarrative {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.sectionEyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--accent-terracotta);
+  display: inline-block;
+}
+
+.sectionHeading {
+  font-family: var(--font-serif);
+  font-size: clamp(2.2rem, 3.8vw, 3.2rem);
+  font-weight: 400;
+  line-height: 1.18;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+  letter-spacing: -0.015em;
+}
+
+.narrativeText {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.calloutQuote {
+  background: linear-gradient(135deg, rgba(246, 241, 232, 0.9) 0%, rgba(250, 247, 242, 0.6) 100%);
+  border-left: 3px solid var(--accent-terracotta);
+  border-radius: 0;
+  padding: var(--space-6) var(--space-7);
+  margin: var(--space-4) 0;
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--text-primary);
+  box-shadow: 0 4px 20px rgba(34, 24, 19, 0.02);
+}
+
+/* Genesis Visual Frame: Square Architectural Cut */
+.genesisVisualFrame {
+  position: relative;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(34, 24, 19, 0.12);
+  border: 1px solid rgba(151, 65, 29, 0.3);
+  background-color: #EFE8DC;
+  outline: 8px solid #FAF9F5;
+  outline-offset: -12px;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.genesisPhoto {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  border-radius: 0;
+  transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.genesisVisualFrame:hover .genesisPhoto {
+  transform: scale(1.03);
+}
+
+.artisanBadgeOverlay {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  right: 24px;
+  background: rgba(250, 249, 245, 0.96);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(151, 65, 29, 0.25);
+  border-radius: 0;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 10px 30px rgba(34, 24, 19, 0.08);
+}
+
+.artisanIconBox {
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+  background-color: var(--accent-terracotta);
+  color: #FAF9F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.artisanText {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+/* ========================================================
+   SECTION 3: THE 4 SACRED RITUALS (SPOTLIGHT + CAROUSEL)
+   ======================================================== */
+.ritualsSection {
+  padding: var(--space-24) 0;
+  background-color: var(--bg-cream);
+  border-bottom: 1px solid var(--border-hairline);
+  position: relative;
+}
+
+.centerHeader {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto var(--space-12);
+}
+
+/* Stage Navigation Tabs - Square Cut Architectural Tabs */
+.ritualTabsBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: var(--space-8);
+}
+
+.ritualTabBtn {
+  background: #FFFFFF;
+  border: 1px solid rgba(34, 24, 19, 0.12);
+  padding: 12px 22px;
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ritualTabBtn:hover {
+  color: var(--accent-terracotta);
+  border-color: rgba(151, 65, 29, 0.35);
+  background-color: #FAF7F2;
+}
+
+.ritualTabBtnActive {
+  background: #221813;
+  color: #FAF9F5;
+  border-color: #221813;
+}
+
+.ritualTabBtnActive:hover {
+  background: #17100D;
+  color: #FAF9F5;
+}
+
+.ritualTabNum {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent-terracotta);
+}
+
+.ritualTabBtnActive .ritualTabNum {
+  color: var(--accent-warm-petal);
+}
+
+/* Spotlight Showcase Card - Square Cut */
+.spotlightCard {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(151, 65, 29, 0.2);
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(34, 24, 19, 0.08);
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  min-height: 520px;
+  position: relative;
+  margin-bottom: var(--space-10);
+}
+
+@media (max-width: 900px) {
+  .spotlightCard {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+}
+
+.spotlightVisualSide {
+  position: relative;
+  overflow: hidden;
+  background-color: #E8E0D5;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  border-right: 1px solid var(--border-hairline);
+}
+
+.spotlightImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 0;
+}
+
+.spotlightOverlayPill {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(34, 24, 19, 0.9);
+  color: #FAF9F5;
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 6px 14px;
+  border-radius: 0;
+  backdrop-filter: blur(8px);
+}
+
+.spotlightContentSide {
+  padding: var(--space-10) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Watermark Ghost Number - Anchored without clipping */
+.ghostNumWatermark {
+  position: absolute;
+  right: 28px;
+  bottom: 24px;
+  font-family: var(--font-serif);
+  font-size: clamp(6rem, 12vw, 9rem);
+  font-style: italic;
+  font-weight: 300;
+  line-height: 0.85;
+  color: var(--accent-terracotta);
+  opacity: 0.06;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+}
+
+.spotlightStepEyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent-terracotta);
+  margin-bottom: var(--space-2);
+}
+
+.spotlightTitle {
+  font-family: var(--font-serif);
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.25;
+  margin-bottom: var(--space-4);
+  position: relative;
+  z-index: 2;
+}
+
+.spotlightDesc {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.75;
+  margin-bottom: var(--space-6);
+  position: relative;
+  z-index: 2;
+}
+
+.spotlightBenefitTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(78, 96, 71, 0.09);
+  border: 1px solid rgba(78, 96, 71, 0.25);
+  padding: 8px 16px;
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent-sage);
+  margin-bottom: var(--space-6);
+  width: fit-content;
+  position: relative;
+  z-index: 2;
+}
+
+/* Nav Controls */
+.spotlightControls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-hairline);
+  position: relative;
+  z-index: 2;
+}
+
+.navArrowBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+  border: 1px solid rgba(34, 24, 19, 0.2);
+  background-color: transparent;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.navArrowBtn:hover {
+  background-color: var(--accent-terracotta);
+  color: #FAF9F5;
+  border-color: var(--accent-terracotta);
+}
+
+.pipIndicators {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pip {
+  width: 18px;
+  height: 3px;
+  border-radius: 0;
+  background-color: var(--border-medium);
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.pipActive {
+  width: 32px;
+  background-color: var(--accent-terracotta);
+}
+
+/* 4-Card Overview Grid - Square Mini Thumbnails */
+.ritualsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
+}
+
+@media (max-width: 992px) {
+  .ritualsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 580px) {
+  .ritualsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.miniRitualCard {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-hairline);
+  border-radius: 0;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 6px 20px rgba(34, 24, 19, 0.03);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.miniRitualCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(151, 65, 29, 0.12);
+  border-color: rgba(151, 65, 29, 0.35);
+}
+
+.miniRitualCardActive {
+  border: 2px solid var(--accent-terracotta);
+  box-shadow: 0 10px 30px rgba(151, 65, 29, 0.15);
+}
+
+.miniThumbWrapper {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background-color: #E8E0D5;
+  position: relative;
+  border-radius: 0;
+  border-bottom: 1px solid var(--border-hairline);
+}
+
+.miniThumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 0;
+  transition: transform 0.6s ease;
+}
+
+.miniRitualCard:hover .miniThumb {
+  transform: scale(1.08);
+}
+
+.miniCardBody {
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.miniStepTag {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent-terracotta);
+}
+
+.miniTitle {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ========================================================
+   SECTION 4: THE TRANSPARENCY LEDGER (FACTORY VS ATELIER)
+   ======================================================== */
+.comparisonSection {
+  padding: var(--space-24) 0;
+  border-bottom: 1px solid var(--border-hairline);
+}
+
+.comparisonDeck {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-8);
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .comparisonDeck {
+    grid-template-columns: 1fr;
+  }
+}
+
+.factoryCard {
+  background-color: #F8F7F5;
+  border: 1px dashed rgba(34, 24, 19, 0.25);
+  border-radius: 0;
+  padding: 40px 36px;
+  display: flex;
+  flex-direction: column;
+}
+
+.atelierCard {
+  background-color: #FAF6F0;
+  border: 2px solid var(--accent-terracotta);
+  border-radius: 0;
+  padding: 40px 36px;
+  box-shadow: 0 16px 44px rgba(151, 65, 29, 0.1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.cardEyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+}
+
+.cardTitle {
+  font-family: var(--font-serif);
+  font-size: 1.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-6);
+  line-height: 1.2;
+}
+
+.atelierBadge {
+  background-color: var(--accent-terracotta);
+  color: #FAF9F5;
+  padding: 4px 12px;
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.comparisonList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.comparisonItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-family: var(--font-sans);
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.itemIconBad {
+  color: #dc2626;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.itemIconGood {
+  color: #16a34a;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+/* ========================================================
+   SECTION 5: INGREDIENT SANCTUARY (SQUARE PHOTOS)
+   ======================================================== */
+.ingredientSection {
+  padding: var(--space-24) 0;
+  background-color: var(--bg-cream);
+  border-bottom: 1px solid var(--border-hairline);
+}
+
+.ingredientGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+@media (max-width: 992px) {
+  .ingredientGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .ingredientGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ingredientCard {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-hairline);
+  border-radius: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(34, 24, 19, 0.04);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.3s ease;
+}
+
+.ingredientCard:hover {
+  transform: translateY(-6px);
+  border-color: rgba(151, 65, 29, 0.35);
+  box-shadow: 0 16px 36px rgba(151, 65, 29, 0.12);
+}
+
+/* 1:1 Pure Square Image Aspect Ratio */
+.ingredientImgBox {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background-color: #EFE8DC;
+  border-radius: 0;
+}
+
+.ingredientImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 0;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ingredientCard:hover .ingredientImg {
+  transform: scale(1.08);
+}
+
+.ingredientBody {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.ingredientRegion {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent-terracotta);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 6px;
+}
+
+.ingredientName {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  line-height: 1.25;
+}
+
+.ingredientDesc {
+  font-family: var(--font-sans);
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}

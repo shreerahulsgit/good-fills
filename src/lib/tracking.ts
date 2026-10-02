@@ -1,0 +1,437 @@
+import fs from 'fs';
+import path from 'path';
+import { Order, ShippingAddress } from '@/types';
+import { PRODUCTS } from '@/data/products';
+
+export type MilestoneStatus = 'completed' | 'in_progress' | 'pending';
+
+export interface TrackingMilestone {
+  step: number;
+  title: string;
+  stageName: string;
+  location: string;
+  timestamp: string;
+  status: MilestoneStatus;
+  telemetryNote: string;
+  carrierAction?: string;
+}
+
+export interface CourierPartnerInfo {
+  name: string;
+  brand: string;
+  serviceType: string;
+  awbNumber: string;
+  isAssigned: boolean;
+  trackingUrl: string;
+  helpline: string;
+}
+
+export interface ConsignmentPackageSpecs {
+  totalWeightGrams: number;
+  formattedWeight: string;
+  packagingType: string;
+  sealIntegrity: string;
+  storageRequirement: string;
+  batchCode: string;
+}
+
+export interface TrackingTelemetryResult {
+  orderId: string;
+  found: boolean;
+  orderCreatedAt: string;
+  customerName: string;
+  maskedPhone: string;
+  shippingAddress: ShippingAddress;
+  orderStatus: string;
+  shipmentStatus: string;
+  overallProgressPercent: number;
+  currentStatusHeadline: string;
+  currentStatusDescription: string;
+  statusBadgeType: 'live' | 'completed' | 'processing' | 'pending';
+  estimatedDeliveryDate: string;
+  estimatedDeliveryWindow: string;
+  isDelivered: boolean;
+  courier: CourierPartnerInfo;
+  packageSpecs: ConsignmentPackageSpecs;
+  milestones: TrackingMilestone[];
+  items: Array<{
+    id: string;
+    name: string;
+    packSize: string;
+    quantity: number;
+    price: number;
+    imagePrimary: string;
+    productWeightGrams: number;
+  }>;
+  subtotal: number;
+  shippingCost: number;
+  total: number;
+}
+
+const DATA_DIR = path.join(process.cwd(), '.data');
+const ORDERS_FILE = path.join(DATA_DIR, 'server-orders.json');
+
+function maskPhoneNumber(phone?: string): string {
+  if (!phone) return '+91 ••••• •••••';
+  const clean = phone.replace(/\D/g, '');
+  if (clean.length >= 10) {
+    const last4 = clean.slice(-4);
+    const first2 = clean.slice(0, 2);
+    return `+91 ${first2}••• ••${last4}`;
+  }
+  return phone;
+}
+
+function loadOrdersFromDisk(): Order[] {
+  try {
+    if (fs.existsSync(ORDERS_FILE)) {
+      const raw = fs.readFileSync(ORDERS_FILE, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.error('Error reading server-orders.json for tracking:', err);
+  }
+  return [];
+}
+
+/**
+ * Derives the active milestone stage (1 to 5) directly from the order data
+ */
+export function deriveActiveStage(order: Order): number {
+  if (order.shipmentStatus === 'Delivered' || order.orderStatus === 'Delivered') {
+    return 5;
+  }
+  if (order.shipmentStatus === 'Out for Delivery') {
+    return 4;
+  }
+  if (
+    order.shipmentStatus === 'In Transit' ||
+    order.shipmentStatus === 'Handed Over' ||
+    order.orderStatus === 'Shipped'
+  ) {
+    return 3;
+  }
+  if (order.orderStatus === 'Processing' || order.orderStatus === 'Ready to Ship') {
+    return 2;
+  }
+  return 1;
+}
+
+/**
+ * Builds clear, simple, professional tracking data based on the real order
+ */
+export function buildTrackingTelemetry(order: Order, forcedStage?: number): TrackingTelemetryResult {
+  const createdDate = new Date(order.createdAt || Date.now());
+  const orderId = order.id || 'ORD-2523';
+  const phoneClean = (order.customerPhone || '9876543210').replace(/\D/g, '');
+
+  const activeStage = forcedStage !== undefined ? forcedStage : deriveActiveStage(order);
+
+  // Real or pending DTDC tracking number
+  const hasRealAwb = Boolean(order.trackingNumber && order.trackingNumber.trim().length > 0);
+  const dtdcAwb = hasRealAwb ? (order.trackingNumber as string).trim() : 'Assigned on Dispatch';
+
+  // Format dates cleanly
+  const fmtDate = (d: Date) =>
+    d.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+
+  const t1 = new Date(createdDate.getTime());
+  const t2 = new Date(createdDate.getTime() + 12 * 3600 * 1000);
+  const t3 = new Date(createdDate.getTime() + 24 * 3600 * 1000);
+  const t4 = new Date(createdDate.getTime() + 48 * 3600 * 1000);
+  const t5 = new Date(createdDate.getTime() + 54 * 3600 * 1000);
+
+  const destCity = order.shippingAddress?.city || 'Bengaluru';
+  const destPincode = order.shippingAddress?.pincode || '560038';
+
+  // 5 Clear, Professional Milestones
+  const milestones: TrackingMilestone[] = [
+    {
+      step: 1,
+      title: 'Order Confirmed',
+      stageName: 'Kitchen Order Received',
+      location: 'Good Fills Kitchen, Bengaluru',
+      timestamp: fmtDate(t1),
+      status: activeStage >= 1 ? 'completed' : 'pending',
+      telemetryNote: 'Order and payment confirmed. Batch queued for fresh soaking and sprouting.',
+      carrierAction: 'Order Confirmed',
+    },
+    {
+      step: 2,
+      title: 'Prepared & Packed',
+      stageName: 'Processing & Packaging',
+      location: 'Good Fills Kitchen, Bengaluru',
+      timestamp: activeStage >= 2 ? fmtDate(t2) : 'Awaiting Preparation',
+      status: activeStage > 2 ? 'completed' : activeStage === 2 ? 'in_progress' : 'pending',
+      telemetryNote: 'Batch freshly prepared, quality checked, and sealed in an airtight barrier pouch for freshness.',
+      carrierAction: 'Packed & Quality Checked',
+    },
+    {
+      step: 3,
+      title: 'Dispatched via DTDC Express',
+      stageName: 'Handed to Courier',
+      location: 'DTDC Sorting Facility, Bengaluru',
+      timestamp: activeStage >= 3 ? (order.dispatchDate ? fmtDate(new Date(order.dispatchDate)) : fmtDate(t3)) : 'Awaiting Courier Handover',
+      status: activeStage > 3 ? 'completed' : activeStage === 3 ? 'in_progress' : 'pending',
+      telemetryNote: hasRealAwb
+        ? `Handed over to DTDC Express courier under AWB ${dtdcAwb}. In transit to ${destCity}.`
+        : `Handed over to DTDC Express courier. In transit to ${destCity}.`,
+      carrierAction: hasRealAwb ? `DTDC AWB: ${dtdcAwb}` : 'Courier Manifest Assigned',
+    },
+    {
+      step: 4,
+      title: 'Out for Delivery',
+      stageName: 'Local Courier Delivery',
+      location: `DTDC Delivery Hub, ${destCity}`,
+      timestamp: activeStage >= 4 ? fmtDate(t4) : 'Pending Delivery Run',
+      status: activeStage > 4 ? 'completed' : activeStage === 4 ? 'in_progress' : 'pending',
+      telemetryNote: `Your package is with the local DTDC delivery executive and will reach your doorstep today.`,
+      carrierAction: 'Out for Delivery',
+    },
+    {
+      step: 5,
+      title: 'Delivered',
+      stageName: 'Doorstep Handover',
+      location: `${order.shippingAddress?.addressLine1 || 'Doorstep'}, ${destCity}`,
+      timestamp: activeStage === 5 ? (order.deliveredDate ? fmtDate(new Date(order.deliveredDate)) : fmtDate(t5)) : 'Pending Handover',
+      status: activeStage === 5 ? 'completed' : 'pending',
+      telemetryNote: 'Package delivered safely to your address with tamper-evident seal intact.',
+      carrierAction: 'Delivered Successfully',
+    },
+  ];
+
+  // Professional percentage mapping: 20%, 40%, 60%, 80%, 100%
+  const progressMap: Record<number, number> = {
+    1: 20,
+    2: 40,
+    3: 60,
+    4: 80,
+    5: 100,
+  };
+  const overallProgressPercent = progressMap[activeStage] || 20;
+
+  // Simple, Professional Status Headlines
+  let currentStatusHeadline = 'Order Confirmed & Preparing';
+  let currentStatusDescription = 'We have received your order. Our Bengaluru kitchen team is preparing your fresh batch.';
+  let statusBadgeType: 'live' | 'completed' | 'processing' | 'pending' = 'processing';
+
+  if (activeStage === 2) {
+    currentStatusHeadline = 'Prepared & Packed';
+    currentStatusDescription = 'Your batch has been prepared and packed into an airtight pouch, ready for courier pickup.';
+    statusBadgeType = 'processing';
+  } else if (activeStage === 3) {
+    currentStatusHeadline = 'Dispatched via DTDC Express';
+    currentStatusDescription = `Your parcel is on its way with DTDC courier to ${destCity}.`;
+    statusBadgeType = 'live';
+  } else if (activeStage === 4) {
+    currentStatusHeadline = 'Out for Delivery Today';
+    currentStatusDescription = `Your local DTDC courier agent is on the way to your doorstep in ${destCity}.`;
+    statusBadgeType = 'live';
+  } else if (activeStage === 5) {
+    currentStatusHeadline = 'Delivered to Doorstep';
+    currentStatusDescription = `Your package has been successfully delivered at ${destCity}.`;
+    statusBadgeType = 'completed';
+  }
+
+  // Current real stage without fake date promises
+  const currentDeliveryStage =
+    activeStage === 5
+      ? 'Delivered'
+      : activeStage === 4
+      ? 'Out for Delivery'
+      : activeStage === 3
+      ? 'In Transit with DTDC'
+      : activeStage === 2
+      ? 'Stone-Milled & Packed'
+      : 'Order Confirmed & Preparing';
+
+  const estimatedDeliveryWindow = currentDeliveryStage;
+  const estimatedDeliveryDate = '';
+
+  const totalWeightGrams =
+    order.weightGrams ||
+    order.items?.reduce((sum, it) => sum + (it.product.productWeightGrams * it.quantity), 0) ||
+    250;
+
+  const packageSpecs: ConsignmentPackageSpecs = {
+    totalWeightGrams,
+    formattedWeight: totalWeightGrams >= 1000 ? `${(totalWeightGrams / 1000).toFixed(1)} kg` : `${totalWeightGrams}g`,
+    packagingType: 'Airtight Barrier Foil Pouch + Sturdy Carton',
+    sealIntegrity: 'Tamper-Evident Freshness Seal',
+    storageRequirement: 'Store in cool, dry place away from moisture',
+    batchCode: `BATCH-${createdDate.toISOString().slice(2, 10).replace(/-/g, '')}`,
+  };
+
+  const courier: CourierPartnerInfo = {
+    name: 'DTDC Express Limited',
+    brand: 'DTDC Pan-India Express',
+    serviceType: 'Domestic Priority Express',
+    awbNumber: dtdcAwb,
+    isAssigned: hasRealAwb,
+    trackingUrl: hasRealAwb
+      ? `https://www.dtdc.in/tracking/shipment-tracking.asp`
+      : 'https://www.dtdc.in/tracking/shipment-tracking.asp',
+    helpline: '1800 209 6006',
+  };
+
+  const items = (order.items || []).map((it) => ({
+    id: it.product?.id || 'prod-01',
+    name: it.product?.name || 'Artisanal Porridge Flour',
+    packSize: it.product?.packSize || '250g',
+    quantity: it.quantity || 1,
+    price: it.product?.price || 225,
+    imagePrimary:
+      it.product?.images?.primary ||
+      'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80',
+    productWeightGrams: it.product?.productWeightGrams || 250,
+  }));
+
+  return {
+    orderId,
+    found: true,
+    orderCreatedAt: order.createdAt || new Date().toISOString(),
+    customerName: order.customerName || 'Good Fills Customer',
+    maskedPhone: maskPhoneNumber(phoneClean),
+    shippingAddress: order.shippingAddress || {
+      fullName: order.customerName || 'Good Fills Customer',
+      phone: phoneClean,
+      email: order.customerEmail || 'customer@example.com',
+      addressLine1: 'Doorstep Delivery',
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      pincode: '560038',
+      country: 'India',
+    },
+    orderStatus: order.orderStatus || 'Confirmed',
+    shipmentStatus: order.shipmentStatus || 'Not Shipped',
+    overallProgressPercent,
+    currentStatusHeadline,
+    currentStatusDescription,
+    statusBadgeType,
+    estimatedDeliveryDate: '',
+    estimatedDeliveryWindow,
+    isDelivered: activeStage === 5,
+    courier,
+    packageSpecs,
+    milestones,
+    items,
+    subtotal: order.subtotal || 225,
+    shippingCost: order.shippingCost || 100,
+    total: order.total || 325,
+  };
+}
+
+/**
+ * Searches orders by Order ID, DTDC tracking number, or phone number
+ */
+export async function searchTrackingOrder(query: string): Promise<TrackingTelemetryResult | null> {
+  const cleanQuery = query.trim().toUpperCase();
+  if (!cleanQuery) return null;
+
+  const orders = loadOrdersFromDisk();
+
+  // 1. Direct match by Order ID (e.g. "ORD-2523")
+  const idMatch = orders.find(
+    (o) =>
+      o.id.toUpperCase() === cleanQuery ||
+      o.id.toUpperCase().replace(/\D/g, '') === cleanQuery.replace(/\D/g, '')
+  );
+  if (idMatch) {
+    return buildTrackingTelemetry(idMatch);
+  }
+
+  // 2. Direct match by DTDC Consignment number
+  const awbMatch = orders.find(
+    (o) => o.trackingNumber && o.trackingNumber.toUpperCase() === cleanQuery
+  );
+  if (awbMatch) {
+    return buildTrackingTelemetry(awbMatch);
+  }
+
+  // 3. Match by Phone Number (last 10 digits)
+  const phoneDigits = cleanQuery.replace(/\D/g, '');
+  if (phoneDigits.length >= 8) {
+    const phoneMatch = orders.find((o) => {
+      const oDigits = (o.customerPhone || '').replace(/\D/g, '');
+      return oDigits.endsWith(phoneDigits) || phoneDigits.endsWith(oDigits);
+    });
+    if (phoneMatch) {
+      return buildTrackingTelemetry(phoneMatch);
+    }
+  }
+
+  // 4. Fallback demo orders for instant exploration
+  if (cleanQuery === 'ORD-2523' || cleanQuery === '2523') {
+    return buildDemoOrder('ORD-2523', 'Shree Rahul', '9876543210', 'Indiranagar, Bengaluru', 1);
+  }
+  if (cleanQuery === 'ORD-8431' || cleanQuery === '8431') {
+    return buildDemoOrder('ORD-8431', 'Sandbox Patron', '9777777777', 'Koramangala, Bengaluru', 3, 'D62984105');
+  }
+  if (cleanQuery === 'ORD-9639' || cleanQuery === '9639') {
+    return buildDemoOrder('ORD-9639', 'Shree Rahul S', '6382543212', 'Jayanagar, Bengaluru', 2);
+  }
+  if (cleanQuery === 'D62984105') {
+    return buildDemoOrder('ORD-8431', 'Sandbox Patron', '9777777777', 'Koramangala, Bengaluru', 4, 'D62984105');
+  }
+
+  return null;
+}
+
+function buildDemoOrder(
+  id: string,
+  name: string,
+  phone: string,
+  cityLine: string,
+  stage: number,
+  customAwb?: string
+): TrackingTelemetryResult {
+  const p1 = PRODUCTS[0];
+  const p2 = PRODUCTS[1] || PRODUCTS[0];
+
+  const mockOrder: Order = {
+    id,
+    createdAt: new Date(Date.now() - (stage === 4 ? 40 : stage === 3 ? 24 : 10) * 3600 * 1000).toISOString(),
+    customerId: `CUST-${phone.slice(-6)}`,
+    customerName: name,
+    customerEmail: `${name.toLowerCase().replace(/\s+/g, '.')}@goodfills.in`,
+    customerPhone: phone,
+    shippingAddress: {
+      fullName: name,
+      phone,
+      email: `${name.toLowerCase().replace(/\s+/g, '.')}@goodfills.in`,
+      addressLine1: 'Villa 14, Lotus Palms, 12th Main',
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      pincode: '560038',
+      country: 'India',
+    },
+    items: [
+      { product: p1, quantity: 1 },
+      { product: p2, quantity: 1 },
+    ],
+    subtotal: p1.price + p2.price,
+    shippingCost: 100,
+    total: p1.price + p2.price + 100,
+    weightGrams: p1.productWeightGrams + p2.productWeightGrams,
+    paymentMethod: 'Razorpay',
+    paymentStatus: 'Paid',
+    orderStatus: stage === 5 ? 'Delivered' : stage >= 3 ? 'Shipped' : stage === 2 ? 'Processing' : 'Confirmed',
+    shipmentStatus: stage === 5 ? 'Delivered' : stage === 4 ? 'Out for Delivery' : stage === 3 ? 'In Transit' : 'Not Shipped',
+    courier: 'DTDC',
+    trackingNumber: customAwb,
+    estimatedDelivery: '2–4 days',
+    statusHistory: [],
+  };
+
+  return buildTrackingTelemetry(mockOrder, stage);
+}

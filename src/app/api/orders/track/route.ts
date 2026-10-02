@@ -1,0 +1,39 @@
+import { NextResponse } from 'next/server';
+import { searchTrackingOrder } from '@/lib/tracking';
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get('q') || searchParams.get('id') || searchParams.get('phone');
+
+    if (!query || !query.trim()) {
+      return NextResponse.json(
+        {
+          error: 'Please enter a valid Good Fills Order ID (e.g. ORD-2523) or 10-digit mobile number.',
+          demoSuggestions: ['ORD-2523', 'ORD-8431', 'ORD-9639', 'D62984105'],
+        },
+        { status: 400 }
+      );
+    }
+
+    const trackingData = await searchTrackingOrder(query);
+
+    if (!trackingData) {
+      return NextResponse.json(
+        {
+          error: `No consignment record located for query "${query.trim()}". Please verify your Order ID or mobile number.`,
+          demoSuggestions: ['ORD-2523', 'ORD-8431', 'ORD-9639', 'D62984105'],
+        },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, tracking: trackingData });
+  } catch (error) {
+    console.error('Error fetching live order tracking:', error);
+    return NextResponse.json(
+      { error: 'An unexpected error occurred while communicating with the logistics telemetry gateway.' },
+      { status: 500 }
+    );
+  }
+}

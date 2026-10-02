@@ -18,6 +18,7 @@ import {
   MapPin,
   Plus,
   CheckCircle2,
+  Building2,
 } from 'lucide-react';
 import { useCart } from '@/lib/cart-context';
 import { useCustomerAuth } from '@/lib/customer-auth-context';
@@ -310,7 +311,7 @@ export function CheckoutView() {
       setVerifyStatus('Launching Razorpay UPI Checkout...');
       setIsVerifying(false);
 
-      // Phase 1 Non-negotiable: UPI ONLY Checkout Configuration
+      // Restrict Checkout Modal strictly to UPI and Netbanking / Bank Transfer
       const rzpOptions = {
         key: orderData.keyId,
         amount: orderData.amount,
@@ -326,6 +327,32 @@ export function CheckoutView() {
         },
         theme: {
           color: '#97411D', // Good Fills Artisanal Terracotta
+        },
+        config: {
+          display: {
+            blocks: {
+              upi_block: {
+                name: 'Pay via UPI (Instant QR / App)',
+                instruments: [
+                  {
+                    method: 'upi',
+                  },
+                ],
+              },
+              bank_block: {
+                name: 'Net Banking / Bank Transfer',
+                instruments: [
+                  {
+                    method: 'netbanking',
+                  },
+                ],
+              },
+            },
+            sequence: ['block.upi_block', 'block.bank_block'],
+            preferences: {
+              show_default_blocks: false,
+            },
+          },
         },
         modal: {
           confirm_close: true,
@@ -863,18 +890,19 @@ export function CheckoutView() {
                   <span className={styles.stepBadge}>STEP 03</span>
                   <span className={styles.stepTagLine} />
                 </div>
-                <h2 className={styles.sectionTitle}>Pay with UPI</h2>
+                <h2 className={styles.sectionTitle}>Pay with UPI or Bank Transfer</h2>
                 <p className={styles.sectionSubtitle}>
-                  Secure UPI payment powered by Razorpay. Encrypted &amp; verified instantly.
+                  Secure payment powered by Razorpay. Encrypted &amp; verified instantly.
                 </p>
               </div>
 
-              {/* UPI Gateway Card */}
+              {/* UPI & Bank Transfer Gateway Card */}
               <div className={styles.upiGatewayCard}>
                 <div className={styles.upiHeaderRow}>
                   <div className={styles.upiTitleGroup}>
                     <span className={styles.upiMethodPill}>UPI 2.0</span>
-                    <h3 className={styles.upiTitle}>Direct UPI Gateway</h3>
+                    <span className={styles.upiMethodPill} style={{ marginLeft: 6 }}>Net Banking</span>
+                    <h3 className={styles.upiTitle}>Instant Payment Gateway</h3>
                   </div>
                   <div className={styles.upiSecureBadge}>
                     <ShieldCheck size={13} />
@@ -884,7 +912,7 @@ export function CheckoutView() {
 
                 <div className={styles.upiSupportedBox}>
                   <div className={styles.upiSupportedHeader}>
-                    <span className={styles.upiSupportedLabel}>Accepted UPI Apps</span>
+                    <span className={styles.upiSupportedLabel}>Accepted Payment Rails</span>
                   </div>
 
                   <div className={styles.upiRailsList}>
@@ -902,20 +930,16 @@ export function CheckoutView() {
                     </span>
                     <span className={styles.upiRailItem}>
                       <Smartphone size={13} style={{ color: 'var(--accent-terracotta)' }} />
-                      BHIM
+                      Any UPI QR / App
                     </span>
                     <span className={styles.upiRailItem}>
-                      <Smartphone size={13} style={{ color: 'var(--accent-terracotta)' }} />
-                      Cred UPI
-                    </span>
-                    <span className={styles.upiRailItem}>
-                      <Smartphone size={13} style={{ color: 'var(--accent-terracotta)' }} />
-                      Any UPI ID / VPA
+                      <Building2 size={13} style={{ color: 'var(--accent-terracotta)' }} />
+                      Net Banking (All Indian Banks)
                     </span>
                   </div>
 
                   <p className={styles.upiInstructionText}>
-                    Clicking <strong>Pay via UPI</strong> opens the secure Razorpay payment modal. On desktop browsers, an instant dynamic UPI QR code is presented to scan. On mobile devices, your preferred UPI app opens directly via UPI Intent.
+                    Clicking <strong>Pay via UPI / Netbanking</strong> opens the secure Razorpay modal. You can scan an instant dynamic UPI QR code, choose your mobile UPI app, or select direct Net Banking across SBI, HDFC, ICICI, Axis, and all major Indian banks.
                   </p>
                 </div>
 
@@ -980,7 +1004,7 @@ export function CheckoutView() {
                     className={styles.submitOrderBtn}
                   >
                     <Lock size={17} />
-                    <span>Pay {formatCurrency(grandTotal)} via UPI</span>
+                    <span>Pay {formatCurrency(grandTotal)} via UPI / Netbanking</span>
                     <ArrowRight size={17} />
                   </button>
                   <p className={styles.legalDisclaimer}>

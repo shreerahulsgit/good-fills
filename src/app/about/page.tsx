@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { AboutView } from '@/components/about/AboutView';
 
 export const metadata: Metadata = {
-  title: 'Our Story • Good Fills Bengaluru Atelier',
+  title: 'Our Story • Good Fills Bengaluru Kitchen',
   description:
-    'The philosophy behind Good Fills: traditional washing, soaking, sun-drying, and sprouting pulses and grains in Bengaluru. Pure made-to-order family nutrition and botanical care.',
+    'How Good Fills makes fresh homemade baby food, sprouted porridges, and natural bath powders in Bengaluru. Pure traditional soaking, sprouting, and stone grinding.',
 };
 
 export default function AboutPage() {

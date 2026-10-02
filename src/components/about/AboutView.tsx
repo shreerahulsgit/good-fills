@@ -19,7 +19,7 @@ import styles from './AboutView.module.css';
 
 const luxuryEase = [0.16, 1, 0.3, 1] as const;
 
-// 4 Sacred Kitchen Rituals with high-resolution bespoke local photography
+// 4 Traditional Kitchen Steps with clear, easy-to-understand explanations
 interface RitualItem {
   id: string;
   step: string;
@@ -35,82 +35,82 @@ interface RitualItem {
 const RITUALS: RitualItem[] = [
   {
     id: 'ritual-01',
-    step: 'RITUAL 01',
+    step: 'STEP 01',
     tabLabel: '01 Washing & Soaking',
     ghostNum: '01',
-    title: 'Multi-Water Washing & 12h Soaking',
+    title: 'Triple-Washing & 12-Hour Soaking',
     description:
-      'Every grain and pulse is triple-washed in fresh water and submerged in antique brass urulis for an unhurried 12-hour soak. This classical bio-process breaks down phytic acid and lectins, unlocking bioavailable nutrition and ensuring gentle, colic-free infant digestion.',
+      'We wash every grain and pulse three times in clean water and soak them for 12 full hours. Soaking softens the grains naturally, breaks down heavy starches, and makes them very gentle on your baby’s little tummy—preventing colic and gas.',
     image: '/images/story/ritual-01-washing.jpg',
-    benefit: 'Neutralizes Phytic Acid • Colic-Free Infant Digestion',
+    benefit: 'Easy to Digest • Gentle on Baby’s Tummy',
     icon: Droplets,
   },
   {
     id: 'ritual-02',
-    step: 'RITUAL 02',
-    tabLabel: '02 48h Natural Sprouting',
+    step: 'STEP 02',
+    tabLabel: '02 Natural Sprouting',
     ghostNum: '02',
-    title: '48-Hour Natural Muslin Sprouting',
+    title: '48-Hour Natural Cotton Sprouting',
     description:
-      'Washed grains are bundled into clean, handwoven unbleached cotton muslin to sprout in quiet darkness. Natural germination awakens dormant plant enzymes, multiplying bioavailable calcium, dietary iron, and natural vitamin C by up to 300%.',
+      'We tie the soaked grains in clean, soft cotton cloth and let them sprout naturally for two days. Sprouting brings grains to life—naturally multiplying calcium, iron, and essential vitamins so your child gets real, wholesome nourishment.',
     image: '/images/story/ritual-02-sprouting.jpg',
-    benefit: 'Multiplies Calcium & Iron • Active Living Enzymes',
+    benefit: 'Boosts Natural Calcium & Iron • Rich in Living Vitamins',
     icon: Leaf,
   },
   {
     id: 'ritual-03',
-    step: 'RITUAL 03',
-    tabLabel: '03 Open-Air Sun-Drying',
+    step: 'STEP 03',
+    tabLabel: '03 Open Sun-Drying',
     ghostNum: '03',
-    title: 'Sun-Drying Under Open Bengaluru Skies',
+    title: 'Sun-Drying Under Bengaluru Sun',
     description:
-      'Rather than using artificial electric dehydrators that cook out delicate volatile oils, our sprouted harvest is spread evenly over clean cotton sheets under the warm sun. Slow natural evaporation seals in the deep, malty flavor of heirloom millets.',
+      'We spread the sprouted grains over clean cotton sheets to dry naturally under the open sun. We never use high-heat electric dryers that destroy vitamins and natural flavors. Slow sun-drying preserves the rich, traditional taste.',
     image: '/images/story/ritual-03-sundrying.jpg',
-    benefit: 'Zero Thermal Scorching • Locks in Volatile Aromas',
+    benefit: 'Preserves Natural Nutrients • Authentic Homemade Taste',
     icon: Sun,
   },
   {
     id: 'ritual-04',
-    step: 'RITUAL 04',
-    tabLabel: '04 Iron Roasting & Milling',
+    step: 'STEP 04',
+    tabLabel: '04 Roasting & Stone Milling',
     ghostNum: '04',
-    title: 'Cast-Iron Kadhai Roasting & Stone-Milling',
+    title: 'Slow Iron Roasting & Cool Stone Grinding',
     description:
-      'Batches are slow-roasted in heavy seasoned cast-iron kadhais over a gentle flame to release aromatics, then milled cool on traditional granite stone chakki wheels. Low-friction grinding preserves living nutrients without high-heat damage.',
+      'We slow-roast each batch in heavy iron pans on a gentle flame until fragrant, then grind them on traditional stone mills (chakki). Stone grinding stays cool, keeping all the natural fiber, healthy oils, and nutrients completely safe.',
     image: '/images/story/ritual-04-roasting-milling.jpg',
-    benefit: 'Low-Friction Cold Grinding • Zero Heat Degradation',
+    benefit: 'Cool Stone Ground • Zero Heat Damage',
     icon: Flame,
   },
 ];
 
-// 4 Heritage Ingredients matching the official Good Fills catalog
+// 4 Natural Ingredients matching the Good Fills catalog
 const INGREDIENTS = [
   {
     name: 'Sprouted Ragi & Ancient Grains',
-    region: 'Sprouted & Sun-Dried Grains',
+    region: 'Sprouted for Strong Bones',
     description:
-      'Carefully selected heirloom millets and pulses, sprouted, hygienically sun-dried, and finely filtered for tender infant and family nutrition.',
+      'Heirloom ragi and wholesome grains, naturally sprouted and sun-dried for easy digestion and healthy baby growth.',
     image: '/images/story/ingredient-ragi.jpg',
   },
   {
     name: 'Pure Mountain Honey',
-    region: '100% Pure Mountain Harvest',
+    region: '100% Pure & Raw',
     description:
-      'Single-origin pure honey with natural aroma and distinct golden hue. 100% natural, never heated, preserving natural restorative vitality.',
+      'Single-origin pure honey with natural aroma and deep golden color. 100% natural, unheated, with zero added sugar.',
     image: '/images/story/ingredient-honey.jpg',
   },
   {
     name: 'Pure Sandalwood & Wild Turmeric',
-    region: 'Sun-Dried Botanical Herbs',
+    region: 'Soothing Natural Bath Care',
     description:
-      'Pure sandalwood, wild turmeric, white turmeric, and fragrant rose petals ground together for gentle, soap-free, calming skincare.',
+      'Real sandalwood, wild turmeric, white turmeric, and sun-dried rose petals for soft, soap-free, calming skincare.',
     image: '/images/story/ingredient-turmeric.jpg',
   },
   {
     name: 'Tree Nuts & Wholesome Power Seeds',
-    region: 'Almonds, Walnuts & Super Seeds',
+    region: 'Daily Energy & Growth',
     description:
-      'Rich whole almonds, walnuts, pistachios, cashews, and power seeds, naturally sweetened with traditional Kempu Kallsakre rock candy.',
+      'Whole almonds, walnuts, pistachios, cashews, and power seeds, lightly sweetened with traditional rock candy (Kempu Kallsakre).',
     image: '/images/story/ingredient-nuts-seeds.jpg',
   },
 ];
@@ -142,13 +142,13 @@ export function AboutView() {
   return (
     <div className={styles.aboutPageWrapper}>
       {/* ========================================================
-          SECTION 1: THE ATELIER MANIFESTO HERO
+          SECTION 1: HERO
           ======================================================== */}
       <section className={styles.heroSection}>
         <div className={styles.heroAura} />
         <div className="container">
           <div className={styles.heroContent}>
-            {/* Live Atelier Status Pill */}
+            {/* Live Kitchen Status Pill */}
             <motion.div
               className={styles.heroStatusPill}
               initial={{ opacity: 0, y: 16 }}
@@ -156,33 +156,33 @@ export function AboutView() {
               transition={{ duration: 0.7, ease: luxuryEase }}
             >
               <span className={styles.statusDot} />
-              <span>Bengaluru Atelier · 100% Traditional Care · Made to Order</span>
+              <span>Bengaluru Kitchen · 100% Traditional · Freshly Made to Order</span>
             </motion.div>
 
-            {/* Poetic Serif Headline */}
+            {/* Clear Serif Headline */}
             <motion.h1
               className={styles.heroTitle}
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.85, ease: luxuryEase, delay: 0.12 }}
             >
-              Before factory conveyor belts, food was made with{' '}
-              <span className={styles.heroTitleEm}>memory, hands, and time.</span>
+              Before factory machines, food was made with{' '}
+              <span className={styles.heroTitleEm}>care, loving hands, and time.</span>
             </motion.h1>
 
-            {/* Subtitle */}
+            {/* Simple, relatable subtitle */}
             <motion.p
               className={styles.heroSubtitle}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.85, ease: luxuryEase, delay: 0.24 }}
             >
-              Good Fills was founded on a quiet, uncompromising pledge: to bring honest,
-              homemade infant nutrition, heirloom millets, and Ayurvedic botanical care back to the
-              everyday Indian family table—freshly prepared only after checkout.
+              Good Fills was started with one simple promise: to make 100% pure, homemade baby food,
+              nutritious sprouted porridges, and gentle herbal bath powders just like mothers and grandmothers
+              have made for generations—prepared fresh only after you place an order.
             </motion.p>
 
-            {/* Atelier Metric Strip with Square Silhouette */}
+            {/* Metric Strip */}
             <motion.div
               className={styles.statsRow}
               initial={{ opacity: 0, y: 24 }}
@@ -194,15 +194,15 @@ export function AboutView() {
                 <span className={styles.statLabel}>Made to Order</span>
               </div>
               <div className={styles.statItem}>
-                <span className={styles.statValue}>48h</span>
-                <span className={styles.statLabel}>Sprouting Cycle</span>
+                <span className={styles.statValue}>48 Hours</span>
+                <span className={styles.statLabel}>Natural Sprouting</span>
               </div>
               <div className={styles.statItem}>
                 <span className={styles.statValue}>0%</span>
                 <span className={styles.statLabel}>Preservatives</span>
               </div>
               <div className={styles.statItem}>
-                <span className={styles.statValue}>6 Mo</span>
+                <span className={styles.statValue}>6 Months</span>
                 <span className={styles.statLabel}>Natural Freshness</span>
               </div>
             </motion.div>
@@ -211,12 +211,12 @@ export function AboutView() {
       </section>
 
       {/* ========================================================
-          SECTION 2: CHAPTER 01 — THE FOUNDER'S GENESIS
+          SECTION 2: OUR STORY — WHY WE STARTED
           ======================================================== */}
       <section className={styles.genesisSection}>
         <div className="container">
           <div className={styles.genesisGrid}>
-            {/* Left Column: Narrative with Sequential Stagger */}
+            {/* Left Column: Simple Story Narrative */}
             <div className={styles.genesisNarrative}>
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
@@ -224,9 +224,9 @@ export function AboutView() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, ease: luxuryEase }}
               >
-                <span className={styles.sectionEyebrow}>CHAPTER 01 · THE GENESIS</span>
+                <span className={styles.sectionEyebrow}>OUR STORY</span>
                 <h2 className={styles.sectionHeading}>
-                  Walking Away from the Supermarket Aisle.
+                  Why We Walked Away from Supermarket Shelves.
                 </h2>
               </motion.div>
 
@@ -237,13 +237,12 @@ export function AboutView() {
                 transition={{ duration: 0.6, ease: luxuryEase, delay: 0.15 }}
               >
                 <p className={styles.narrativeText}>
-                  When you walk down a typical baby food or health powder aisle today, you are looking
-                  at the triumph of industrial logistics over life. Baby cereals and adult protein mixes
-                  are engineered with maltodextrin bulking agents, anti-caking additives, and artificial
-                  vanillin—designed to sit for 24 months in uncooled shipping containers.
+                  Walk into any supermarket today, and you will see shelves full of baby cereals and health powders
+                  loaded with chemical preservatives, artificial thickeners, and refined sugars. They are manufactured
+                  in mass factories specifically designed to sit inside boxes for up to 2 years.
                 </p>
                 <p className={styles.narrativeText} style={{ marginTop: 12 }}>
-                  We asked ourselves a simple question: <em>When did feeding our children become an exercise in industrial shelf life?</em>
+                  We asked ourselves a simple question: <em>Why should our children eat factory-made food made months ago?</em>
                 </p>
               </motion.div>
 
@@ -264,14 +263,13 @@ export function AboutView() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, ease: luxuryEase, delay: 0.38 }}
               >
-                That question gave birth to Good Fills. In our Bengaluru atelier, we abandoned the
-                factory playbook entirely. We keep zero pre-packed inventory in warehouses. We wait for
-                your order, soak the seeds, sprout the ragi, roast in small batches, and seal each pouch
-                warm from the stone mill.
+                That simple thought started Good Fills. In our Bengaluru kitchen, we do things the way families always have.
+                We keep zero old stock sitting in warehouses. When you place an order, we wash the grains, sprout the ragi,
+                slow-roast them in small batches, and pack every pouch fresh from the stone mill.
               </motion.p>
             </div>
 
-            {/* Right Column: Square Architectural Visual Frame */}
+            {/* Right Column: Visual Frame */}
             <motion.div
               className={styles.genesisVisualFrame}
               initial={{ opacity: 0, scale: 0.96 }}
@@ -281,7 +279,7 @@ export function AboutView() {
             >
               <img
                 src="/images/story/genesis-kitchen.jpg"
-                alt="Traditional Bengaluru kitchen atelier with earthen pots and fresh stone-ground grains"
+                alt="Traditional Bengaluru kitchen with earthen pots and fresh stone-ground grains"
                 className={styles.genesisPhoto}
               />
               <motion.div
@@ -292,7 +290,7 @@ export function AboutView() {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <span className={styles.artisanText}>
-                  Handcrafted in micro-batches adhering to FSSAI certified hygiene
+                  Prepared fresh in small batches following strict FSSAI hygiene standards
                 </span>
               </motion.div>
             </motion.div>
@@ -301,7 +299,7 @@ export function AboutView() {
       </section>
 
       {/* ========================================================
-          SECTION 3: THE 4 SACRED RITUALS (SPOTLIGHT + CAROUSEL)
+          SECTION 3: THE 4 TRADITIONAL STEPS
           ======================================================== */}
       <section
         className={styles.ritualsSection}
@@ -310,11 +308,11 @@ export function AboutView() {
       >
         <div className="container">
           <div className={styles.centerHeader}>
-            <span className={styles.sectionEyebrow}>TIME-HONORED PREPARATION</span>
-            <h2 className={styles.sectionHeading}>The 4 Sacred Kitchen Rituals</h2>
+            <span className={styles.sectionEyebrow}>HOW WE MAKE OUR PRODUCTS</span>
+            <h2 className={styles.sectionHeading}>Our 4 Traditional Kitchen Steps</h2>
             <p className={styles.narrativeText}>
-              Classical culinary Ayurveda understands that nourishment is determined by how an ingredient
-              is treated. Every creation at Good Fills passes through these four uncompromising stages:
+              Real nourishment comes from care, patience, and traditional wisdom. Every Good Fills product
+              goes through these four simple, time-tested steps:
             </p>
           </div>
 
@@ -330,12 +328,12 @@ export function AboutView() {
                 }`}
               >
                 <span className={styles.ritualTabNum}>0{idx + 1}</span>
-                <span>{ritual.title.split('&')[0].trim()}</span>
+                <span>{ritual.tabLabel.replace(/^\d+\s*/, '')}</span>
               </button>
             ))}
           </div>
 
-          {/* Interactive Featured Spotlight Card - Square Cut */}
+          {/* Interactive Featured Spotlight Card */}
           <div className={styles.spotlightCard}>
             <AnimatePresence mode="wait">
               <motion.div
@@ -382,7 +380,7 @@ export function AboutView() {
                     type="button"
                     onClick={prevRitual}
                     className={styles.navArrowBtn}
-                    aria-label="Previous ritual"
+                    aria-label="Previous step"
                   >
                     <ArrowLeft size={16} />
                   </button>
@@ -396,7 +394,7 @@ export function AboutView() {
                         className={`${styles.pip} ${
                           activeRitualIndex === idx ? styles.pipActive : ''
                         }`}
-                        aria-label={`Go to ritual ${idx + 1}`}
+                        aria-label={`Go to step ${idx + 1}`}
                       />
                     ))}
                   </div>
@@ -405,7 +403,7 @@ export function AboutView() {
                     type="button"
                     onClick={nextRitual}
                     className={styles.navArrowBtn}
-                    aria-label="Next ritual"
+                    aria-label="Next step"
                   >
                     <ArrowRight size={16} />
                   </button>
@@ -414,7 +412,7 @@ export function AboutView() {
             </AnimatePresence>
           </div>
 
-          {/* 4-Card Overview Grid Below Spotlight - Square Mini Cards */}
+          {/* 4-Card Overview Grid Below Spotlight */}
           <div className={styles.ritualsGrid}>
             {RITUALS.map((ritual, idx) => (
               <motion.div
@@ -447,16 +445,16 @@ export function AboutView() {
       </section>
 
       {/* ========================================================
-          SECTION 4: THE TRANSPARENCY LEDGER (FACTORY VS ATELIER)
+          SECTION 4: COMPARISON (SUPERMARKET VS GOOD FILLS)
           ======================================================== */}
       <section className={styles.comparisonSection}>
         <div className="container">
           <div className={styles.centerHeader}>
-            <span className={styles.sectionEyebrow}>THE TRANSPARENCY LEDGER</span>
-            <h2 className={styles.sectionHeading}>Factory Standard vs. Good Fills Atelier</h2>
+            <span className={styles.sectionEyebrow}>THE HONEST DIFFERENCE</span>
+            <h2 className={styles.sectionHeading}>Supermarket Brands vs. Good Fills Homemade</h2>
             <p className={styles.narrativeText}>
-              We believe families deserve to know exactly how everyday food is made. Here is how our
-              homemade preparation compares to commercial brand standards:
+              Every family deserves to know what goes into their food. Here is an honest look at how our
+              fresh homemade method compares to commercial factory brands:
             </p>
           </div>
 
@@ -473,37 +471,37 @@ export function AboutView() {
               <div className={styles.cardTopRow}>
                 <span className={styles.cardEyebrow}>COMMERCIAL BRANDS</span>
               </div>
-              <h3 className={styles.cardTitle}>Factory Standard</h3>
+              <h3 className={styles.cardTitle}>Factory Made</h3>
 
               <ul className={styles.comparisonList}>
                 <li className={styles.comparisonItem}>
                   <X size={18} className={styles.itemIconBad} />
                   <span>
-                    <strong>24-Month Shelf Life:</strong> Achieved through synthetic preservatives, chemical stabilizers, and BHA/BHT antioxidants.
+                    <strong>2-Year Shelf Life:</strong> Uses chemical preservatives and artificial stabilizers so products can sit on store shelves for years.
                   </span>
                 </li>
                 <li className={styles.comparisonItem}>
                   <X size={18} className={styles.itemIconBad} />
                   <span>
-                    <strong>High-Heat Extrusion:</strong> Grains blasted through extreme industrial steam, destroying heat-sensitive vitamins and living enzymes.
+                    <strong>High Factory Heat:</strong> Grains are blasted with extreme industrial heat, destroying natural vitamins and nutrients.
                   </span>
                 </li>
                 <li className={styles.comparisonItem}>
                   <X size={18} className={styles.itemIconBad} />
                   <span>
-                    <strong>Bulking Fillers:</strong> Up to 40% maltodextrin, refined corn starch, and artificial vanilla flavoring added to pad margins.
+                    <strong>Cheap Additives &amp; Fillers:</strong> Padded with refined maltodextrin, corn starch, and artificial flavoring to cut costs.
                   </span>
                 </li>
                 <li className={styles.comparisonItem}>
                   <X size={18} className={styles.itemIconBad} />
                   <span>
-                    <strong>Warehouse Stockpiling:</strong> Pallets sit in distributor hubs for months before reaching your grocery shelf.
+                    <strong>Months in Warehouses:</strong> Boxes sit in godowns and transport hubs for months before you buy them.
                   </span>
                 </li>
               </ul>
             </motion.div>
 
-            {/* The Good Fills Atelier Standard */}
+            {/* The Good Fills Homemade Standard */}
             <motion.div
               className={styles.atelierCard}
               initial={{ opacity: 0, y: 20 }}
@@ -514,35 +512,35 @@ export function AboutView() {
             >
               <div className={styles.cardTopRow}>
                 <span className={styles.cardEyebrow} style={{ color: 'var(--accent-terracotta)' }}>
-                  OUR PHILOSOPHY
+                  OUR PROMISE
                 </span>
                 <span className={styles.atelierBadge}>GOOD FILLS</span>
               </div>
-              <h3 className={styles.cardTitle}>Artisanal Atelier</h3>
+              <h3 className={styles.cardTitle}>Freshly Homemade</h3>
 
               <ul className={styles.comparisonList}>
                 <li className={styles.comparisonItem}>
                   <Check size={18} className={styles.itemIconGood} />
                   <span>
-                    <strong>6-Month Natural Freshness:</strong> Preserved purely through airtight, food-grade multi-layer barrier pouches—zero preservatives.
+                    <strong>Naturally Fresh for 6 Months:</strong> Kept fresh through clean, airtight food-grade pouches—100% natural with zero preservatives.
                   </span>
                 </li>
                 <li className={styles.comparisonItem}>
                   <Check size={18} className={styles.itemIconGood} />
                   <span>
-                    <strong>Cold Stone-Milling:</strong> Slow, low-friction traditional milling preserves natural lipids, micronutrients, and delicate aromas.
+                    <strong>Cool Stone Grinding:</strong> Slow, traditional stone grinding keeps grains cool, preserving natural fiber and nutrition.
                   </span>
                 </li>
                 <li className={styles.comparisonItem}>
                   <Check size={18} className={styles.itemIconGood} />
                   <span>
-                    <strong>100% Whole Foods:</strong> Zero fillers, zero added refined sugars, zero synthetic fragrance, and zero emulsifiers.
+                    <strong>100% Real Food:</strong> Only pure grains, pulses, tree nuts, and herbs—zero refined sugars, chemicals, or fillers.
                   </span>
                 </li>
                 <li className={styles.comparisonItem}>
                   <Check size={18} className={styles.itemIconGood} />
                   <span>
-                    <strong>Freshly Made to Order:</strong> Prepared in Bengaluru only after your checkout and dispatched via DTDC express in 24–48 hours.
+                    <strong>Made Fresh After You Order:</strong> Prepared in Bengaluru only after your order is confirmed, then shipped straight to your door.
                   </span>
                 </li>
               </ul>
@@ -552,16 +550,16 @@ export function AboutView() {
       </section>
 
       {/* ========================================================
-          SECTION 5: INGREDIENT SANCTUARY (PURE 1:1 SQUARE PHOTOS)
+          SECTION 5: INGREDIENTS
           ======================================================== */}
       <section className={styles.ingredientSection}>
         <div className="container">
           <div className={styles.centerHeader}>
-            <span className={styles.sectionEyebrow}>PURE & TRADITIONAL</span>
-            <h2 className={styles.sectionHeading}>The Ingredient Sanctuary</h2>
+            <span className={styles.sectionEyebrow}>100% PURE &amp; NATURAL</span>
+            <h2 className={styles.sectionHeading}>Our Natural Ingredients</h2>
             <p className={styles.narrativeText}>
-              Every creation honors time-tested methods: washing, soaking, sun-drying, and sprouting pure pulses,
-              heirloom grains, and botanical superfoods—free from mass-market shortcuts or artificial additives:
+              Every Good Fills product starts with pure, traditional ingredients: heirloom grains,
+              whole tree nuts, pure mountain honey, and sun-dried herbs—free from chemicals, additives, and factory shortcuts:
             </p>
           </div>
 

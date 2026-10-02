@@ -90,6 +90,20 @@ export function ResetPasswordView() {
   return (
     <main className={styles.resetContainer}>
       <div className={styles.resetCard}>
+        <div style={{ marginBottom: '16px' }}>
+          <Link href="/">
+            <img 
+              src="/logo.png" 
+              alt="Good Fills" 
+              style={{
+                height: '42px',
+                width: 'auto',
+                display: 'block'
+              }}
+            />
+          </Link>
+        </div>
+
         {/* Top Eyebrow */}
         <div className={styles.brandEyebrow}>
           <span>Good Fills Atelier · Security</span>

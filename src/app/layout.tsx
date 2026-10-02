@@ -21,12 +21,25 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Good Fills' }],
   metadataBase: new URL('https://goodfills.in'),
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
   openGraph: {
     title: 'Good Fills — Traditional Care, Made for Everyday Life',
     description: 'Artisanal homemade food, nutrition, skincare and bath products prepared with care and made to order in Bengaluru.',
     siteName: 'Good Fills',
     locale: 'en_IN',
-    type: 'website'
+    type: 'website',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1200,
+        height: 400,
+        alt: 'Good Fills Homemade Products',
+      },
+    ],
   }
 };
 

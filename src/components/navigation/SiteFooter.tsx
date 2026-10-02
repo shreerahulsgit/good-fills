@@ -35,9 +35,18 @@ export function SiteFooter() {
             <div className="footer-card-top">
               {/* Brand Column */}
               <div className="footer-brand-pane">
-                <div className="footer-logo-row">
-                  <span className="footer-brand-title">Good Fills</span>
-                  <span className="footer-brand-subtag">ATELIER</span>
+                <div className="footer-logo-row" style={{ marginBottom: 'var(--space-4)' }}>
+                  <img 
+                    src="/logo.png" 
+                    alt="Good Fills Homemade Products" 
+                    style={{
+                      height: '52px',
+                      width: 'auto',
+                      maxWidth: '220px',
+                      objectFit: 'contain',
+                      display: 'block'
+                    }}
+                  />
                 </div>
 
                 <p className="footer-brand-summary">

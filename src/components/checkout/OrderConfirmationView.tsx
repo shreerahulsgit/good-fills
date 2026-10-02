@@ -110,8 +110,22 @@ export function OrderConfirmationView({ orderId }: OrderConfirmationViewProps) {
     <div className={styles.pageWrapper}>
       <div className="container">
         <div className={styles.confirmationContainer}>
-          {/* Success Seal Card */}
           <div className={styles.successCard}>
+            <div style={{ marginBottom: '20px' }}>
+              <Link href="/">
+                <img 
+                  src="/logo.png" 
+                  alt="Good Fills Homemade Products" 
+                  style={{
+                    height: '46px',
+                    width: 'auto',
+                    margin: '0 auto',
+                    display: 'block'
+                  }}
+                />
+              </Link>
+            </div>
+
             <div className={styles.successIconBadge}>
               <Check size={36} strokeWidth={2.5} />
             </div>

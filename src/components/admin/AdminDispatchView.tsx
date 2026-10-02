@@ -480,7 +480,9 @@ export function AdminDispatchView() {
         <div className={styles.adminHeaderBar}>
           <div className={styles.headerBarInner}>
             <div className={styles.brandWrap}>
-              <h1 className={styles.brandTitle}>Good Fills</h1>
+              <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+                <img src="/logo.png" alt="Good Fills" style={{ height: '32px', width: 'auto', display: 'block' }} />
+              </Link>
               <span className={styles.badgeAdmin}>Dispatch Console</span>
             </div>
             <Link href="/" className={styles.viewStoreBtn}>
@@ -532,7 +534,9 @@ export function AdminDispatchView() {
       <div className={styles.adminHeaderBar}>
         <div className={styles.headerBarInner}>
           <div className={styles.brandWrap}>
-            <h1 className={styles.brandTitle}>Good Fills</h1>
+            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+              <img src="/logo.png" alt="Good Fills" style={{ height: '32px', width: 'auto', display: 'block' }} />
+            </Link>
             <span className={styles.badgeAdmin}>Kitchen Operations</span>
           </div>
 

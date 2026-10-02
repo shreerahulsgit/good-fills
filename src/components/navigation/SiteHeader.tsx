@@ -114,41 +114,28 @@ export function SiteHeader() {
             </button>
           </div>
 
-          {/* Brand Wordmark & Origin */}
+          {/* Brand Logo & Origin */}
           <Link 
             href="/"
             style={{
               display: 'flex',
-              flexDirection: 'column',
-              lineHeight: 1,
-              textDecoration: 'none'
+              alignItems: 'center',
+              textDecoration: 'none',
+              padding: '2px 0'
             }}
+            aria-label="Good Fills Homepage"
           >
-            <span 
+            <img 
+              src="/logo.png" 
+              alt="Good Fills Homemade Products" 
               style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '1.65rem',
-                fontWeight: 500,
-                letterSpacing: '0.08em',
-                color: 'var(--text-primary)',
-                textTransform: 'uppercase'
+                height: '44px',
+                width: 'auto',
+                maxWidth: '200px',
+                objectFit: 'contain',
+                display: 'block'
               }}
-            >
-              Good Fills
-            </span>
-            <span 
-              style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: '0.62rem',
-                fontWeight: 600,
-                letterSpacing: '0.22em',
-                color: 'var(--accent-terracotta)',
-                textTransform: 'uppercase',
-                marginTop: '3px'
-              }}
-            >
-              Bengaluru
-            </span>
+            />
           </Link>
 
           {/* Desktop Navigation Links */}
@@ -657,10 +644,24 @@ export function SiteHeader() {
                   marginBottom: 'var(--space-4)'
                 }}
               >
-                <div>
-                  <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.4rem', fontWeight: 600 }}>Good Fills</span>
-                  <span style={{ display: 'block', fontSize: '0.65rem', color: 'var(--accent-terracotta)', letterSpacing: '0.15em' }}>BENGALURU</span>
-                </div>
+                <Link 
+                  href="/" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}
+                  aria-label="Good Fills Homepage"
+                >
+                  <img 
+                    src="/logo.png" 
+                    alt="Good Fills Homemade Products" 
+                    style={{
+                      height: '38px',
+                      width: 'auto',
+                      maxWidth: '165px',
+                      objectFit: 'contain',
+                      display: 'block'
+                    }}
+                  />
+                </Link>
                 <button 
                   onClick={() => setIsMobileMenuOpen(false)}
                   aria-label="Close menu"

@@ -116,7 +116,18 @@ export function Preloader() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.3, ease: luxuryEase, delay: 0.2 }}
             >
-              <span className="preloader-grand-title">Good Fills</span>
+              <img 
+                src="/logo.png" 
+                alt="Good Fills Homemade Products" 
+                style={{
+                  height: 'clamp(56px, 8vw, 76px)',
+                  width: 'auto',
+                  maxWidth: '300px',
+                  objectFit: 'contain',
+                  display: 'block',
+                  margin: '0 auto 12px'
+                }}
+              />
               <span className="preloader-sub-tag">Traditional Artisanal Care</span>
             </motion.div>
 

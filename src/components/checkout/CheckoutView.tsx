@@ -318,7 +318,7 @@ export function CheckoutView() {
         currency: orderData.currency || 'INR',
         name: 'Good Fills',
         description: 'Bengaluru Artisanal Homemade Preparation',
-        image: '/favicon.ico',
+        image: '/logo.png',
         order_id: orderData.razorpayOrderId,
         prefill: {
           name: formData.fullName.trim(),

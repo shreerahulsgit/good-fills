@@ -470,7 +470,9 @@ export function AccountView() {
         <div className={styles.accountTopBar}>
           <div className={styles.accountTopBarInner}>
             <div className={styles.brandLabel}>
-              <span>Good Fills</span>
+              <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+                <img src="/logo.png" alt="Good Fills" style={{ height: '32px', width: 'auto', display: 'block' }} />
+              </Link>
               <span className={styles.memberBadge}>My Account</span>
             </div>
             <div className={styles.topLinksRow}>
@@ -484,8 +486,19 @@ export function AccountView() {
         {/* Clean Login Box */}
         <div className={styles.loginContainer}>
           <div className={styles.loginHeader}>
-            <div className={styles.loginIconWrap}>
-              <User size={24} />
+            <div style={{ marginBottom: '16px' }}>
+              <Link href="/">
+                <img 
+                  src="/logo.png" 
+                  alt="Good Fills" 
+                  style={{
+                    height: '48px',
+                    width: 'auto',
+                    margin: '0 auto',
+                    display: 'block'
+                  }}
+                />
+              </Link>
             </div>
             <h1 className={styles.loginTitle}>Customer Sign In</h1>
             <p className={styles.loginDesc}>
@@ -635,7 +648,9 @@ export function AccountView() {
       <div className={styles.accountTopBar}>
         <div className={styles.accountTopBarInner}>
           <div className={styles.brandLabel}>
-            <span>Good Fills</span>
+            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+              <img src="/logo.png" alt="Good Fills" style={{ height: '32px', width: 'auto', display: 'block' }} />
+            </Link>
             <span className={styles.memberBadge}>Verified Account</span>
           </div>
 

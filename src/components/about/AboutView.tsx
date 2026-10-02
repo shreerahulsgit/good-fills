@@ -142,71 +142,75 @@ export function AboutView() {
   return (
     <div className={styles.aboutPageWrapper}>
       {/* ========================================================
-          SECTION 1: HERO
+          SECTION 1: HERO (HIGH-FASHION EDITORIAL BANNER)
           ======================================================== */}
       <section className={styles.heroSection}>
-        <div className={styles.heroAura} />
         <div className="container">
-          <div className={styles.heroContent}>
-            {/* Live Kitchen Status Pill */}
-            <motion.div
-              className={styles.heroStatusPill}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: luxuryEase }}
-            >
-              <span className={styles.statusDot} />
-              <span>Bengaluru Kitchen · 100% Traditional · Freshly Made to Order</span>
-            </motion.div>
-
-            {/* Clear Serif Headline */}
+          {/* Top Brand Title & Editorial Tagline Row (Matching Image 2) */}
+          <div className={styles.heroHeaderRow}>
             <motion.h1
-              className={styles.heroTitle}
-              initial={{ opacity: 0, y: 24 }}
+              className={styles.heroBrandMark}
+              initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.85, ease: luxuryEase, delay: 0.12 }}
+              transition={{ duration: 0.75, ease: luxuryEase }}
             >
-              Before factory machines, food was made with{' '}
-              <span className={styles.heroTitleEm}>care, loving hands, and time.</span>
+              Good Fills<span className={styles.trademarkSymbol}>®</span>
             </motion.h1>
 
-            {/* Simple, relatable subtitle */}
-            <motion.p
-              className={styles.heroSubtitle}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.85, ease: luxuryEase, delay: 0.24 }}
-            >
-              Good Fills was started with one simple promise: to make 100% pure, homemade baby food,
-              nutritious sprouted porridges, and gentle herbal bath powders just like mothers and grandmothers
-              have made for generations—prepared fresh only after you place an order.
-            </motion.p>
-
-            {/* Metric Strip */}
             <motion.div
-              className={styles.statsRow}
-              initial={{ opacity: 0, y: 24 }}
+              className={styles.heroAsideBox}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.85, ease: luxuryEase, delay: 0.36 }}
+              transition={{ duration: 0.75, ease: luxuryEase, delay: 0.12 }}
             >
-              <div className={styles.statItem}>
-                <span className={styles.statValue}>100%</span>
-                <span className={styles.statLabel}>Made to Order</span>
-              </div>
-              <div className={styles.statItem}>
-                <span className={styles.statValue}>48 Hours</span>
-                <span className={styles.statLabel}>Natural Sprouting</span>
-              </div>
-              <div className={styles.statItem}>
-                <span className={styles.statValue}>0%</span>
-                <span className={styles.statLabel}>Preservatives</span>
-              </div>
-              <div className={styles.statItem}>
-                <span className={styles.statValue}>6 Months</span>
-                <span className={styles.statLabel}>Natural Freshness</span>
-              </div>
+              <p className={styles.heroTagline}>
+                The traditional blend of homemade care and ancestral nutrition,
+                crafted fresh for wholesome daily nourishment.
+              </p>
+              <Link href="/shop" className={styles.heroShopCta}>
+                <span>Shop now</span>
+              </Link>
             </motion.div>
           </div>
+
+          {/* Cinematic Editorial Widescreen Hero Banner Image */}
+          <motion.div
+            className={styles.heroImageWrapper}
+            initial={{ opacity: 0, y: 22, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.85, ease: luxuryEase, delay: 0.2 }}
+          >
+            <img
+              src="/images/story/about-hero-editorial.jpg"
+              alt="Good Fills ancestral kitchen ingredients, loving hands, sprouted grains, and mountain honey"
+              className={styles.heroBannerImage}
+            />
+          </motion.div>
+
+          {/* Architectural Trust Metrics Strip */}
+          <motion.div
+            className={styles.statsRow}
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: luxuryEase, delay: 0.32 }}
+          >
+            <div className={styles.statItem}>
+              <span className={styles.statValue}>100%</span>
+              <span className={styles.statLabel}>Made to Order</span>
+            </div>
+            <div className={styles.statItem}>
+              <span className={styles.statValue}>48 Hours</span>
+              <span className={styles.statLabel}>Natural Sprouting</span>
+            </div>
+            <div className={styles.statItem}>
+              <span className={styles.statValue}>0%</span>
+              <span className={styles.statLabel}>Preservatives</span>
+            </div>
+            <div className={styles.statItem}>
+              <span className={styles.statValue}>6 Months</span>
+              <span className={styles.statLabel}>Natural Freshness</span>
+            </div>
+          </motion.div>
         </div>
       </section>
 

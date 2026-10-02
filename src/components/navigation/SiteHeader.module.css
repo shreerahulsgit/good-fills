@@ -1,6 +1,6 @@
 /* ==========================================================================
    GOOD FILLS — LUXURY RESPONSIVE NAVIGATION HEADER
-   Strict 0px Border-Radius · Seamless Mobile, Tablet & Desktop Adaptability
+   Strict 0px Border-Radius · Symmetrical Mobile Center · Clean 4-Option Drawer
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -85,18 +85,18 @@
 }
 
 .headerContainer {
+  position: relative;
   height: 72px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 0 var(--space-4);
 }
 
 /* --------------------------------------------------------------------------
-   Brand Logo
+   Brand Logo (Desktop: Left; Mobile/Tablet: Centered Absolutely)
    -------------------------------------------------------------------------- */
 .brandLink {
   display: flex;
@@ -476,8 +476,10 @@
   background-color: #fff8f7;
 }
 
-/* Cart Bag Button (Desktop & Compact) */
-.cartBtn {
+/* --------------------------------------------------------------------------
+   Desktop Bag Button (ONLY displayed on desktop > 1040px)
+   -------------------------------------------------------------------------- */
+.cartBtnDesktop {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -493,13 +495,13 @@
   transition: all var(--transition-fast);
 }
 
-.cartBtnFilled {
+.cartBtnDesktopFilled {
   background-color: var(--text-primary);
   color: var(--bg-surface);
   border-color: var(--text-primary);
 }
 
-.cartBtn:hover {
+.cartBtnDesktop:hover {
   background-color: var(--accent-terracotta);
   border-color: var(--accent-terracotta);
   color: var(--text-light);
@@ -519,19 +521,17 @@
   border-radius: 0px;
 }
 
-.cartBtnFilled .cartCountPill {
+.cartBtnDesktopFilled .cartCountPill {
   background-color: var(--bg-surface);
   color: var(--text-primary);
 }
 
-/* Mobile Icon Buttons */
-.mobileOnlyBtn {
-  display: none;
-}
-
+/* --------------------------------------------------------------------------
+   Mobile-Only Action Buttons (STRICTLY HIDDEN on desktop > 1040px)
+   -------------------------------------------------------------------------- */
 .mobileCartBtn {
+  display: none;
   position: relative;
-  display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 8px;
@@ -558,6 +558,18 @@
   justify-content: center;
   border-radius: 0px;
   line-height: 1;
+}
+
+.mobileUserBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  color: var(--text-primary);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 0px;
+  text-decoration: none;
 }
 
 .hamburgerBtn {
@@ -598,8 +610,8 @@
   top: 0;
   left: 0;
   bottom: 0;
-  width: 86vw;
-  max-width: 380px;
+  width: 84vw;
+  max-width: 340px;
   background-color: var(--bg-surface);
   box-shadow: 10px 0 40px rgba(34, 24, 19, 0.22);
   border-radius: 0px;
@@ -642,171 +654,23 @@
   padding: var(--space-5);
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-4);
   flex: 1;
 }
 
-/* Drawer Quick Search Trigger */
-.drawerSearchBar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 10px 14px;
-  background-color: var(--bg-canvas);
-  border: 1px solid var(--border-medium);
-  border-radius: 0px;
-  color: var(--text-muted);
-  font-size: 0.88rem;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.drawerSearchBar:hover {
-  border-color: var(--accent-terracotta);
-  color: var(--text-primary);
-  background-color: var(--bg-cream);
-}
-
-/* Drawer Patron Card */
-.drawerPatronCard {
-  background-color: var(--bg-cream);
-  padding: 14px;
-  border: 1px solid var(--border-medium);
-  border-radius: 0px;
-}
-
-.drawerPatronTop {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.drawerPatronAvatar {
-  width: 40px;
-  height: 40px;
-  background-color: var(--accent-terracotta);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.95rem;
-  font-family: var(--font-serif);
-  border-radius: 0px;
-  flex-shrink: 0;
-}
-
-.drawerPatronMeta {
-  min-width: 0;
-}
-
-.drawerPatronName {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.drawerPatronVerified {
-  font-size: 0.74rem;
-  color: #27ae60;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.drawerPatronQuickGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border-hairline);
-}
-
-.drawerPatronQuickLink {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  text-decoration: none;
-  padding: 6px 8px;
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-hairline);
-  border-radius: 0px;
-}
-
-.drawerGuestBox {
-  background-color: var(--bg-cream);
-  padding: 14px;
-  border: 1px solid var(--border-medium);
-  border-radius: 0px;
-}
-
-.drawerGuestTitle {
-  font-weight: 700;
-  font-size: 0.92rem;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.drawerGuestDesc {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin-bottom: 12px;
-}
-
-.drawerGuestSignInBtn {
-  width: 100%;
-  padding: 11px;
-  background-color: var(--accent-terracotta);
-  border: none;
-  color: var(--text-light);
-  font-weight: 600;
-  font-size: 0.84rem;
-  letter-spacing: 0.05em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  text-decoration: none;
-  border-radius: 0px;
-  transition: background-color var(--transition-fast);
-}
-
-.drawerGuestSignInBtn:hover {
-  background-color: var(--accent-terracotta-hover);
-}
-
-/* Drawer Navigation Groups */
-.drawerNavGroup {
+/* 4 Clean Navigation Links in Drawer */
+.drawerCleanNavList {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.drawerGroupHeading {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-}
-
-.drawerCategoryLink {
+.drawerCleanLink {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 8px;
-  font-size: 0.95rem;
+  padding: 14px 10px;
+  font-size: 1.05rem;
   font-weight: 500;
   color: var(--text-primary);
   text-decoration: none;
@@ -814,57 +678,35 @@
   transition: all var(--transition-fast);
 }
 
-.drawerCategoryLink:hover {
+.drawerCleanLink:hover {
   color: var(--accent-terracotta);
-  padding-left: 12px;
+  padding-left: 14px;
+  background-color: var(--bg-cream);
+}
+
+.drawerCleanLinkActive {
+  color: var(--accent-terracotta);
+  font-weight: 600;
   background-color: var(--bg-canvas);
 }
 
-.drawerCategoryTagline {
-  font-size: 0.75rem;
+.drawerArrow {
   color: var(--text-muted);
-  margin-top: 1px;
+  transition: transform var(--transition-fast);
 }
 
-.drawerViewAllBtn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 10px;
-  margin-top: 6px;
-  background-color: var(--bg-canvas);
-  border: 1px solid var(--border-medium);
-  font-size: 0.88rem;
-  font-weight: 600;
+.drawerCleanLink:hover .drawerArrow {
   color: var(--accent-terracotta);
-  text-decoration: none;
-  border-radius: 0px;
+  transform: translateX(3px);
 }
 
-.drawerStandardLink {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 8px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  text-decoration: none;
-  border-bottom: 1px solid var(--border-hairline);
-  transition: all var(--transition-fast);
+.drawerDivider {
+  height: 1px;
+  background-color: var(--border-hairline);
+  margin: var(--space-2) 0;
 }
 
-.drawerStandardLink:hover {
-  color: var(--accent-terracotta);
-  padding-left: 12px;
-}
-
-.drawerStandardLinkActive {
-  color: var(--accent-terracotta);
-  font-weight: 600;
-}
-
-/* WhatsApp Concierge Strip */
+/* WhatsApp Quick Need Button */
 .drawerConciergeCard {
   background-color: #f0f7f2;
   border: 1px solid #c2e2cc;
@@ -884,7 +726,7 @@
 }
 
 .drawerConciergeTitle {
-  font-size: 0.84rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #1b5e20;
 }
@@ -906,12 +748,12 @@
 
 .drawerSignOutBtn {
   width: 100%;
-  padding: 10px;
+  padding: 11px;
   background: transparent;
   border: 1px solid #d9381e;
   color: #d9381e;
   font-weight: 600;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   cursor: pointer;
@@ -926,6 +768,30 @@
 .drawerSignOutBtn:hover {
   background-color: #d9381e;
   color: #ffffff;
+}
+
+.drawerSignInLink {
+  width: 100%;
+  padding: 11px;
+  background: var(--text-primary);
+  border: 1px solid var(--text-primary);
+  color: var(--bg-surface);
+  font-weight: 600;
+  font-size: 0.84rem;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 0px;
+  transition: all var(--transition-fast);
+}
+
+.drawerSignInLink:hover {
+  background-color: var(--accent-terracotta);
+  border-color: var(--accent-terracotta);
+  color: var(--text-light);
 }
 
 .drawerTrustNote {
@@ -963,13 +829,19 @@
     display: flex !important;
   }
 
+  /* Hide Desktop Cart & Auth buttons */
+  .cartBtnDesktop,
   .signInBtn,
-  .patronChip,
-  .cartBtn {
+  .patronChip {
     display: none !important;
   }
 
-  .mobileOnlyBtn {
+  /* Show Mobile Cart & User buttons */
+  .mobileCartBtn {
+    display: inline-flex !important;
+  }
+
+  .mobileUserBtn {
     display: inline-flex !important;
   }
 
@@ -978,9 +850,20 @@
     padding: 0 16px;
   }
 
+  /* MATHEMATICALLY EXACT CENTER FOR LOGO ON MOBILE & TABLET */
+  .brandLink {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 2;
+    padding: 0;
+    margin: 0;
+  }
+
   .brandLogo {
-    height: 36px;
-    max-width: 160px;
+    height: 34px;
+    max-width: 155px;
   }
 
   .topBar {
@@ -998,12 +881,11 @@
   .headerContainer {
     height: 60px;
     padding: 0 12px;
-    gap: 8px;
   }
 
   .brandLogo {
-    height: 32px;
-    max-width: 135px;
+    height: 30px;
+    max-width: 130px;
   }
 
   .actionsRow {

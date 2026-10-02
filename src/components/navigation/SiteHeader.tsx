@@ -52,7 +52,7 @@ export function SiteHeader() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close menus and restore body scroll on route change
+  // Close menus on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsShopDropdownOpen(false);
@@ -151,7 +151,7 @@ export function SiteHeader() {
             <Menu size={20} />
           </button>
 
-          {/* Brand Logo */}
+          {/* Brand Logo (Center on mobile/tablet, Left on desktop) */}
           <Link
             href="/"
             className={styles.brandLink}
@@ -233,15 +233,6 @@ export function SiteHeader() {
             </div>
 
             <Link
-              href="/about"
-              className={`${styles.navLink} ${
-                pathname === '/about' ? styles.navLinkActive : ''
-              }`}
-            >
-              Our Story
-            </Link>
-
-            <Link
               href="/track"
               className={`${styles.navLink} ${
                 pathname.startsWith('/track') ? styles.navLinkActive : ''
@@ -249,6 +240,15 @@ export function SiteHeader() {
             >
               <Truck size={14} style={{ opacity: 0.75 }} />
               <span>Track Order</span>
+            </Link>
+
+            <Link
+              href="/about"
+              className={`${styles.navLink} ${
+                pathname === '/about' ? styles.navLinkActive : ''
+              }`}
+            >
+              Our Story
             </Link>
 
             <Link
@@ -273,7 +273,7 @@ export function SiteHeader() {
               <Search size={19} />
             </button>
 
-            {/* Desktop User Account Hub (> 1040px) */}
+            {/* Desktop User Account Hub (> 1040px only) */}
             {currentUser ? (
               <div
                 ref={accountDropdownRef}
@@ -401,11 +401,11 @@ export function SiteHeader() {
               </Link>
             )}
 
-            {/* Mobile / Tablet Compact User Button (<= 1040px) */}
+            {/* Mobile / Tablet Compact User Button (<= 1040px only) */}
             <Link
               href="/account"
               aria-label="Customer Account"
-              className={`${styles.iconBtn} ${styles.mobileOnlyBtn}`}
+              className={styles.mobileUserBtn}
             >
               {currentUser ? (
                 <span className={styles.patronAvatar} style={{ width: 24, height: 24, fontSize: '0.68rem' }}>
@@ -416,13 +416,13 @@ export function SiteHeader() {
               )}
             </Link>
 
-            {/* Desktop Full Cart Button (> 1040px) */}
+            {/* Desktop ONLY Bag Button (> 1040px) */}
             <button
               type="button"
               onClick={openCart}
               aria-label={`View shopping bag with ${totalItems} items`}
-              className={`${styles.cartBtn} ${
-                totalItems > 0 ? styles.cartBtnFilled : ''
+              className={`${styles.cartBtnDesktop} ${
+                totalItems > 0 ? styles.cartBtnDesktopFilled : ''
               }`}
             >
               <ShoppingBag size={16} />
@@ -430,12 +430,12 @@ export function SiteHeader() {
               <span className={styles.cartCountPill}>{totalItems}</span>
             </button>
 
-            {/* Mobile / Tablet Compact Bag Button (<= 1040px) */}
+            {/* Mobile / Tablet ONLY Bag Button (<= 1040px) */}
             <button
               type="button"
               onClick={openCart}
               aria-label={`View shopping bag with ${totalItems} items`}
-              className={`${styles.mobileCartBtn} ${styles.mobileOnlyBtn}`}
+              className={styles.mobileCartBtn}
             >
               <ShoppingBag size={20} />
               {totalItems > 0 && (
@@ -447,7 +447,7 @@ export function SiteHeader() {
       </header>
 
       {/* --------------------------------------------------------
-          MOBILE & TABLET DRAWER (FRAMER MOTION SHEET)
+          MOBILE & TABLET DRAWER (CLEAN 4-OPTION MENU + WHATSAPP & SIGN OUT)
           -------------------------------------------------------- */}
       <AnimatePresence>
         {isMobileMenuOpen && (
@@ -457,7 +457,7 @@ export function SiteHeader() {
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ duration: 0.32, ease: drawerEase }}
+              transition={{ duration: 0.3, ease: drawerEase }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Drawer Header */}
@@ -471,7 +471,7 @@ export function SiteHeader() {
                   <img
                     src="/logo.png"
                     alt="Good Fills Homemade Products"
-                    style={{ height: '34px', width: 'auto', maxWidth: '145px', objectFit: 'contain' }}
+                    style={{ height: '32px', width: 'auto', maxWidth: '140px', objectFit: 'contain' }}
                   />
                 </Link>
 
@@ -485,145 +485,58 @@ export function SiteHeader() {
                 </button>
               </div>
 
-              {/* Drawer Scrollable Body */}
+              {/* Drawer Scrollable Body: Exactly the 4 options + WhatsApp quick need */}
               <div className={styles.drawerBody}>
-                {/* Tap-to-Search Quick Bar */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    setIsSearchOpen(true);
-                  }}
-                  className={styles.drawerSearchBar}
-                  aria-label="Search products"
-                >
-                  <Search size={16} style={{ color: 'var(--accent-terracotta)' }} />
-                  <span>Search sprouted ragi, honey, bath powders...</span>
-                </button>
-
-                {/* Patron Account Box */}
-                {currentUser ? (
-                  <div className={styles.drawerPatronCard}>
-                    <div className={styles.drawerPatronTop}>
-                      <div className={styles.drawerPatronAvatar}>
-                        {getInitials(currentUser.name)}
-                      </div>
-                      <div className={styles.drawerPatronMeta}>
-                        <div className={styles.drawerPatronName}>{currentUser.name}</div>
-                        <div className={styles.drawerPatronVerified}>
-                          <ShieldCheck size={13} />
-                          <span>
-                            {currentUser.email ||
-                              (currentUser.phone ? `+91 ${currentUser.phone}` : 'Verified Account')}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className={styles.drawerPatronQuickGrid}>
-                      <Link
-                        href="/account?tab=orders"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={styles.drawerPatronQuickLink}
-                      >
-                        <Package size={14} color="var(--accent-terracotta)" />
-                        <span>My Orders ({orders.length})</span>
-                      </Link>
-
-                      <Link
-                        href="/account?tab=addresses"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={styles.drawerPatronQuickLink}
-                      >
-                        <MapPin size={14} color="var(--accent-terracotta)" />
-                        <span>Addresses</span>
-                      </Link>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={styles.drawerGuestBox}>
-                    <div className={styles.drawerGuestTitle}>Welcome to Good Fills</div>
-                    <div className={styles.drawerGuestDesc}>
-                      Sign in with your mobile number to view saved addresses &amp; track doorstep orders.
-                    </div>
-                    <Link
-                      href="/account"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className={styles.drawerGuestSignInBtn}
-                    >
-                      <User size={15} />
-                      <span>Sign In with Mobile OTP</span>
-                    </Link>
-                  </div>
-                )}
-
-                {/* Store Catalog Group */}
-                <div className={styles.drawerNavGroup}>
-                  <div className={styles.drawerGroupHeading}>OUR HOMEMADE PRODUCTS</div>
-                  {CATEGORIES.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      href={`/shop/${cat.id}`}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className={styles.drawerCategoryLink}
-                    >
-                      <div>
-                        <div>{cat.name}</div>
-                        <div className={styles.drawerCategoryTagline}>{cat.tagline}</div>
-                      </div>
-                      <ArrowRight size={14} style={{ opacity: 0.5, flexShrink: 0 }} />
-                    </Link>
-                  ))}
-
+                {/* 4 Clean Navigation Links Requested */}
+                <div className={styles.drawerCleanNavList}>
                   <Link
                     href="/shop"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={styles.drawerViewAllBtn}
+                    className={`${styles.drawerCleanLink} ${
+                      pathname.startsWith('/shop') ? styles.drawerCleanLinkActive : ''
+                    }`}
                   >
-                    <span>Browse All 13 Products</span>
-                    <ArrowRight size={15} />
+                    <span>Shop</span>
+                    <ArrowRight size={16} className={styles.drawerArrow} />
                   </Link>
-                </div>
-
-                {/* Explore & Help Group */}
-                <div className={styles.drawerNavGroup}>
-                  <div className={styles.drawerGroupHeading}>EXPLORE &amp; ASSISTANCE</div>
 
                   <Link
                     href="/track"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`${styles.drawerStandardLink} ${
-                      pathname.startsWith('/track') ? styles.drawerStandardLinkActive : ''
+                    className={`${styles.drawerCleanLink} ${
+                      pathname.startsWith('/track') ? styles.drawerCleanLinkActive : ''
                     }`}
                   >
-                    <Truck size={16} color="var(--accent-terracotta)" />
-                    <span>Track Doorstep Order</span>
+                    <span>Track Order</span>
+                    <ArrowRight size={16} className={styles.drawerArrow} />
                   </Link>
 
                   <Link
                     href="/about"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`${styles.drawerStandardLink} ${
-                      pathname === '/about' ? styles.drawerStandardLinkActive : ''
+                    className={`${styles.drawerCleanLink} ${
+                      pathname === '/about' ? styles.drawerCleanLinkActive : ''
                     }`}
                   >
-                    <Sparkles size={16} color="var(--accent-terracotta)" />
-                    <span>Our Story &amp; Kitchen Steps</span>
+                    <span>Our Story</span>
+                    <ArrowRight size={16} className={styles.drawerArrow} />
                   </Link>
 
                   <Link
                     href="/contact"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`${styles.drawerStandardLink} ${
-                      pathname === '/contact' ? styles.drawerStandardLinkActive : ''
+                    className={`${styles.drawerCleanLink} ${
+                      pathname === '/contact' ? styles.drawerCleanLinkActive : ''
                     }`}
                   >
-                    <User size={16} color="var(--accent-terracotta)" />
-                    <span>Contact &amp; Concierge</span>
+                    <span>Contact</span>
+                    <ArrowRight size={16} className={styles.drawerArrow} />
                   </Link>
                 </div>
 
-                {/* Direct WhatsApp Concierge Help */}
+                <div className={styles.drawerDivider} />
+
+                {/* Quick Need: WhatsApp Chat */}
                 <a
                   href="https://wa.me/919742068899?text=Hello%20Good%20Fills!%20I%20have%20an%20inquiry%20regarding%20your%20homemade%20products."
                   target="_blank"
@@ -631,11 +544,11 @@ export function SiteHeader() {
                   className={styles.drawerConciergeCard}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <MessageCircle size={22} color="#27ae60" style={{ flexShrink: 0 }} />
+                    <MessageCircle size={20} color="#27ae60" style={{ flexShrink: 0 }} />
                     <div>
                       <div className={styles.drawerConciergeTitle}>Need Quick Help?</div>
                       <div className={styles.drawerConciergeSubtitle}>
-                        Chat with our Bengaluru kitchen on WhatsApp
+                        Chat directly on WhatsApp
                       </div>
                     </div>
                   </div>
@@ -643,9 +556,9 @@ export function SiteHeader() {
                 </a>
               </div>
 
-              {/* Drawer Footer */}
+              {/* Drawer Footer: Sign Out (if logged in) or Sign In (if guest) */}
               <div className={styles.drawerFooter}>
-                {currentUser && (
+                {currentUser ? (
                   <button
                     type="button"
                     onClick={() => {
@@ -654,12 +567,22 @@ export function SiteHeader() {
                     }}
                     className={styles.drawerSignOutBtn}
                   >
-                    <LogOut size={14} />
+                    <LogOut size={15} />
                     <span>Sign Out</span>
                   </button>
+                ) : (
+                  <Link
+                    href="/account"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={styles.drawerSignInLink}
+                  >
+                    <User size={15} />
+                    <span>Sign In to Account</span>
+                  </Link>
                 )}
+
                 <div className={styles.drawerTrustNote}>
-                  100% Traditional Homemade · Made Fresh in Bengaluru · Zero Preservatives
+                  100% Traditional Homemade · Made Fresh in Bengaluru
                 </div>
               </div>
             </motion.div>

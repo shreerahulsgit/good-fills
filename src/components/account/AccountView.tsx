@@ -466,23 +466,6 @@ export function AccountView() {
   if (!currentUser) {
     return (
       <main className={styles.accountContainer}>
-        {/* Top Minimal Strip */}
-        <div className={styles.accountTopBar}>
-          <div className={styles.accountTopBarInner}>
-            <div className={styles.brandLabel}>
-              <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-                <img src="/logo.png" alt="Good Fills" style={{ height: '32px', width: 'auto', display: 'block' }} />
-              </Link>
-              <span className={styles.memberBadge}>My Account</span>
-            </div>
-            <div className={styles.topLinksRow}>
-              <Link href="/" className={styles.topLink}>
-                Storefront <ArrowRight size={13} />
-              </Link>
-            </div>
-          </div>
-        </div>
-
         {/* Clean Login Box */}
         <div className={styles.loginContainer}>
           <div className={styles.loginHeader}>
@@ -644,27 +627,6 @@ export function AccountView() {
   // SCREEN 2: AUTHENTICATED CUSTOMER HUB (2-COLUMN E-COMMERCE LAYOUT)
   return (
     <main className={styles.accountContainer}>
-      {/* Top Header Strip */}
-      <div className={styles.accountTopBar}>
-        <div className={styles.accountTopBarInner}>
-          <div className={styles.brandLabel}>
-            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img src="/logo.png" alt="Good Fills" style={{ height: '32px', width: 'auto', display: 'block' }} />
-            </Link>
-            <span className={styles.memberBadge}>Verified Account</span>
-          </div>
-
-          <div className={styles.topLinksRow}>
-            <Link href="/shop" className={styles.topLink}>
-              <ShoppingBag size={14} /> Storefront
-            </Link>
-            <Link href="/track" className={styles.topLink}>
-              <Truck size={14} /> Doorstep Courier Tracking
-            </Link>
-          </div>
-        </div>
-      </div>
-
       {/* 2-Column Main Workspace */}
       <div className={styles.accountLayout}>
         {/* LEFT SIDEBAR: CUSTOMER IDENTITY & NAVIGATION */}

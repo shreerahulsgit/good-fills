@@ -1,27 +1,33 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/lib/cart-context';
 import { useCustomerAuth } from '@/lib/customer-auth-context';
 import { CATEGORIES } from '@/data/products';
 import { SearchModal } from '@/components/navigation/SearchModal';
 import { CartDrawer } from '@/components/cart/CartDrawer';
-import { 
-  ShoppingBag, 
-  Search, 
-  User, 
-  Menu, 
-  X, 
-  ChevronDown, 
+import {
+  ShoppingBag,
+  Search,
+  User,
+  Menu,
+  X,
+  ChevronDown,
   ArrowRight,
   Package,
   MapPin,
   ShieldCheck,
   LogOut,
-  Truck
+  Truck,
+  MessageCircle,
+  Sparkles,
 } from 'lucide-react';
+import styles from './SiteHeader.module.css';
+
+const drawerEase = [0.16, 1, 0.3, 1] as const;
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -34,9 +40,10 @@ export function SiteHeader() {
   const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
 
+  const shopDropdownTimerRef = useRef<NodeJS.Timeout | null>(null);
   const accountDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Monitor scroll for subtle elevation
+  // Monitor scroll for subtle elevation and backdrop blur
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -45,22 +52,48 @@ export function SiteHeader() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close menus on route change
+  // Close menus and restore body scroll on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsShopDropdownOpen(false);
     setIsAccountDropdownOpen(false);
   }, [pathname]);
 
+  // Lock body scroll when mobile/tablet drawer is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isMobileMenuOpen]);
+
   // Close account dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (accountDropdownRef.current && !accountDropdownRef.current.contains(e.target as Node)) {
+      if (
+        accountDropdownRef.current &&
+        !accountDropdownRef.current.contains(e.target as Node)
+      ) {
         setIsAccountDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Dropdown hover helpers with debounce to prevent accidental flicker
+  const handleShopMouseEnter = useCallback(() => {
+    if (shopDropdownTimerRef.current) clearTimeout(shopDropdownTimerRef.current);
+    setIsShopDropdownOpen(true);
+  }, []);
+
+  const handleShopMouseLeave = useCallback(() => {
+    shopDropdownTimerRef.current = setTimeout(() => {
+      setIsShopDropdownOpen(false);
+    }, 150);
   }, []);
 
   const getInitials = (name?: string) => {
@@ -81,817 +114,562 @@ export function SiteHeader() {
 
   return (
     <>
-      <header
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 40,
-          backgroundColor: isScrolled ? 'rgba(250, 248, 245, 0.94)' : 'var(--bg-canvas)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: isScrolled ? '1px solid var(--border-hairline)' : '1px solid transparent',
-          transition: 'all var(--transition-smooth)',
-          height: 'var(--header-height)'
-        }}
-      >
-        <div 
-          className="container"
-          style={{
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 'var(--space-4)'
-          }}
-        >
-          {/* Mobile Menu Button */}
-          <div className="mobile-only" style={{ display: 'none' }}>
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              aria-label="Open mobile navigation"
-              style={{ padding: '8px', color: 'var(--text-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
-            >
-              <Menu size={22} />
-            </button>
+      {/* --------------------------------------------------------
+          TOP ANNOUNCEMENT BAR
+          -------------------------------------------------------- */}
+      <div className={styles.topBar}>
+        <div className={styles.topBarInner}>
+          <div className={styles.topBarCenter}>
+            <span>Bengaluru Kitchen · Made Fresh to Order</span>
+            <span className={styles.topBarDot} />
+            <span className={styles.topBarHighlight}>Free Shipping Over ₹999</span>
+            <span className={styles.topBarDot} />
+            <span>100% Traditional Care · 0% Preservatives</span>
           </div>
 
-          {/* Brand Logo & Origin */}
-          <Link 
+          <Link href="/track" className={styles.topBarTrackLink}>
+            <Truck size={13} />
+            <span>Track Order</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* --------------------------------------------------------
+          MAIN STICKY HEADER
+          -------------------------------------------------------- */}
+      <header
+        className={`${styles.headerRoot} ${isScrolled ? styles.headerScrolled : ''}`}
+      >
+        <div className={styles.headerContainer}>
+          {/* Mobile & Tablet Hamburger Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(true)}
+            aria-label="Open mobile navigation menu"
+            className={styles.hamburgerBtn}
+          >
+            <Menu size={20} />
+          </button>
+
+          {/* Brand Logo */}
+          <Link
             href="/"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              textDecoration: 'none',
-              padding: '2px 0'
-            }}
+            className={styles.brandLink}
             aria-label="Good Fills Homepage"
           >
-            <img 
-              src="/logo.png" 
-              alt="Good Fills Homemade Products" 
-              style={{
-                height: '44px',
-                width: 'auto',
-                maxWidth: '200px',
-                objectFit: 'contain',
-                display: 'block'
-              }}
+            <img
+              src="/logo.png"
+              alt="Good Fills Homemade Products"
+              className={styles.brandLogo}
             />
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav 
-            className="desktop-nav"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--space-8)'
-            }}
-          >
-            {/* Shop with Rich Dropdown */}
-            <div 
-              style={{ position: 'relative' }}
-              onMouseEnter={() => setIsShopDropdownOpen(true)}
-              onMouseLeave={() => setIsShopDropdownOpen(false)}
+          {/* Desktop Navigation Links (> 1040px) */}
+          <nav className={styles.desktopNav} aria-label="Main Navigation">
+            {/* Shop with Interactive Mega-Menu */}
+            <div
+              className={styles.dropdownWrapper}
+              onMouseEnter={handleShopMouseEnter}
+              onMouseLeave={handleShopMouseLeave}
             >
               <Link
                 href="/shop"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  fontSize: '0.92rem',
-                  fontWeight: 500,
-                  letterSpacing: '0.03em',
-                  color: pathname.startsWith('/shop') ? 'var(--accent-terracotta)' : 'var(--text-primary)',
-                  padding: 'var(--space-2) 0',
-                  transition: 'color var(--transition-fast)',
-                  textDecoration: 'none'
-                }}
+                className={`${styles.dropdownTrigger} ${
+                  pathname.startsWith('/shop') ? styles.dropdownTriggerActive : ''
+                }`}
               >
                 <span>Shop</span>
-                <ChevronDown size={14} style={{ opacity: 0.6, transform: isShopDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform var(--transition-fast)' }} />
+                <ChevronDown
+                  size={14}
+                  className={`${styles.chevronIcon} ${
+                    isShopDropdownOpen ? styles.chevronRotated : ''
+                  }`}
+                />
               </Link>
 
-              {/* Rich Dropdown Panel */}
-              {isShopDropdownOpen && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: '-20px',
-                    width: '460px',
-                    backgroundColor: 'var(--bg-surface)',
-                    border: '1px solid var(--border-medium)',
-                    boxShadow: '0 16px 40px rgba(34, 24, 19, 0.08)',
-                    borderRadius: 0,
-                    padding: 'var(--space-6)',
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: 'var(--space-4)',
-                    zIndex: 50,
-                    animation: 'fadeIn 0.2s ease-out'
-                  }}
-                >
-                  {CATEGORIES.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      href={`/shop/${cat.id}`}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '2px',
-                        padding: 'var(--space-2)',
-                        borderRadius: 0,
-                        textDecoration: 'none',
-                        transition: 'background var(--transition-fast)'
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-cream)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                    >
-                      <span style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--text-primary)' }}>
-                        {cat.name}
-                      </span>
-                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                        {cat.tagline}
-                      </span>
-                    </Link>
-                  ))}
-
-                  <div 
-                    style={{ 
-                      gridColumn: 'span 2', 
-                      borderTop: '1px solid var(--border-hairline)', 
-                      paddingTop: 'var(--space-3)',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      fontSize: '0.85rem'
-                    }}
+              {/* Mega-Menu Dropdown Panel */}
+              <AnimatePresence>
+                {isShopDropdownOpen && (
+                  <motion.div
+                    className={styles.megaMenuPanel}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 4 }}
+                    transition={{ duration: 0.16, ease: drawerEase }}
                   >
-                    <span style={{ color: 'var(--text-muted)' }}>13 launch products • Handcrafted to order</span>
-                    <Link 
-                      href="/shop" 
-                      style={{ fontWeight: 600, color: 'var(--accent-terracotta)', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}
-                    >
-                      View All Products <ArrowRight size={13} />
-                    </Link>
-                  </div>
-                </div>
-              )}
+                    <div className={styles.megaMenuGrid}>
+                      {CATEGORIES.map((cat) => (
+                        <Link
+                          key={cat.id}
+                          href={`/shop/${cat.id}`}
+                          className={styles.megaMenuItem}
+                          onClick={() => setIsShopDropdownOpen(false)}
+                        >
+                          <span className={styles.megaMenuTitle}>
+                            {cat.name}
+                            <ArrowRight size={13} style={{ opacity: 0.5 }} />
+                          </span>
+                          <span className={styles.megaMenuDesc}>{cat.tagline}</span>
+                        </Link>
+                      ))}
+                    </div>
+
+                    <div className={styles.megaMenuFooter}>
+                      <span className={styles.megaMenuBadge}>
+                        13 catalog products · Freshly made to order
+                      </span>
+                      <Link
+                        href="/shop"
+                        className={styles.megaMenuViewAll}
+                        onClick={() => setIsShopDropdownOpen(false)}
+                      >
+                        <span>View All Products</span>
+                        <ArrowRight size={13} />
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <Link
               href="/about"
-              style={{
-                fontSize: '0.92rem',
-                fontWeight: 500,
-                color: pathname === '/about' ? 'var(--accent-terracotta)' : 'var(--text-primary)',
-                transition: 'color var(--transition-fast)',
-                textDecoration: 'none'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent-terracotta)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
+              className={`${styles.navLink} ${
+                pathname === '/about' ? styles.navLinkActive : ''
+              }`}
             >
               Our Story
             </Link>
 
             <Link
-              href="/contact"
-              style={{
-                fontSize: '0.92rem',
-                fontWeight: 500,
-                color: pathname === '/contact' ? 'var(--accent-terracotta)' : 'var(--text-primary)',
-                transition: 'color var(--transition-fast)',
-                textDecoration: 'none'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent-terracotta)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
+              href="/track"
+              className={`${styles.navLink} ${
+                pathname.startsWith('/track') ? styles.navLinkActive : ''
+              }`}
             >
-              Contact
+              <Truck size={14} style={{ opacity: 0.75 }} />
+              <span>Track Order</span>
             </Link>
 
             <Link
-              href="/track"
-              style={{
-                fontSize: '0.92rem',
-                fontWeight: 500,
-                color: pathname.startsWith('/track') ? 'var(--accent-terracotta)' : 'var(--text-primary)',
-                transition: 'color var(--transition-fast)',
-                textDecoration: 'none'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent-terracotta)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
+              href="/contact"
+              className={`${styles.navLink} ${
+                pathname === '/contact' ? styles.navLinkActive : ''
+              }`}
             >
-              Track Order
+              Contact
             </Link>
           </nav>
 
-          {/* Action Icons (Search, Real Account Hub, Cart) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          {/* Action Icons & Controls */}
+          <div className={styles.actionsRow}>
             {/* Search Trigger */}
             <button
+              type="button"
               onClick={() => setIsSearchOpen(true)}
-              aria-label="Search store"
-              style={{
-                padding: '8px',
-                color: 'var(--text-primary)',
-                borderRadius: 0,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'color var(--transition-fast)'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent-terracotta)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
+              aria-label="Search store products"
+              className={styles.iconBtn}
             >
-              <Search size={20} />
+              <Search size={19} />
             </button>
 
-            {/* REAL-WORLD PATRON ACCOUNT NAV HUB */}
+            {/* Desktop User Account Hub (> 1040px) */}
             {currentUser ? (
-              /* LOGGED IN PATRON CHIP & DROPDOWN */
-              <div 
+              <div
                 ref={accountDropdownRef}
-                style={{ position: 'relative' }}
+                className={styles.dropdownWrapper}
                 onMouseEnter={() => setIsAccountDropdownOpen(true)}
                 onMouseLeave={() => setIsAccountDropdownOpen(false)}
               >
                 <Link
                   href="/account"
+                  className={`${styles.patronChip} ${
+                    isAccountDropdownOpen ? styles.patronChipActive : ''
+                  }`}
                   aria-label="My Account"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '7px',
-                    padding: '5px 10px',
-                    backgroundColor: pathname.startsWith('/account') ? 'var(--bg-cream)' : 'transparent',
-                    border: '1px solid var(--border-medium)',
-                    borderRadius: 0,
-                    color: 'var(--text-primary)',
-                    textDecoration: 'none',
-                    fontSize: '0.84rem',
-                    fontWeight: 600,
-                    transition: 'all var(--transition-fast)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--accent-terracotta)';
-                    e.currentTarget.style.backgroundColor = 'var(--bg-cream)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border-medium)';
-                    if (!pathname.startsWith('/account')) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }
-                  }}
                 >
-                  <span
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      backgroundColor: 'var(--accent-terracotta)',
-                      color: 'var(--text-light)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '0.72rem',
-                      fontWeight: 700,
-                      fontFamily: 'var(--font-serif)',
-                      borderRadius: 0,
-                      flexShrink: 0
-                    }}
-                  >
+                  <span className={styles.patronAvatar}>
                     {getInitials(currentUser.name)}
                   </span>
-                  <span style={{ maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span className={styles.patronName}>
                     Hi, {getFirstName(currentUser.name)}
                   </span>
-                  <ChevronDown 
-                    size={13} 
-                    style={{ 
-                      opacity: 0.6, 
-                      transform: isAccountDropdownOpen ? 'rotate(180deg)' : 'none',
-                      transition: 'transform 0.15s ease'
-                    }} 
+                  <ChevronDown
+                    size={13}
+                    className={`${styles.chevronIcon} ${
+                      isAccountDropdownOpen ? styles.chevronRotated : ''
+                    }`}
                   />
                 </Link>
 
-                {/* Rich E-Commerce Account Dropdown Menu */}
-                {isAccountDropdownOpen && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      right: 0,
-                      marginTop: '4px',
-                      width: '260px',
-                      backgroundColor: 'var(--bg-surface)',
-                      border: '1px solid var(--border-medium)',
-                      boxShadow: '0 16px 36px rgba(34, 24, 19, 0.1)',
-                      borderRadius: 0,
-                      zIndex: 60,
-                      animation: 'fadeIn 0.15s ease-out'
-                    }}
-                  >
-                    {/* Header: Verified Patron Meta */}
-                    <div 
-                      style={{ 
-                        padding: '14px 16px', 
-                        borderBottom: '1px solid var(--border-hairline)', 
-                        backgroundColor: 'var(--bg-cream)' 
-                      }}
+                <AnimatePresence>
+                  {isAccountDropdownOpen && (
+                    <motion.div
+                      className={styles.patronDropdown}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 4 }}
+                      transition={{ duration: 0.15 }}
                     >
-                      <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text-primary)', marginBottom: '2px' }}>
-                        {currentUser.name}
+                      <div className={styles.patronDropdownHeader}>
+                        <div className={styles.patronDropdownName}>
+                          {currentUser.name}
+                        </div>
+                        <div className={styles.patronDropdownVerified}>
+                          <ShieldCheck size={13} />
+                          <span>
+                            {currentUser.email ||
+                              (currentUser.phone
+                                ? `+91 ${currentUser.phone}`
+                                : 'Verified Account')}
+                          </span>
+                        </div>
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: '#27ae60', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <ShieldCheck size={13} /> {currentUser.email || (currentUser.phone ? `+91 ${currentUser.phone}` : 'Verified Account')}
+
+                      <div className={styles.patronDropdownList}>
+                        <Link
+                          href="/account?tab=orders"
+                          onClick={() => setIsAccountDropdownOpen(false)}
+                          className={styles.patronDropdownItem}
+                        >
+                          <span className={styles.patronDropdownItemLeft}>
+                            <Package size={15} color="var(--accent-terracotta)" />
+                            <span>My Orders</span>
+                          </span>
+                          <span className={styles.orderBadge}>{orders.length}</span>
+                        </Link>
+
+                        <Link
+                          href="/account?tab=profile"
+                          onClick={() => setIsAccountDropdownOpen(false)}
+                          className={styles.patronDropdownItem}
+                        >
+                          <span className={styles.patronDropdownItemLeft}>
+                            <User size={15} color="var(--accent-terracotta)" />
+                            <span>Personal Profile</span>
+                          </span>
+                        </Link>
+
+                        <Link
+                          href="/account?tab=addresses"
+                          onClick={() => setIsAccountDropdownOpen(false)}
+                          className={styles.patronDropdownItem}
+                        >
+                          <span className={styles.patronDropdownItemLeft}>
+                            <MapPin size={15} color="var(--accent-terracotta)" />
+                            <span>Saved Addresses</span>
+                          </span>
+                        </Link>
+
+                        <Link
+                          href="/track"
+                          onClick={() => setIsAccountDropdownOpen(false)}
+                          className={styles.patronDropdownItem}
+                        >
+                          <span className={styles.patronDropdownItemLeft}>
+                            <Truck size={15} color="var(--accent-terracotta)" />
+                            <span>Track Consignment</span>
+                          </span>
+                        </Link>
                       </div>
-                    </div>
 
-                    {/* Nav Actions */}
-                    <div style={{ display: 'flex', flexDirection: 'column', padding: '6px 0' }}>
-                      <Link
-                        href="/account?tab=orders"
-                        onClick={() => setIsAccountDropdownOpen(false)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          padding: '9px 16px',
-                          fontSize: '0.85rem',
-                          color: 'var(--text-primary)',
-                          textDecoration: 'none',
-                          transition: 'background 0.15s'
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-cream)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                      >
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
-                          <Package size={15} color="var(--accent-terracotta)" /> My Orders
-                        </span>
-                        <span style={{ fontSize: '0.72rem', backgroundColor: 'var(--bg-subtle)', padding: '2px 7px', fontWeight: 700, borderRadius: 0 }}>
-                          {orders.length}
-                        </span>
-                      </Link>
-
-                      <Link
-                        href="/account?tab=profile"
-                        onClick={() => setIsAccountDropdownOpen(false)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '9px',
-                          padding: '9px 16px',
-                          fontSize: '0.85rem',
-                          color: 'var(--text-primary)',
-                          textDecoration: 'none',
-                          transition: 'background 0.15s'
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-cream)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                      >
-                        <User size={15} color="var(--accent-terracotta)" /> Personal Profile
-                      </Link>
-
-                      <Link
-                        href="/account?tab=addresses"
-                        onClick={() => setIsAccountDropdownOpen(false)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '9px',
-                          padding: '9px 16px',
-                          fontSize: '0.85rem',
-                          color: 'var(--text-primary)',
-                          textDecoration: 'none',
-                          transition: 'background 0.15s'
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-cream)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                      >
-                        <MapPin size={15} color="var(--accent-terracotta)" /> Saved Addresses
-                      </Link>
-
-                      <Link
-                        href="/track"
-                        onClick={() => setIsAccountDropdownOpen(false)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '9px',
-                          padding: '9px 16px',
-                          fontSize: '0.85rem',
-                          color: 'var(--text-primary)',
-                          textDecoration: 'none',
-                          transition: 'background 0.15s'
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-cream)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                      >
-                        <Truck size={15} color="var(--accent-terracotta)" /> Track Consignment
-                      </Link>
-                    </div>
-
-                    {/* Footer: Sign Out */}
-                    <div style={{ borderTop: '1px solid var(--border-hairline)', padding: '6px 0' }}>
-                      <button
-                        onClick={() => {
-                          setIsAccountDropdownOpen(false);
-                          logout();
-                        }}
-                        style={{
-                          width: '100%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          padding: '9px 16px',
-                          fontSize: '0.82rem',
-                          fontWeight: 600,
-                          color: '#d9381e',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          textAlign: 'left'
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fff8f7')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                      >
-                        <LogOut size={14} /> Sign Out
-                      </button>
-                    </div>
-                  </div>
-                )}
+                      <div className={styles.patronDropdownFooter}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsAccountDropdownOpen(false);
+                            logout();
+                          }}
+                          className={styles.signOutBtn}
+                        >
+                          <LogOut size={14} />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ) : (
-              /* LOGGED OUT STATE: SIGN IN BUTTON */
               <Link
                 href="/account"
+                className={styles.signInBtn}
                 aria-label="Customer account sign in"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  border: '1px solid var(--border-medium)',
-                  borderRadius: 0,
-                  color: 'var(--text-primary)',
-                  textDecoration: 'none',
-                  fontSize: '0.82rem',
-                  fontWeight: 600,
-                  letterSpacing: '0.04em',
-                  transition: 'all var(--transition-fast)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--accent-terracotta)';
-                  e.currentTarget.style.color = 'var(--accent-terracotta)';
-                  e.currentTarget.style.backgroundColor = 'var(--bg-cream)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border-medium)';
-                  e.currentTarget.style.color = 'var(--text-primary)';
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
               >
                 <User size={15} />
                 <span>Sign In</span>
               </Link>
             )}
 
-            {/* Cart Button with Reactive Counter */}
+            {/* Mobile / Tablet Compact User Button (<= 1040px) */}
+            <Link
+              href="/account"
+              aria-label="Customer Account"
+              className={`${styles.iconBtn} ${styles.mobileOnlyBtn}`}
+            >
+              {currentUser ? (
+                <span className={styles.patronAvatar} style={{ width: 24, height: 24, fontSize: '0.68rem' }}>
+                  {getInitials(currentUser.name)}
+                </span>
+              ) : (
+                <User size={19} />
+              )}
+            </Link>
+
+            {/* Desktop Full Cart Button (> 1040px) */}
             <button
+              type="button"
               onClick={openCart}
-              aria-label={`View Cart with ${totalItems} items`}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '6px 14px',
-                backgroundColor: totalItems > 0 ? 'var(--text-primary)' : 'transparent',
-                color: totalItems > 0 ? 'var(--bg-surface)' : 'var(--text-primary)',
-                border: '1px solid var(--text-primary)',
-                borderRadius: 0,
-                fontWeight: 600,
-                fontSize: '0.84rem',
-                cursor: 'pointer',
-                transition: 'all var(--transition-fast)'
-              }}
-              onMouseEnter={(e) => {
-                if (totalItems === 0) {
-                  e.currentTarget.style.backgroundColor = 'var(--bg-cream)';
-                } else {
-                  e.currentTarget.style.backgroundColor = 'var(--accent-terracotta)';
-                  e.currentTarget.style.borderColor = 'var(--accent-terracotta)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (totalItems === 0) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                } else {
-                  e.currentTarget.style.backgroundColor = 'var(--text-primary)';
-                  e.currentTarget.style.borderColor = 'var(--text-primary)';
-                }
-              }}
+              aria-label={`View shopping bag with ${totalItems} items`}
+              className={`${styles.cartBtn} ${
+                totalItems > 0 ? styles.cartBtnFilled : ''
+              }`}
             >
               <ShoppingBag size={16} />
-              <span>Bag ({totalItems})</span>
+              <span>Bag</span>
+              <span className={styles.cartCountPill}>{totalItems}</span>
+            </button>
+
+            {/* Mobile / Tablet Compact Bag Button (<= 1040px) */}
+            <button
+              type="button"
+              onClick={openCart}
+              aria-label={`View shopping bag with ${totalItems} items`}
+              className={`${styles.mobileCartBtn} ${styles.mobileOnlyBtn}`}
+            >
+              <ShoppingBag size={20} />
+              {totalItems > 0 && (
+                <span className={styles.mobileCartBadge}>{totalItems}</span>
+              )}
             </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Drawer Menu */}
-      {isMobileMenuOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 100,
-            backgroundColor: 'rgba(34, 24, 19, 0.4)',
-            backdropFilter: 'blur(4px)'
-          }}
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              bottom: 0,
-              width: '85%',
-              maxWidth: '360px',
-              backgroundColor: 'var(--bg-surface)',
-              padding: 'var(--space-6)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              boxShadow: 'var(--shadow-xl)',
-              borderRadius: 0
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Drawer Header */}
-            <div>
-              <div 
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between',
-                  borderBottom: '1px solid var(--border-hairline)',
-                  paddingBottom: 'var(--space-4)',
-                  marginBottom: 'var(--space-4)'
-                }}
-              >
-                <Link 
-                  href="/" 
+      {/* --------------------------------------------------------
+          MOBILE & TABLET DRAWER (FRAMER MOTION SHEET)
+          -------------------------------------------------------- */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <div className={styles.drawerBackdrop} onClick={() => setIsMobileMenuOpen(false)}>
+            <motion.div
+              className={styles.drawerPanel}
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ duration: 0.32, ease: drawerEase }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Drawer Header */}
+              <div className={styles.drawerHeader}>
+                <Link
+                  href="/"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}
                   aria-label="Good Fills Homepage"
+                  style={{ display: 'flex', alignItems: 'center' }}
                 >
-                  <img 
-                    src="/logo.png" 
-                    alt="Good Fills Homemade Products" 
-                    style={{
-                      height: '38px',
-                      width: 'auto',
-                      maxWidth: '165px',
-                      objectFit: 'contain',
-                      display: 'block'
-                    }}
+                  <img
+                    src="/logo.png"
+                    alt="Good Fills Homemade Products"
+                    style={{ height: '34px', width: 'auto', maxWidth: '145px', objectFit: 'contain' }}
                   />
                 </Link>
-                <button 
+
+                <button
+                  type="button"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  aria-label="Close menu"
-                  style={{ padding: '6px', background: 'none', border: 'none', cursor: 'pointer' }}
+                  aria-label="Close navigation menu"
+                  className={styles.drawerCloseBtn}
                 >
-                  <X size={22} />
+                  <X size={19} />
                 </button>
               </div>
 
-              {/* Mobile Patron Profile Banner (If logged in) */}
-              {currentUser && (
-                <div 
-                  style={{ 
-                    backgroundColor: 'var(--bg-cream)', 
-                    padding: '12px 14px', 
-                    border: '1px solid var(--border-medium)', 
-                    marginBottom: 'var(--space-4)',
-                    borderRadius: 0 
+              {/* Drawer Scrollable Body */}
+              <div className={styles.drawerBody}>
+                {/* Tap-to-Search Quick Bar */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsSearchOpen(true);
                   }}
+                  className={styles.drawerSearchBar}
+                  aria-label="Search products"
+                >
+                  <Search size={16} style={{ color: 'var(--accent-terracotta)' }} />
+                  <span>Search sprouted ragi, honey, bath powders...</span>
+                </button>
+
+                {/* Patron Account Box */}
+                {currentUser ? (
+                  <div className={styles.drawerPatronCard}>
+                    <div className={styles.drawerPatronTop}>
+                      <div className={styles.drawerPatronAvatar}>
+                        {getInitials(currentUser.name)}
+                      </div>
+                      <div className={styles.drawerPatronMeta}>
+                        <div className={styles.drawerPatronName}>{currentUser.name}</div>
+                        <div className={styles.drawerPatronVerified}>
+                          <ShieldCheck size={13} />
+                          <span>
+                            {currentUser.email ||
+                              (currentUser.phone ? `+91 ${currentUser.phone}` : 'Verified Account')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className={styles.drawerPatronQuickGrid}>
+                      <Link
+                        href="/account?tab=orders"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={styles.drawerPatronQuickLink}
+                      >
+                        <Package size={14} color="var(--accent-terracotta)" />
+                        <span>My Orders ({orders.length})</span>
+                      </Link>
+
+                      <Link
+                        href="/account?tab=addresses"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={styles.drawerPatronQuickLink}
+                      >
+                        <MapPin size={14} color="var(--accent-terracotta)" />
+                        <span>Addresses</span>
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={styles.drawerGuestBox}>
+                    <div className={styles.drawerGuestTitle}>Welcome to Good Fills</div>
+                    <div className={styles.drawerGuestDesc}>
+                      Sign in with your mobile number to view saved addresses &amp; track doorstep orders.
+                    </div>
+                    <Link
+                      href="/account"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={styles.drawerGuestSignInBtn}
+                    >
+                      <User size={15} />
+                      <span>Sign In with Mobile OTP</span>
+                    </Link>
+                  </div>
+                )}
+
+                {/* Store Catalog Group */}
+                <div className={styles.drawerNavGroup}>
+                  <div className={styles.drawerGroupHeading}>OUR HOMEMADE PRODUCTS</div>
+                  {CATEGORIES.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/shop/${cat.id}`}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={styles.drawerCategoryLink}
+                    >
+                      <div>
+                        <div>{cat.name}</div>
+                        <div className={styles.drawerCategoryTagline}>{cat.tagline}</div>
+                      </div>
+                      <ArrowRight size={14} style={{ opacity: 0.5, flexShrink: 0 }} />
+                    </Link>
+                  ))}
+
+                  <Link
+                    href="/shop"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={styles.drawerViewAllBtn}
+                  >
+                    <span>Browse All 13 Products</span>
+                    <ArrowRight size={15} />
+                  </Link>
+                </div>
+
+                {/* Explore & Help Group */}
+                <div className={styles.drawerNavGroup}>
+                  <div className={styles.drawerGroupHeading}>EXPLORE &amp; ASSISTANCE</div>
+
+                  <Link
+                    href="/track"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`${styles.drawerStandardLink} ${
+                      pathname.startsWith('/track') ? styles.drawerStandardLinkActive : ''
+                    }`}
+                  >
+                    <Truck size={16} color="var(--accent-terracotta)" />
+                    <span>Track Doorstep Order</span>
+                  </Link>
+
+                  <Link
+                    href="/about"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`${styles.drawerStandardLink} ${
+                      pathname === '/about' ? styles.drawerStandardLinkActive : ''
+                    }`}
+                  >
+                    <Sparkles size={16} color="var(--accent-terracotta)" />
+                    <span>Our Story &amp; Kitchen Steps</span>
+                  </Link>
+
+                  <Link
+                    href="/contact"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`${styles.drawerStandardLink} ${
+                      pathname === '/contact' ? styles.drawerStandardLinkActive : ''
+                    }`}
+                  >
+                    <User size={16} color="var(--accent-terracotta)" />
+                    <span>Contact &amp; Concierge</span>
+                  </Link>
+                </div>
+
+                {/* Direct WhatsApp Concierge Help */}
+                <a
+                  href="https://wa.me/919742068899?text=Hello%20Good%20Fills!%20I%20have%20an%20inquiry%20regarding%20your%20homemade%20products."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.drawerConciergeCard}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div 
-                      style={{ 
-                        width: '38px', 
-                        height: '38px', 
-                        backgroundColor: 'var(--accent-terracotta)', 
-                        color: '#fff', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center', 
-                        fontWeight: 700, 
-                        fontFamily: 'var(--font-serif)',
-                        borderRadius: 0,
-                        flexShrink: 0
-                      }}
-                    >
-                      {getInitials(currentUser.name)}
-                    </div>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {currentUser.name}
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: '#27ae60', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <ShieldCheck size={12} /> {currentUser.email || (currentUser.phone ? `+91 ${currentUser.phone}` : 'Verified Account')}
+                    <MessageCircle size={22} color="#27ae60" style={{ flexShrink: 0 }} />
+                    <div>
+                      <div className={styles.drawerConciergeTitle}>Need Quick Help?</div>
+                      <div className={styles.drawerConciergeSubtitle}>
+                        Chat with our Bengaluru kitchen on WhatsApp
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-
-              {/* Category & Store Links */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                <span className="eyebrow" style={{ marginBottom: 0 }}>Catalog</span>
-                {CATEGORIES.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    href={`/shop/${cat.id}`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    style={{
-                      fontSize: '0.98rem',
-                      fontWeight: 500,
-                      color: 'var(--text-primary)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: 'var(--space-2) 0',
-                      borderBottom: '1px solid var(--border-hairline)',
-                      textDecoration: 'none'
-                    }}
-                  >
-                    <span>{cat.name}</span>
-                    <ArrowRight size={14} style={{ color: 'var(--text-muted)' }} />
-                  </Link>
-                ))}
-
-                <Link
-                  href="/shop"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--accent-terracotta)', textDecoration: 'none', paddingTop: '4px' }}
-                >
-                  Browse All 13 Products →
-                </Link>
-
-                <div className="hairline-divider" style={{ margin: 'var(--space-2) 0' }} />
-
-                <Link
-                  href="/track"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  style={{ 
-                    fontSize: '0.95rem', 
-                    fontWeight: 500, 
-                    color: pathname.startsWith('/track') ? 'var(--accent-terracotta)' : 'var(--text-primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    textDecoration: 'none'
-                  }}
-                >
-                  <Truck size={15} /> Track Doorstep Order
-                </Link>
-
-                {currentUser ? (
-                  <>
-                    <Link
-                      href="/account?tab=orders"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      style={{ 
-                        fontSize: '0.95rem', 
-                        fontWeight: 500, 
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        textDecoration: 'none'
-                      }}
-                    >
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Package size={15} /> My Orders
-                      </span>
-                      <span style={{ fontSize: '0.72rem', backgroundColor: 'var(--bg-subtle)', padding: '2px 7px', fontWeight: 700 }}>
-                        {orders.length}
-                      </span>
-                    </Link>
-
-                    <Link
-                      href="/account?tab=profile"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      style={{ fontSize: '0.95rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
-                    >
-                      <User size={15} /> Personal Profile
-                    </Link>
-
-                    <Link
-                      href="/account?tab=addresses"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      style={{ fontSize: '0.95rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
-                    >
-                      <MapPin size={15} /> Saved Addresses
-                    </Link>
-                  </>
-                ) : null}
-
-                <Link
-                  href="/about"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  style={{ fontSize: '0.95rem', fontWeight: 500, textDecoration: 'none' }}
-                >
-                  Our Story
-                </Link>
-                <Link
-                  href="/contact"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  style={{ fontSize: '0.95rem', fontWeight: 500, textDecoration: 'none' }}
-                >
-                  Contact &amp; Concierge
-                </Link>
+                  <ArrowRight size={15} color="#27ae60" style={{ flexShrink: 0 }} />
+                </a>
               </div>
-            </div>
 
-            {/* Mobile Footer Auth Action */}
-            <div style={{ borderTop: '1px solid var(--border-hairline)', paddingTop: 'var(--space-4)', marginTop: 'var(--space-4)' }}>
-              {currentUser ? (
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    logout();
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    backgroundColor: 'transparent',
-                    border: '1px solid #d9381e',
-                    color: '#d9381e',
-                    fontWeight: 600,
-                    fontSize: '0.85rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    borderRadius: 0
-                  }}
-                >
-                  <LogOut size={15} /> Sign Out
-                </button>
-              ) : (
-                <Link
-                  href="/account"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    backgroundColor: 'var(--accent-terracotta)',
-                    border: 'none',
-                    color: 'var(--text-light)',
-                    fontWeight: 600,
-                    fontSize: '0.85rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    textDecoration: 'none',
-                    borderRadius: 0
-                  }}
-                >
-                  <User size={15} /> Sign In with Mobile OTP
-                </Link>
-              )}
-            </div>
+              {/* Drawer Footer */}
+              <div className={styles.drawerFooter}>
+                {currentUser && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      logout();
+                    }}
+                    className={styles.drawerSignOutBtn}
+                  >
+                    <LogOut size={14} />
+                    <span>Sign Out</span>
+                  </button>
+                )}
+                <div className={styles.drawerTrustNote}>
+                  100% Traditional Homemade · Made Fresh in Bengaluru · Zero Preservatives
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       {/* Embedded Search Modal and Cart Drawer */}
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       <CartDrawer />
-
-      <style jsx global>{`
-        @media (max-width: 900px) {
-          .desktop-nav {
-            display: none !important;
-          }
-          .mobile-only {
-            display: block !important;
-          }
-        }
-      `}</style>
     </>
   );
 }

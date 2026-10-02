@@ -51,21 +51,27 @@ interface FaqItem {
 const KITCHEN_FAQS: FaqItem[] = [
   {
     id: 'faq-1',
-    question: 'How fast is my order stone-milled and dispatched?',
+    question: 'Why does Good Fills have a strict No Return policy?',
     answer:
-      'We never warehouse finished stock. We soak, sprout, and cold-stone mill in micro-batches in Bengaluru within 24–48 hours of checkout, sealing every pouch warm before handing it to DTDC express.',
+      'Because every food, infant nutrition, and skincare creation is prepared fresh to order using 100% natural ingredients without artificial preservatives, items cannot be restocked or resold once dispatched. In compliance with FSSAI hygiene standards, all sales are final.',
   },
   {
     id: 'faq-2',
-    question: 'Can I request custom grinding fineness or grain exclusion?',
+    question: 'What if my parcel arrives damaged or seal tampered?',
     answer:
-      'Yes. You can contact us immediately on WhatsApp with your Order ID to request custom flour fineness (ultra-fine for initial infant weaning vs textured for toddlers) or exclude specific seeds.',
+      'We offer a 100% Transit Safety Guarantee. If your package arrives crushed, punctured, or leaking, take clear photos or video of the box and courier label, and WhatsApp our concierge (+91 97420 68899) with your Order ID within 24 hours. We will promptly dispatch a free replacement or initiate a refund.',
   },
   {
     id: 'faq-3',
-    question: 'How do I track my DTDC courier delivery?',
+    question: 'Can I cancel or modify my order after payment?',
     answer:
-      'As soon as your package is dispatched from our atelier, DTDC assigns a consignment tracking number. An SMS and WhatsApp alert is sent to your mobile with a live tracking link.',
+      'Because traditional soaking, sprouting, and stone-milling are queued specifically for your batch shortly after checkout, cancellations are only possible if requested before kitchen preparation begins. Once grinding or dispatch is underway, orders cannot be cancelled.',
+  },
+  {
+    id: 'faq-4',
+    question: 'How do I track my order & DTDC express courier delivery?',
+    answer:
+      'You can track your package anytime directly on our live tracking page using your Order ID (e.g. ORD-7776) or registered 10-digit mobile number. You will also receive real-time SMS and WhatsApp notifications with your DTDC AWB number upon dispatch.',
   },
 ];
 
@@ -176,23 +182,6 @@ export function ContactView() {
               <span>+91 97420 68899</span>
             </motion.a>
           </motion.div>
-
-          {/* Animated terracotta hairline divider */}
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 1.1, ease: luxuryEase, delay: 0.2 }}
-            style={{
-              position: 'absolute',
-              bottom: -1,
-              left: 0,
-              width: '100%',
-              height: '1px',
-              backgroundColor: 'var(--accent-terracotta)',
-              transformOrigin: 'left',
-              opacity: 0.6,
-            }}
-          />
         </motion.header>
 
         {/* ========================================================

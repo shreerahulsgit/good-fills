@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
   Truck, 
@@ -19,12 +20,13 @@ import {
   ShieldCheck, 
   ArrowRight, 
   RefreshCw,
-  Box
+  Box,
+  Sparkles
 } from 'lucide-react';
 import { TrackingTelemetryResult } from '@/lib/tracking';
 import styles from './TrackView.module.css';
 
-
+const luxuryEase = [0.16, 1, 0.3, 1] as const;
 
 export function TrackView() {
   const searchParams = useSearchParams();
@@ -81,8 +83,6 @@ export function TrackView() {
     router.replace(`/track?q=${encodeURIComponent(searchQuery.trim())}`, { scroll: false });
   };
 
-
-
   const handleCopyAwb = (awb: string) => {
     if (awb === 'Assigned on Dispatch') return;
     navigator.clipboard.writeText(awb);
@@ -93,7 +93,12 @@ export function TrackView() {
   return (
     <main className={styles.trackContainer}>
       {/* 1. TOP LOGISTICS STATUS BAR */}
-      <div className={styles.controlBar}>
+      <motion.div 
+        className={styles.controlBar}
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: luxuryEase }}
+      >
         <div className={styles.controlBarInner}>
           <div className={styles.gatewayBadge}>
             <span className={styles.pulseDot} />
@@ -107,24 +112,47 @@ export function TrackView() {
             <span>Service: <span className={styles.hubRouteItem}>Doorstep Delivery</span></span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* 2. SEARCH CONSOLE */}
       <section className={styles.consoleHero}>
         <div className={styles.heroHeader}>
-          <div className={styles.eyebrow}>
+          <motion.div 
+            className={styles.eyebrow}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: luxuryEase }}
+          >
             <Truck size={14} />
             <span>Doorstep Tracking</span>
-          </div>
-          <h1 className={styles.heroTitle}>
-            Track Your <em>Good Fills</em> Order
-          </h1>
-          <p className={styles.heroSubtitle}>
-            Follow your freshly prepared batch from our Bengaluru kitchen to your doorstep. Enter your Order ID or registered mobile number below.
-          </p>
+          </motion.div>
 
-          {/* Search Box */}
-          <form className={styles.searchConsole} onSubmit={handleSearchSubmit}>
+          <motion.h1 
+            className={styles.heroTitle}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: luxuryEase, delay: 0.08 }}
+          >
+            Track Your <em>Good Fills</em> Order
+          </motion.h1>
+
+          <motion.p 
+            className={styles.heroSubtitle}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: luxuryEase, delay: 0.16 }}
+          >
+            Follow your freshly prepared batch from our Bengaluru kitchen to your doorstep. Enter your Order ID or registered mobile number below.
+          </motion.p>
+
+          {/* Search Box with Micro-Animations */}
+          <motion.form 
+            className={styles.searchConsole} 
+            onSubmit={handleSearchSubmit}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: luxuryEase, delay: 0.22 }}
+          >
             <div className={styles.searchIconWrapper}>
               <Search size={20} />
             </div>
@@ -136,14 +164,16 @@ export function TrackView() {
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Order ID or Mobile Number"
             />
-            <button
+            <motion.button
               type="submit"
               className={styles.searchBtn}
               disabled={isLoading || !searchQuery.trim()}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
             >
               {isLoading ? (
                 <>
-                  <RefreshCw size={15} className="spin-animation" />
+                  <RefreshCw size={15} className={styles.spinIcon} />
                   <span>Searching...</span>
                 </>
               ) : (
@@ -152,347 +182,406 @@ export function TrackView() {
                   <ArrowRight size={15} />
                 </>
               )}
-            </button>
-          </form>
-
-
+            </motion.button>
+          </motion.form>
 
           {/* Error Message Banner */}
-          {errorMessage && (
-            <div className={styles.errorBanner}>
-              <AlertCircle size={20} color="#d9381e" style={{ flexShrink: 0, marginTop: '2px' }} />
-              <div>
-                <div className={styles.errorTitle}>Order Lookup Notice</div>
-                <p className={styles.errorText}>{errorMessage}</p>
-              </div>
-            </div>
-          )}
+          <AnimatePresence>
+            {errorMessage && (
+              <motion.div 
+                className={styles.errorBanner}
+                initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+              >
+                <AlertCircle size={20} color="#d9381e" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <div className={styles.errorTitle}>Order Lookup Notice</div>
+                  <p className={styles.errorText}>{errorMessage}</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
 
       {/* 3. TRACKING DASHBOARD */}
-      {activeOrder && (
-        <section className={styles.dashboardGrid}>
-          {/* Main Status Card */}
-          <div className={styles.statusMasterCard}>
-            <div className={styles.statusHeaderStrip}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {activeOrder.statusBadgeType === 'live' && (
-                  <span className={styles.badgeLive}>
-                    <span className={styles.pulseDot} />
-                    In Transit
-                  </span>
-                )}
-                {activeOrder.statusBadgeType === 'completed' && (
-                  <span className={styles.badgeDelivered}>
-                    <CheckCircle2 size={13} />
-                    Delivered
-                  </span>
-                )}
-                {activeOrder.statusBadgeType === 'processing' && (
-                  <span className={styles.badgeProcessing}>
-                    <Clock size={13} />
-                    Kitchen Preparation
-                  </span>
-                )}
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-light-muted)' }}>
-                  DTDC AWB:{' '}
-                  <strong style={{ color: 'var(--text-light)' }}>
-                    {activeOrder.courier.awbNumber}
-                  </strong>
-                </span>
-              </div>
-            </div>
-
-            <div className={styles.statusHeadlineBody}>
-              <h2 className={styles.statusLeadTitle}>
-                {activeOrder.currentStatusHeadline}
-              </h2>
-              <p className={styles.statusLeadDesc}>
-                {activeOrder.currentStatusDescription}
-              </p>
-            </div>
-
-            {/* Metrics Strip */}
-            <div className={styles.metricsGrid}>
-              <div className={styles.metricCell}>
-                <div className={styles.metricLabel}>Order ID</div>
-                <div className={styles.metricValue}>
-                  <span>{activeOrder.orderId}</span>
-                </div>
-              </div>
-
-              <div className={styles.metricCell}>
-                <div className={styles.metricLabel}>DTDC Tracking Number</div>
-                <div className={styles.metricValue}>
-                  <span>{activeOrder.courier.awbNumber}</span>
-                  {activeOrder.courier.isAssigned && (
-                    <button
-                      type="button"
-                      className={`${styles.copyAwbBtn} ${copiedAwb ? styles.copiedBadge : ''}`}
-                      onClick={() => handleCopyAwb(activeOrder.courier.awbNumber)}
-                      title="Copy tracking number"
-                    >
-                      {copiedAwb ? <Check size={11} /> : <Copy size={11} />}
-                      <span>{copiedAwb ? 'Copied' : 'Copy'}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.metricCell}>
-                <div className={styles.metricLabel}>Package Weight</div>
-                <div className={styles.metricValue}>
-                  <span>{activeOrder.packageSpecs.formattedWeight}</span>
-                </div>
-              </div>
-
-              <div className={styles.metricCell}>
-                <div className={styles.metricLabel}>Delivery Location</div>
-                <div className={styles.metricValue}>
-                  <span>{activeOrder.shippingAddress.city}, {activeOrder.shippingAddress.pincode}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className={styles.progressSection}>
-            <div className={styles.progressLabelRow}>
-              <span>Order &amp; Delivery Progress</span>
-              <span>{activeOrder.overallProgressPercent}%</span>
-            </div>
-            <div className={styles.progressTrack}>
-              <div
-                className={`${styles.progressFill} ${activeOrder.isDelivered ? styles.progressFillDelivered : ''}`}
-                style={{ width: `${activeOrder.overallProgressPercent}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Two-Column Details */}
-          <div className={styles.telemetrySplit}>
-            {/* Left Column: 5 Chronological Steps */}
-            <div className={styles.timelineCard}>
-              <div className={styles.timelineCardHeader}>
-                <h3 className={styles.timelineTitle}>Delivery Steps</h3>
-                <span className={styles.timelineSlaNote}>Pan-India Express</span>
-              </div>
-
-              <div className={styles.milestonesList}>
-                {activeOrder.milestones.map((m, idx) => {
-                  const isCompleted = m.status === 'completed';
-                  const isCurrent = m.status === 'in_progress';
-
-                  return (
-                    <div
-                      key={m.step}
-                      className={`${styles.milestoneItem} ${
-                        isCompleted
-                          ? styles.milestoneItemCompleted
-                          : isCurrent
-                          ? styles.milestoneItemCurrent
-                          : ''
-                      }`}
-                      style={{ animationDelay: `${idx * 0.08}s` }}
-                    >
-                      {/* Step Marker */}
-                      <div className={styles.milestoneMarker}>
-                        {isCompleted ? (
-                          <Check size={16} />
-                        ) : isCurrent ? (
-                          <span className={styles.pulseDot} style={{ width: '10px', height: '10px' }} />
-                        ) : (
-                          <span>{m.step}</span>
-                        )}
-                      </div>
-
-                      {/* Content Box */}
-                      <div className={styles.milestoneContent}>
-                        <div className={styles.milestoneTopRow}>
-                          <h4 className={styles.milestoneTitle}>{m.title}</h4>
-                          <span className={styles.milestoneTime}>{m.timestamp}</span>
-                        </div>
-
-                        <div className={styles.milestoneLocation}>
-                          <MapPin size={12} />
-                          <span>{m.location}</span>
-                        </div>
-
-                        <p className={styles.milestoneNote}>{m.telemetryNote}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Right Column: Courier & Manifest Details */}
-            <div className={styles.sidebarCol}>
-              {/* Courier Card */}
-              <div className={styles.sideCard}>
-                <h3 className={styles.sideCardTitle}>
-                  <span>Courier Partner</span>
-                  <Truck size={18} color="var(--accent-terracotta)" />
-                </h3>
-
-                <div className={styles.courierGrid}>
-                  <div className={styles.courierRow}>
-                    <span className={styles.courierKey}>Carrier</span>
-                    <span className={styles.courierVal}>{activeOrder.courier.name}</span>
-                  </div>
-                  <div className={styles.courierRow}>
-                    <span className={styles.courierKey}>Tracking No. (AWB)</span>
-                    <span className={styles.courierVal}>{activeOrder.courier.awbNumber}</span>
-                  </div>
-                  <div className={styles.courierRow}>
-                    <span className={styles.courierKey}>DTDC Helpline</span>
-                    <span className={styles.courierVal}>{activeOrder.courier.helpline}</span>
-                  </div>
-                  <div className={styles.courierRow}>
-                    <span className={styles.courierKey}>Recipient</span>
-                    <span className={styles.courierVal}>
-                      {activeOrder.customerName} ({activeOrder.maskedPhone})
+      <AnimatePresence mode="wait">
+        {activeOrder ? (
+          <motion.section 
+            key={activeOrder.orderId}
+            className={styles.dashboardGrid}
+            initial={{ opacity: 0, y: 22 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.6, ease: luxuryEase }}
+          >
+            {/* Main Status Card */}
+            <div className={styles.statusMasterCard}>
+              <div className={styles.statusHeaderStrip}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {activeOrder.statusBadgeType === 'live' && (
+                    <span className={styles.badgeLive}>
+                      <span className={styles.pulseDot} />
+                      In Transit
                     </span>
-                  </div>
-                </div>
-
-                {activeOrder.courier.isAssigned && (
-                  <a
-                    href="https://www.dtdc.in/tracking/shipment-tracking.asp"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.dtdcPortalBtn}
-                  >
-                    <span>Check on DTDC Website</span>
-                    <ExternalLink size={14} />
-                  </a>
-                )}
-              </div>
-
-              {/* Items Card */}
-              <div className={styles.sideCard}>
-                <h3 className={styles.sideCardTitle}>
-                  <span>Items in This Order</span>
-                  <Package size={18} color="var(--accent-terracotta)" />
-                </h3>
-
-                <div className={styles.itemList}>
-                  {activeOrder.items.map((item) => (
-                    <div key={item.id} className={styles.itemRow}>
-                      <img
-                        src={item.imagePrimary}
-                        alt={item.name}
-                        className={styles.itemThumb}
-                      />
-                      <div className={styles.itemDetails}>
-                        <div className={styles.itemName}>{item.name}</div>
-                        <div className={styles.itemMeta}>
-                          {item.packSize} • Qty: {item.quantity}
-                        </div>
-                      </div>
-                      <div className={styles.itemPrice}>
-                        ₹{item.price * item.quantity}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className={styles.specsBox}>
-                  <div className={styles.specItem}>
-                    <ShieldCheck size={14} color="#27ae60" style={{ flexShrink: 0, marginTop: '2px' }} />
-                    <span><strong>Packaging:</strong> Sealed Airtight Barrier Foil Pouch</span>
-                  </div>
-                  <div className={styles.specItem}>
-                    <Box size={14} color="var(--accent-terracotta)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                    <span><strong>Batch Reference:</strong> {activeOrder.packageSpecs.batchCode}</span>
-                  </div>
+                  )}
+                  {activeOrder.statusBadgeType === 'completed' && (
+                    <span className={styles.badgeDelivered}>
+                      <CheckCircle2 size={13} />
+                      Delivered
+                    </span>
+                  )}
+                  {activeOrder.statusBadgeType === 'processing' && (
+                    <span className={styles.badgeProcessing}>
+                      <Clock size={13} />
+                      Kitchen Preparation
+                    </span>
+                  )}
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-light-muted)' }}>
+                    DTDC AWB:{' '}
+                    <strong style={{ color: 'var(--text-light)' }}>
+                      {activeOrder.courier.awbNumber}
+                    </strong>
+                  </span>
                 </div>
               </div>
 
-              {/* Kitchen Support */}
-              <div className={styles.conciergeCard}>
-                <h3 className={styles.conciergeTitle}>Need Help with Delivery?</h3>
-                <p className={styles.conciergeDesc}>
-                  Have special delivery instructions or questions about your order? Reach our Bengaluru kitchen team directly.
+              <div className={styles.statusHeadlineBody}>
+                <h2 className={styles.statusLeadTitle}>
+                  {activeOrder.currentStatusHeadline}
+                </h2>
+                <p className={styles.statusLeadDesc}>
+                  {activeOrder.currentStatusDescription}
                 </p>
+              </div>
 
-                <div className={styles.conciergeActions}>
-                  <a
-                    href={`https://wa.me/919606456789?text=${encodeURIComponent(
-                      `Hi Good Fills team, I am checking the status of my order ${activeOrder.orderId}.`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.whatsappBtn}
-                  >
-                    <MessageSquare size={16} />
-                    <span>WhatsApp Support</span>
-                  </a>
+              {/* Metrics Strip */}
+              <div className={styles.metricsGrid}>
+                <div className={styles.metricCell}>
+                  <div className={styles.metricLabel}>Order ID</div>
+                  <div className={styles.metricValue}>
+                    <span>{activeOrder.orderId}</span>
+                  </div>
+                </div>
 
-                  <a
-                    href="tel:+919606456789"
-                    className={styles.callSupportBtn}
-                  >
-                    <Phone size={15} />
-                    <span>Call +91 96064 56789</span>
-                  </a>
+                <div className={styles.metricCell}>
+                  <div className={styles.metricLabel}>DTDC Tracking Number</div>
+                  <div className={styles.metricValue}>
+                    <span>{activeOrder.courier.awbNumber}</span>
+                    {activeOrder.courier.isAssigned && (
+                      <motion.button
+                        type="button"
+                        className={`${styles.copyAwbBtn} ${copiedAwb ? styles.copiedBadge : ''}`}
+                        onClick={() => handleCopyAwb(activeOrder.courier.awbNumber)}
+                        title="Copy tracking number"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        {copiedAwb ? <Check size={11} /> : <Copy size={11} />}
+                        <span>{copiedAwb ? 'Copied' : 'Copy'}</span>
+                      </motion.button>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.metricCell}>
+                  <div className={styles.metricLabel}>Package Weight</div>
+                  <div className={styles.metricValue}>
+                    <span>{activeOrder.packageSpecs.formattedWeight}</span>
+                  </div>
+                </div>
+
+                <div className={styles.metricCell}>
+                  <div className={styles.metricLabel}>Delivery Location</div>
+                  <div className={styles.metricValue}>
+                    <span>{activeOrder.shippingAddress.city}, {activeOrder.shippingAddress.pincode}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-      )}
+
+            {/* Animated Progress Bar */}
+            <div className={styles.progressSection}>
+              <div className={styles.progressLabelRow}>
+                <span>Order &amp; Delivery Progress</span>
+                <span className={styles.progressPercentText}>{activeOrder.overallProgressPercent}%</span>
+              </div>
+              <div className={styles.progressTrack}>
+                <motion.div
+                  className={`${styles.progressFill} ${activeOrder.isDelivered ? styles.progressFillDelivered : ''}`}
+                  initial={{ width: '0%' }}
+                  animate={{ width: `${activeOrder.overallProgressPercent}%` }}
+                  transition={{ duration: 1.2, ease: luxuryEase, delay: 0.15 }}
+                />
+              </div>
+            </div>
+
+            {/* Two-Column Details */}
+            <div className={styles.telemetrySplit}>
+              {/* Left Column: 5 Chronological Steps */}
+              <div className={styles.timelineCard}>
+                <div className={styles.timelineCardHeader}>
+                  <h3 className={styles.timelineTitle}>Delivery Steps</h3>
+                  <span className={styles.timelineSlaNote}>Pan-India Express</span>
+                </div>
+
+                <div className={styles.milestonesList}>
+                  {activeOrder.milestones.map((m, idx) => {
+                    const isCompleted = m.status === 'completed';
+                    const isCurrent = m.status === 'in_progress';
+
+                    return (
+                      <motion.div
+                        key={m.step}
+                        className={`${styles.milestoneItem} ${
+                          isCompleted
+                            ? styles.milestoneItemCompleted
+                            : isCurrent
+                            ? styles.milestoneItemCurrent
+                            : ''
+                        }`}
+                        initial={{ opacity: 0, x: -14 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.45, ease: luxuryEase, delay: idx * 0.08 }}
+                        whileHover={{ x: 3 }}
+                      >
+                        {/* Step Marker */}
+                        <div className={styles.milestoneMarker}>
+                          {isCompleted ? (
+                            <Check size={16} />
+                          ) : isCurrent ? (
+                            <span className={styles.pulseDot} style={{ width: '10px', height: '10px' }} />
+                          ) : (
+                            <span>{m.step}</span>
+                          )}
+                        </div>
+
+                        {/* Content Box */}
+                        <div className={styles.milestoneContent}>
+                          <div className={styles.milestoneTopRow}>
+                            <h4 className={styles.milestoneTitle}>{m.title}</h4>
+                            <span className={styles.milestoneTime}>{m.timestamp}</span>
+                          </div>
+
+                          <div className={styles.milestoneLocation}>
+                            <MapPin size={12} />
+                            <span>{m.location}</span>
+                          </div>
+
+                          <p className={styles.milestoneNote}>{m.telemetryNote}</p>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Right Column: Courier & Manifest Details */}
+              <div className={styles.sidebarCol}>
+                {/* Courier Card */}
+                <motion.div 
+                  className={styles.sideCard}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease: luxuryEase, delay: 0.18 }}
+                >
+                  <h3 className={styles.sideCardTitle}>
+                    <span>Courier Partner</span>
+                    <Truck size={18} color="var(--accent-terracotta)" />
+                  </h3>
+
+                  <div className={styles.courierGrid}>
+                    <div className={styles.courierRow}>
+                      <span className={styles.courierKey}>Carrier</span>
+                      <span className={styles.courierVal}>{activeOrder.courier.name}</span>
+                    </div>
+                    <div className={styles.courierRow}>
+                      <span className={styles.courierKey}>Tracking No. (AWB)</span>
+                      <span className={styles.courierVal}>{activeOrder.courier.awbNumber}</span>
+                    </div>
+                    <div className={styles.courierRow}>
+                      <span className={styles.courierKey}>DTDC Helpline</span>
+                      <span className={styles.courierVal}>{activeOrder.courier.helpline}</span>
+                    </div>
+                    <div className={styles.courierRow}>
+                      <span className={styles.courierKey}>Recipient</span>
+                      <span className={styles.courierVal}>
+                        {activeOrder.customerName} ({activeOrder.maskedPhone})
+                      </span>
+                    </div>
+                  </div>
+
+                  {activeOrder.courier.isAssigned && (
+                    <motion.a
+                      href="https://www.dtdc.in/tracking/shipment-tracking.asp"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.dtdcPortalBtn}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <span>Check on DTDC Website</span>
+                      <ExternalLink size={14} />
+                    </motion.a>
+                  )}
+                </motion.div>
+
+                {/* Items Card */}
+                <motion.div 
+                  className={styles.sideCard}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease: luxuryEase, delay: 0.28 }}
+                >
+                  <h3 className={styles.sideCardTitle}>
+                    <span>Items in This Order</span>
+                    <Package size={18} color="var(--accent-terracotta)" />
+                  </h3>
+
+                  <div className={styles.itemList}>
+                    {activeOrder.items.map((item) => (
+                      <div key={item.id} className={styles.itemRow}>
+                        <img
+                          src={item.imagePrimary}
+                          alt={item.name}
+                          className={styles.itemThumb}
+                        />
+                        <div className={styles.itemDetails}>
+                          <div className={styles.itemName}>{item.name}</div>
+                          <div className={styles.itemMeta}>
+                            {item.packSize} • Qty: {item.quantity}
+                          </div>
+                        </div>
+                        <div className={styles.itemPrice}>
+                          ₹{item.price * item.quantity}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className={styles.specsBox}>
+                    <div className={styles.specItem}>
+                      <ShieldCheck size={14} color="#27ae60" style={{ flexShrink: 0, marginTop: '2px' }} />
+                      <span><strong>Packaging:</strong> Sealed Airtight Barrier Foil Pouch</span>
+                    </div>
+                    <div className={styles.specItem}>
+                      <Box size={14} color="var(--accent-terracotta)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                      <span><strong>Batch Reference:</strong> {activeOrder.packageSpecs.batchCode}</span>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Kitchen Support */}
+                <motion.div 
+                  className={styles.conciergeCard}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease: luxuryEase, delay: 0.36 }}
+                >
+                  <h3 className={styles.conciergeTitle}>Need Help with Delivery?</h3>
+                  <p className={styles.conciergeDesc}>
+                    Have special delivery instructions or questions about your order? Reach our Bengaluru kitchen team directly.
+                  </p>
+
+                  <div className={styles.conciergeActions}>
+                    <motion.a
+                      href={`https://wa.me/919742068899?text=${encodeURIComponent(
+                        `Hi Good Fills team, I am checking the status of my order ${activeOrder.orderId}.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.whatsappBtn}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <MessageSquare size={16} />
+                      <span>WhatsApp Support</span>
+                    </motion.a>
+
+                    <motion.a
+                      href="tel:+919742068899"
+                      className={styles.callSupportBtn}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Phone size={15} />
+                      <span>Call +91 97420 68899</span>
+                    </motion.a>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </motion.section>
+        ) : null}
+      </AnimatePresence>
 
       {/* 4. EMPTY STATE */}
-      {!activeOrder && !isLoading && (
-        <section className={styles.dashboardGrid}>
-          <div className={styles.awaitingConsole}>
-            <div className={styles.awaitingIconWrap}>
-              <Package size={30} />
+      <AnimatePresence>
+        {!activeOrder && !isLoading && (
+          <motion.section 
+            className={styles.dashboardGrid}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.5, ease: luxuryEase }}
+          >
+            <div className={styles.awaitingConsole}>
+              <motion.div 
+                className={styles.awaitingIconWrap}
+                animate={{ y: [0, -4, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <Package size={30} />
+              </motion.div>
+              <h2 className={styles.awaitingTitle}>Search for Your Order</h2>
+              <p className={styles.awaitingText}>
+                Enter your Order ID (from your confirmation SMS or email) or your 10-digit mobile number above.
+              </p>
+
+              {/* 4 Simple Steps with Staggered Entrance */}
+              <div className={styles.logisticsProcessGrid}>
+                {[
+                  {
+                    step: 'STEP 1',
+                    title: 'Order Received',
+                    desc: 'Grains are soaked and sprouted for 24 hours for tender infant digestion.',
+                  },
+                  {
+                    step: 'STEP 2',
+                    title: 'Preparation & Packaging',
+                    desc: 'Carefully prepared and packed in airtight pouches to preserve natural nutrients.',
+                  },
+                  {
+                    step: 'STEP 3',
+                    title: 'Foil Sealed',
+                    desc: 'Sealed immediately in airtight pouches with zero preservatives.',
+                  },
+                  {
+                    step: 'STEP 4',
+                    title: 'DTDC Delivery',
+                    desc: 'Dispatched via DTDC express courier straight to your doorstep with live SMS tracking.',
+                  },
+                ].map((item, idx) => (
+                  <motion.div 
+                    key={item.step}
+                    className={styles.processStepCard}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, ease: luxuryEase, delay: idx * 0.08 }}
+                    whileHover={{ y: -3 }}
+                  >
+                    <span className={styles.stepNum}>{item.step}</span>
+                    <h4 className={styles.stepTitle}>{item.title}</h4>
+                    <p className={styles.stepDesc}>{item.desc}</p>
+                  </motion.div>
+                ))}
+              </div>
             </div>
-            <h2 className={styles.awaitingTitle}>Search for Your Order</h2>
-            <p className={styles.awaitingText}>
-              Enter your Order ID (from your confirmation SMS or email) or your 10-digit mobile number above.
-            </p>
-
-            {/* 4 Simple Steps */}
-            <div className={styles.logisticsProcessGrid}>
-              <div className={styles.processStepCard}>
-                <span className={styles.stepNum}>STEP 1</span>
-                <h4 className={styles.stepTitle}>Order Received</h4>
-                <p className={styles.stepDesc}>
-                  Grains are soaked and sprouted for 24 hours for tender infant digestion.
-                </p>
-              </div>
-
-              <div className={styles.processStepCard}>
-                <span className={styles.stepNum}>STEP 2</span>
-                <h4 className={styles.stepTitle}>Preparation &amp; Packaging</h4>
-                <p className={styles.stepDesc}>
-                  Carefully prepared and packed in airtight pouches to preserve natural nutrients.
-                </p>
-              </div>
-
-              <div className={styles.processStepCard}>
-                <span className={styles.stepNum}>STEP 3</span>
-                <h4 className={styles.stepTitle}>Foil Sealed</h4>
-                <p className={styles.stepDesc}>
-                  Sealed immediately in airtight pouches with zero preservatives.
-                </p>
-              </div>
-
-              <div className={styles.processStepCard}>
-                <span className={styles.stepNum}>STEP 4</span>
-                <h4 className={styles.stepTitle}>DTDC Delivery</h4>
-                <p className={styles.stepDesc}>
-                  Dispatched via DTDC express courier straight to your doorstep with live SMS tracking.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
+          </motion.section>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

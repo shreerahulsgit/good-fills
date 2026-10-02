@@ -1,5 +1,8 @@
-/* GOOD FILLS — LIVE ORDER TRACKING PORTAL (/track) */
-/* Strictly square-cut architectural aesthetics (0px border-radius) */
+/* ==========================================================================
+   GOOD FILLS — LIVE ORDER TRACKING PORTAL (/track)
+   Strictly Square-Cut Architectural Aesthetics (0px Border-Radius)
+   Mobile-First Interactive Telemetry & Refined Micro-Animations
+   ========================================================================== */
 
 .trackContainer {
   width: 100%;
@@ -101,9 +104,9 @@
 
 .heroTitle {
   font-family: var(--font-serif);
-  font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+  font-size: clamp(2.2rem, 4.5vw, 3.6rem);
   font-weight: 400;
-  line-height: 1.08;
+  line-height: 1.1;
   color: var(--text-primary);
   margin-bottom: var(--space-4);
   letter-spacing: -0.02em;
@@ -134,6 +137,12 @@
   position: relative;
   max-width: 760px;
   border-radius: 0;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.searchConsole:focus-within {
+  border-color: var(--accent-terracotta);
+  box-shadow: 0 10px 30px rgba(151, 65, 29, 0.08);
 }
 
 .searchIconWrapper {
@@ -150,7 +159,7 @@
   background: transparent;
   padding: 14px 8px;
   font-family: var(--font-sans);
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   font-weight: 500;
   color: var(--text-primary);
   outline: none;
@@ -160,6 +169,7 @@
 .searchInput::placeholder {
   color: var(--text-muted);
   font-weight: 400;
+  font-size: 0.95rem;
 }
 
 .searchBtn {
@@ -170,19 +180,19 @@
   font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast);
   border-radius: 0;
+  white-space: nowrap;
 }
 
 .searchBtn:hover:not(:disabled) {
   background-color: var(--accent-terracotta-hover);
-  transform: translateY(-1px);
 }
 
 .searchBtn:disabled {
@@ -190,6 +200,14 @@
   cursor: not-allowed;
 }
 
+.spinIcon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 
 /* ERROR NOTIFICATION BANNER */
 .errorBanner {
@@ -296,14 +314,6 @@
   border-radius: 0;
 }
 
-.estimatedDateTag {
-  font-size: 0.85rem;
-  color: var(--text-light-muted);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .statusHeadlineBody {
   padding: var(--space-6) var(--space-8);
   border-bottom: 1px solid var(--border-hairline);
@@ -359,7 +369,7 @@
 }
 
 .metricValue {
-  font-size: 1.15rem;
+  font-size: 1.12rem;
   font-weight: 600;
   color: var(--text-primary);
   display: flex;
@@ -371,7 +381,7 @@
 .copyAwbBtn {
   background: transparent;
   border: 1px solid var(--border-subtle);
-  padding: 2px 6px;
+  padding: 3px 7px;
   cursor: pointer;
   color: var(--accent-terracotta);
   display: inline-flex;
@@ -392,12 +402,12 @@
 }
 
 .copiedBadge {
-  background-color: #2ecc71;
-  color: white;
-  border-color: #2ecc71;
+  background-color: #2ecc71 !important;
+  color: white !important;
+  border-color: #2ecc71 !important;
 }
 
-/* OVERALL PROGRESS BAR */
+/* OVERALL PROGRESS BAR WITH ANIMATED SHIMMER */
 .progressSection {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -417,9 +427,15 @@
   color: var(--text-secondary);
 }
 
+.progressPercentText {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  color: var(--accent-terracotta);
+}
+
 .progressTrack {
   width: 100%;
-  height: 6px;
+  height: 8px;
   background-color: var(--bg-subtle);
   position: relative;
   overflow: hidden;
@@ -429,9 +445,30 @@
 .progressFill {
   height: 100%;
   background-color: var(--accent-terracotta);
-  transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+  overflow: hidden;
   border-radius: 0;
+}
+
+.progressFill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 100%
+  );
+  animation: progressShimmer 2.2s infinite;
+}
+
+@keyframes progressShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .progressFillDelivered {
@@ -501,18 +538,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-5);
-  animation: fadeInUp 0.5s ease forwards;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  cursor: default;
 }
 
 .milestoneMarker {
@@ -564,12 +590,13 @@
   border: 1px solid var(--border-hairline);
   padding: var(--space-4) var(--space-5);
   border-radius: 0;
-  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .milestoneItemCurrent .milestoneContent {
   background-color: var(--bg-cream);
   border-color: var(--accent-terracotta);
+  box-shadow: 0 4px 16px rgba(151, 65, 29, 0.05);
 }
 
 .milestoneTopRow {
@@ -608,18 +635,7 @@
   font-size: 0.88rem;
   line-height: 1.5;
   color: var(--text-secondary);
-  margin: 0 0 var(--space-2);
-}
-
-.milestoneActionTag {
-  display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  background-color: rgba(34, 24, 19, 0.05);
-  padding: 3px 8px;
-  color: var(--text-secondary);
-  border-radius: 0;
+  margin: 0;
 }
 
 /* RIGHT COLUMN: PACKAGE MANIFEST & COURIER CONCIERGE */
@@ -682,7 +698,7 @@
   background-color: var(--bg-canvas);
   border: 1px solid var(--accent-terracotta);
   color: var(--accent-terracotta);
-  padding: 10px;
+  padding: 11px;
   font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -715,6 +731,7 @@
   gap: var(--space-3);
   padding: var(--space-2) 0;
   border-bottom: 1px solid var(--border-hairline);
+  transition: background-color var(--transition-fast);
 }
 
 .itemThumb {
@@ -751,51 +768,43 @@
   font-size: 0.92rem;
   font-weight: 600;
   color: var(--text-primary);
-  text-align: right;
 }
 
-/* PACKAGE SPECS & SEAL */
 .specsBox {
-  background-color: var(--bg-canvas);
-  border: 1px solid var(--border-subtle);
-  padding: var(--space-4);
-  margin-top: var(--space-3);
-  border-radius: 0;
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
 }
 
 .specItem {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
-  line-height: 1.4;
 }
 
-.specItem:last-child {
-  margin-bottom: 0;
-}
-
-/* DISPATCH CONCIERGE HELP DESK */
+/* CONCIERGE CARD */
 .conciergeCard {
   background-color: var(--bg-dark);
   color: var(--text-light);
-  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: var(--space-6);
   border-radius: 0;
 }
 
 .conciergeTitle {
   font-family: var(--font-serif);
-  font-size: 1.35rem;
+  font-size: 1.32rem;
   font-weight: 500;
   color: var(--text-light);
   margin-bottom: var(--space-2);
 }
 
 .conciergeDesc {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   line-height: 1.5;
   color: var(--text-light-muted);
   margin-bottom: var(--space-5);
@@ -812,9 +821,9 @@
   color: white;
   border: none;
   padding: 12px;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   cursor: pointer;
   display: flex;
@@ -828,15 +837,14 @@
 
 .whatsappBtn:hover {
   background-color: #1ebc57;
-  transform: translateY(-1px);
 }
 
 .callSupportBtn {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: var(--text-light);
-  padding: 10px;
-  font-size: 0.85rem;
+  padding: 11px;
+  font-size: 0.84rem;
   font-weight: 500;
   cursor: pointer;
   display: flex;
@@ -850,7 +858,7 @@
 
 .callSupportBtn:hover {
   border-color: var(--text-light);
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.06);
 }
 
 /* 5. AWAITING QUERY / EMPTY STATE */
@@ -859,7 +867,7 @@
   border: 1px solid var(--border-medium);
   padding: var(--space-12) var(--space-8);
   text-align: center;
-  margin-top: var(--space-8);
+  margin-top: var(--space-6);
   border-radius: 0;
 }
 
@@ -907,12 +915,12 @@
   border: 1px solid var(--border-hairline);
   padding: var(--space-5);
   border-radius: 0;
-  transition: border-color var(--transition-fast), transform var(--transition-fast);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
 }
 
 .processStepCard:hover {
   border-color: var(--accent-terracotta);
-  transform: translateY(-2px);
+  background-color: var(--bg-cream);
 }
 
 .stepNum {
@@ -939,7 +947,10 @@
   margin: 0;
 }
 
-/* RESPONSIVE BREAKPOINTS */
+/* --------------------------------------------------------------------------
+   RESPONSIVE BREAKPOINTS (MOBILE-FIRST FOCUS)
+   -------------------------------------------------------------------------- */
+
 @media (max-width: 1024px) {
   .telemetrySplit {
     grid-template-columns: 1fr;
@@ -968,44 +979,107 @@
 }
 
 @media (max-width: 640px) {
+  .consoleHero {
+    padding: var(--space-6) var(--space-4) var(--space-6);
+  }
+
   .controlBarInner {
     flex-direction: column;
     align-items: flex-start;
+    padding: 0 var(--space-4);
+    gap: 6px;
+  }
+
+  .hubRoute {
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 0.7rem;
   }
 
   .searchConsole {
     flex-direction: column;
     padding: 8px;
+    gap: 8px;
+  }
+
+  .searchInput {
+    padding: 10px 4px;
+    font-size: 0.95rem;
   }
 
   .searchBtn {
     width: 100%;
-    padding: 12px;
+    padding: 13px;
     justify-content: center;
+    font-size: 0.85rem;
+  }
+
+  .dashboardGrid {
+    padding: 0 var(--space-4);
+    gap: var(--space-6);
+    margin-top: var(--space-5);
+  }
+
+  .statusHeadlineBody {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .statusHeaderStrip {
+    padding: var(--space-3) var(--space-4);
   }
 
   .metricsGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
   .metricCell {
-    border-right: none;
-    border-bottom: 1px solid var(--border-hairline);
+    padding: var(--space-3) var(--space-4);
   }
 
-  .metricCell:last-child {
-    border-bottom: none;
+  .metricValue {
+    font-size: 0.98rem;
   }
 
-  .logisticsProcessGrid {
-    grid-template-columns: 1fr;
+  .progressSection {
+    padding: var(--space-4);
   }
 
   .timelineCard {
     padding: var(--space-5) var(--space-4);
   }
 
-  .statusHeadlineBody {
+  .milestonesList::before {
+    left: 13px;
+  }
+
+  .milestoneMarker {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .milestoneItem {
+    gap: var(--space-3);
+  }
+
+  .milestoneContent {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .sideCard {
     padding: var(--space-5) var(--space-4);
+  }
+
+  .conciergeCard {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .awaitingConsole {
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .logisticsProcessGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
   }
 }

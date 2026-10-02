@@ -83,35 +83,35 @@ const RITUALS: RitualItem[] = [
   },
 ];
 
-// 4 Heritage Ingredients with bespoke local photography
+// 4 Heritage Ingredients matching the official Good Fills catalog
 const INGREDIENTS = [
   {
-    name: 'Sprouted Ragi (Finger Millet)',
-    region: 'Dryland Karnataka Farmers',
+    name: 'Sprouted Ragi & Ancient Grains',
+    region: 'Sprouted & Sun-Dried Grains',
     description:
-      'Heirloom red ragi, sprouted for 48 hours. Packed with 10× more bioavailable calcium than polished white rice.',
+      'Carefully selected heirloom millets and pulses, sprouted, hygienically sun-dried, and finely filtered for tender infant and family nutrition.',
     image: '/images/story/ingredient-ragi.jpg',
   },
   {
-    name: 'Wood-Pressed Marachekku Oils',
-    region: 'Traditional Tamil Nadu Ghani',
+    name: 'Pure Mountain Honey',
+    region: '100% Pure Mountain Harvest',
     description:
-      'Cold-pressed in slow-turning wooden vats without chemical refining, petroleum solvents, or destructive friction heat.',
-    image: '/images/story/ingredient-oil.jpg',
-  },
-  {
-    name: 'Wild Western Ghats Forest Honey',
-    region: 'Sustainably Gathered Raw Nectar',
-    description:
-      'Unpasteurized raw amber nectar, retaining active botanical propolis, live digestive pollen, and wild floral enzymes.',
+      'Single-origin pure honey with natural aroma and distinct golden hue. 100% natural, never heated, preserving natural restorative vitality.',
     image: '/images/story/ingredient-honey.jpg',
   },
   {
-    name: 'Wild Kasturi Manjal & Sandalwood',
-    region: 'Kerala Foothills & Mysore Roots',
+    name: 'Pure Sandalwood & Wild Turmeric',
+    region: 'Sun-Dried Botanical Herbs',
     description:
-      'Hand-ground non-staining wild turmeric and cooling red sandalwood roots for gentle botanical infant and maternal skincare.',
+      'Pure sandalwood, wild turmeric, white turmeric, and fragrant rose petals ground together for gentle, soap-free, calming skincare.',
     image: '/images/story/ingredient-turmeric.jpg',
+  },
+  {
+    name: 'Tree Nuts & Wholesome Power Seeds',
+    region: 'Almonds, Walnuts & Super Seeds',
+    description:
+      'Rich whole almonds, walnuts, pistachios, cashews, and power seeds, naturally sweetened with traditional Kempu Kallsakre rock candy.',
+    image: '/images/story/ingredient-nuts-seeds.jpg',
   },
 ];
 
@@ -557,11 +557,11 @@ export function AboutView() {
       <section className={styles.ingredientSection}>
         <div className="container">
           <div className={styles.centerHeader}>
-            <span className={styles.sectionEyebrow}>HERITAGE HARVEST</span>
+            <span className={styles.sectionEyebrow}>PURE & TRADITIONAL</span>
             <h2 className={styles.sectionHeading}>The Ingredient Sanctuary</h2>
             <p className={styles.narrativeText}>
-              Every creation begins at the source. We partner directly with organic farmer collectives
-              and certified regional distillers across South India:
+              Every creation honors time-tested methods: washing, soaking, sun-drying, and sprouting pure pulses,
+              heirloom grains, and botanical superfoods—free from mass-market shortcuts or artificial additives:
             </p>
           </div>
 

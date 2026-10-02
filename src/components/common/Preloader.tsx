@@ -77,136 +77,91 @@ export function Preloader() {
   if (!showPreloader) return null;
 
   return (
-    <AnimatePresence>
-      {!isLifting ? (
-        <motion.div
-          key="preloader-active"
-          className="luxury-preloader-canvas"
-          initial={{ y: 0 }}
-          exit={{ 
-            y: '-100%',
-            transition: { duration: 1.05, ease: curtainEase }
-          }}
+    <motion.div
+      key="luxury-preloader-canvas"
+      className="luxury-preloader-canvas"
+      initial={{ y: 0 }}
+      animate={{ y: isLifting ? '-100%' : 0 }}
+      transition={{ duration: 1.05, ease: curtainEase }}
+    >
+      {/* Top Provenance Header */}
+      <div className="preloader-top-bar">
+        <motion.span 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 0.85, y: 0 }}
+          transition={{ duration: 1.0, delay: 0.2 }}
+          className="preloader-eyebrow"
         >
-          {/* Top Provenance Header */}
-          <div className="preloader-top-bar">
-            <motion.span 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 0.85, y: 0 }}
-              transition={{ duration: 1.0, delay: 0.2 }}
-              className="preloader-eyebrow"
-            >
-              BENGALURU • EST. 2024
-            </motion.span>
-            <motion.span 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 0.85, y: 0 }}
-              transition={{ duration: 1.0, delay: 0.3 }}
-              className="preloader-eyebrow"
-            >
-              HANDCRAFTED TO ORDER
-            </motion.span>
-          </div>
+          BENGALURU • EST. 2024
+        </motion.span>
+        <motion.span 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 0.85, y: 0 }}
+          transition={{ duration: 1.0, delay: 0.3 }}
+          className="preloader-eyebrow"
+        >
+          HANDCRAFTED TO ORDER
+        </motion.span>
+      </div>
 
-          {/* Center Monolithic Stage */}
-          <div className="preloader-center-stage">
-            <motion.div
-              className="preloader-wordmark-container"
-              initial={{ opacity: 0, y: 22 }}
+      {/* Center Monolithic Stage */}
+      <div className="preloader-center-stage">
+        <motion.div
+          className="preloader-wordmark-container"
+          initial={{ opacity: 0, y: 22 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.3, ease: luxuryEase, delay: 0.2 }}
+        >
+          <img 
+            src="/logo.png" 
+            alt="Good Fills Homemade Products" 
+            style={{
+              height: 'clamp(56px, 8vw, 76px)',
+              width: 'auto',
+              maxWidth: '300px',
+              objectFit: 'contain',
+              display: 'block',
+              margin: '0 auto 12px'
+            }}
+          />
+          <span className="preloader-sub-tag">Traditional Artisanal Care</span>
+        </motion.div>
+
+        {/* Poetic Dynamic Sub-phrase with Soft, Readable Dissolve */}
+        <div className="preloader-phrase-wrapper">
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={phraseIndex}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.3, ease: luxuryEase, delay: 0.2 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.6, ease: luxuryEase }}
+              className="preloader-phrase"
             >
-              <img 
-                src="/logo.png" 
-                alt="Good Fills Homemade Products" 
-                style={{
-                  height: 'clamp(56px, 8vw, 76px)',
-                  width: 'auto',
-                  maxWidth: '300px',
-                  objectFit: 'contain',
-                  display: 'block',
-                  margin: '0 auto 12px'
-                }}
-              />
-              <span className="preloader-sub-tag">Traditional Artisanal Care</span>
-            </motion.div>
+              {POETIC_PHRASES[phraseIndex]}
+            </motion.p>
+          </AnimatePresence>
+        </div>
+      </div>
 
-            {/* Poetic Dynamic Sub-phrase with Soft, Readable Dissolve */}
-            <div className="preloader-phrase-wrapper">
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={phraseIndex}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.6, ease: luxuryEase }}
-                  className="preloader-phrase"
-                >
-                  {POETIC_PHRASES[phraseIndex]}
-                </motion.p>
-              </AnimatePresence>
-            </div>
-          </div>
+      {/* Bottom Luxury Progress Counter & Line */}
+      <div className="preloader-bottom-bar">
+        <div className="preloader-progress-track">
+          <motion.div 
+            className="preloader-progress-fill"
+            style={{ width: `${progress}%` }}
+            transition={{ ease: 'linear' }}
+          />
+        </div>
 
-          {/* Bottom Luxury Progress Counter & Line */}
-          <div className="preloader-bottom-bar">
-            <div className="preloader-progress-track">
-              <motion.div 
-                className="preloader-progress-fill"
-                style={{ width: `${progress}%` }}
-                transition={{ ease: 'linear' }}
-              />
-            </div>
-
-            <div className="preloader-counter-row">
-              <span className="preloader-counter-label">PREPARING ATELIER</span>
-              <span className="preloader-counter-digits">
-                {progress < 10 ? `0${progress}` : progress}
-                <span className="preloader-counter-unit">%</span>
-              </span>
-            </div>
-          </div>
-        </motion.div>
-      ) : (
-        <motion.div
-          key="preloader-lifting"
-          className="luxury-preloader-canvas"
-          initial={{ y: 0 }}
-          animate={{ y: '-100%' }}
-          transition={{ duration: 1.05, ease: curtainEase }}
-        >
-          {/* Frame frozen at 100% during upward curtain lift */}
-          <div className="preloader-top-bar">
-            <span className="preloader-eyebrow">BENGALURU • EST. 2024</span>
-            <span className="preloader-eyebrow">HANDCRAFTED TO ORDER</span>
-          </div>
-
-          <div className="preloader-center-stage">
-            <div className="preloader-wordmark-container">
-              <span className="preloader-grand-title">Good Fills</span>
-              <span className="preloader-sub-tag">Traditional Artisanal Care</span>
-            </div>
-
-            <div className="preloader-phrase-wrapper">
-              <p className="preloader-phrase">
-                {POETIC_PHRASES[2]}
-              </p>
-            </div>
-          </div>
-
-          <div className="preloader-bottom-bar">
-            <div className="preloader-progress-track">
-              <div className="preloader-progress-fill" style={{ width: '100%' }} />
-            </div>
-            <div className="preloader-counter-row">
-              <span className="preloader-counter-label">PREPARING ATELIER</span>
-              <span className="preloader-counter-digits">
-                100<span className="preloader-counter-unit">%</span>
-              </span>
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        <div className="preloader-counter-row">
+          <span className="preloader-counter-label">PREPARING ATELIER</span>
+          <span className="preloader-counter-digits">
+            {progress < 10 ? `0${progress}` : progress}
+            <span className="preloader-counter-unit">%</span>
+          </span>
+        </div>
+      </div>
+    </motion.div>
   );
 }

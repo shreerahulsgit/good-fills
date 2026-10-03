@@ -74,15 +74,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 7px 22px;
+  padding: 8px 24px;
   background-color: transparent;
   border: 1px solid var(--text-primary);
-  border-radius: 9999px;
+  border-radius: 0;
   color: var(--text-primary);
   text-decoration: none;
   font-size: 0.82rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   transition: all var(--transition-fast);
 }
 
@@ -611,12 +612,6 @@
   }
 }
 
-@media (max-width: 580px) {
-  .ritualsGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .miniRitualCard {
   background-color: #FFFFFF;
   border: 1px solid var(--border-hairline);
@@ -814,12 +809,6 @@
   }
 }
 
-@media (max-width: 540px) {
-  .ingredientGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .ingredientCard {
   background-color: #FFFFFF;
   border: 1px solid var(--border-hairline);
@@ -891,4 +880,342 @@
   color: var(--text-secondary);
   line-height: 1.6;
   margin: 0;
+}
+
+/* ========================================================
+   RESPONSIVE MOBILE ARCHITECTURE (MOBILE-FIRST POLISH)
+   ======================================================== */
+
+@media (max-width: 768px) {
+  .genesisSection,
+  .ritualsSection,
+  .comparisonSection,
+  .ingredientSection {
+    padding: var(--space-16) 0;
+  }
+
+  .genesisGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  .comparisonDeck {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+
+  .factoryCard,
+  .atelierCard {
+    padding: 30px 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroSection {
+    padding: var(--space-6) 0 var(--space-8);
+  }
+
+  .heroHeaderRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: var(--space-4);
+  }
+
+  .heroBrandMark {
+    font-size: clamp(2.8rem, 12.5vw, 4.2rem);
+    letter-spacing: -0.03em;
+  }
+
+  .heroAsideBox {
+    align-items: flex-start;
+    text-align: left;
+    gap: 12px;
+  }
+
+  .heroTagline {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    max-width: 100%;
+  }
+
+  .heroShopCta {
+    padding: 10px 26px;
+    min-height: 44px;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .heroImageWrapper {
+    aspect-ratio: 16 / 10;
+    max-height: 340px;
+    box-shadow: 0 10px 28px rgba(34, 24, 19, 0.05);
+  }
+
+  /* Section Spacing */
+  .genesisSection,
+  .ritualsSection,
+  .comparisonSection,
+  .ingredientSection {
+    padding: var(--space-12) 0 var(--space-14);
+  }
+
+  .centerHeader {
+    margin-bottom: var(--space-6);
+  }
+
+  .sectionEyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+  }
+
+  .sectionHeading {
+    font-size: 1.85rem;
+    line-height: 1.2;
+    margin-bottom: var(--space-2);
+  }
+
+  .narrativeText {
+    font-size: 0.94rem;
+    line-height: 1.7;
+  }
+
+  .calloutQuote {
+    font-size: 1.15rem;
+    line-height: 1.5;
+    padding: 16px 18px;
+    margin: 16px 0;
+  }
+
+  .genesisVisualFrame {
+    max-width: 100%;
+    outline: 5px solid #FAF9F5;
+    outline-offset: -8px;
+  }
+
+  .artisanBadgeOverlay {
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .artisanText {
+    font-size: 0.76rem;
+    line-height: 1.35;
+  }
+
+  /* 4 Traditional Steps — Symmetrical 2x2 Tabs */
+  .ritualTabsBar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-bottom: var(--space-6);
+  }
+
+  .ritualTabBtn {
+    padding: 10px 8px;
+    font-size: 0.76rem;
+    justify-content: center;
+    text-align: center;
+    gap: 6px;
+  }
+
+  .ritualTabNum {
+    font-size: 0.68rem;
+  }
+
+  /* Spotlight Card */
+  .spotlightCard {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    margin-bottom: var(--space-6);
+    box-shadow: 0 10px 30px rgba(34, 24, 19, 0.06);
+  }
+
+  .spotlightVisualSide {
+    aspect-ratio: 16 / 10;
+    border-right: none;
+    border-bottom: 1px solid var(--border-hairline);
+  }
+
+  .spotlightOverlayPill {
+    top: 12px;
+    left: 12px;
+    font-size: 0.68rem;
+    padding: 4px 10px;
+  }
+
+  .spotlightContentSide {
+    padding: 20px 16px;
+  }
+
+  .ghostNumWatermark {
+    font-size: 4.8rem;
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .spotlightStepEyebrow {
+    font-size: 0.7rem;
+    margin-bottom: 4px;
+  }
+
+  .spotlightTitle {
+    font-size: 1.4rem;
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+
+  .spotlightDesc {
+    font-size: 0.88rem;
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .spotlightBenefitTag {
+    font-size: 0.74rem;
+    padding: 6px 12px;
+    margin-bottom: 14px;
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    gap: 6px;
+  }
+
+  .spotlightControls {
+    padding-top: 12px;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .navArrowBtn {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* 4-Card Overview Grid: Symmetrical 2x2 Grid */
+  .ritualsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .miniCardBody {
+    padding: 10px 10px 12px;
+  }
+
+  .miniStepTag {
+    font-size: 0.65rem;
+  }
+
+  .miniTitle {
+    font-size: 0.86rem;
+    line-height: 1.3;
+  }
+
+  /* Comparison Deck */
+  .comparisonDeck {
+    gap: 14px;
+  }
+
+  .factoryCard,
+  .atelierCard {
+    padding: 22px 18px;
+  }
+
+  .cardTitle {
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+  }
+
+  .comparisonList {
+    gap: 12px;
+  }
+
+  .comparisonItem {
+    gap: 10px;
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
+  /* Ingredients: 2-Column Mobile Catalog Layout */
+  .ingredientGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .ingredientBody {
+    padding: 12px 10px 14px;
+  }
+
+  .ingredientRegion {
+    font-size: 0.65rem;
+    margin-bottom: 3px;
+  }
+
+  .ingredientName {
+    font-size: 1.05rem;
+    line-height: 1.25;
+    margin-bottom: 4px;
+  }
+
+  .ingredientDesc {
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroBrandMark {
+    font-size: clamp(2.4rem, 12vw, 3.2rem);
+  }
+
+  .heroTagline {
+    font-size: 0.88rem;
+  }
+
+  .sectionHeading {
+    font-size: 1.65rem;
+  }
+
+  .narrativeText {
+    font-size: 0.9rem;
+  }
+
+  .calloutQuote {
+    font-size: 1.05rem;
+    padding: 14px;
+  }
+
+  .spotlightTitle {
+    font-size: 1.25rem;
+  }
+
+  .cardTitle {
+    font-size: 1.3rem;
+  }
+
+  .factoryCard,
+  .atelierCard {
+    padding: 20px 14px;
+  }
+
+  .ingredientName {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .ritualTabsBar {
+    grid-template-columns: 1fr;
+  }
+
+  .ritualsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ingredientGrid {
+    grid-template-columns: 1fr;
+  }
 }

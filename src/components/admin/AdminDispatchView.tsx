@@ -1542,27 +1542,8 @@ export function AdminDispatchView() {
               </div>
 
               <div className={styles.manifestHeaderActions}>
-                <div className={styles.layoutToggleGroup}>
-                  <button
-                    type="button"
-                    className={`${styles.layoutToggleBtn} ${manifestLayout === 'table' ? styles.layoutToggleActive : ''}`}
-                    onClick={() => setManifestLayout('table')}
-                  >
-                    <LayoutList size={13} />
-                    <span className={styles.toggleBtnLabel}>Table</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.layoutToggleBtn} ${manifestLayout === 'cards' ? styles.layoutToggleActive : ''}`}
-                    onClick={() => setManifestLayout('cards')}
-                  >
-                    <LayoutGrid size={13} />
-                    <span className={styles.toggleBtnLabel}>Cards</span>
-                  </button>
-                </div>
-
                 <button type="button" onClick={exportManifestCSV} className={styles.exportBtn}>
-                  <Download size={13} />
+                  <Download size={14} />
                   <span>Export CSV</span>
                 </button>
               </div>
@@ -1618,31 +1599,33 @@ export function AdminDispatchView() {
                   )}
                 </div>
 
-                {/* Status Dropdown Filter */}
-                <select
-                  className={styles.sortSelect}
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as any)}
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="Confirmed">Confirmed</option>
-                  <option value="Processing">Packed</option>
-                  <option value="Shipped">In Transit (DTDC)</option>
-                  <option value="Delivered">Delivered</option>
-                </select>
+                <div className={styles.filtersDropdownRow}>
+                  {/* Status Dropdown Filter */}
+                  <select
+                    className={styles.sortSelect}
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                  >
+                    <option value="all">All Statuses</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Processing">Packed</option>
+                    <option value="Shipped">In Transit (DTDC)</option>
+                    <option value="Delivered">Delivered</option>
+                  </select>
 
-                {/* Sort Option */}
-                <select
-                  className={styles.sortSelect}
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortOption)}
-                >
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
-                  <option value="highest">Highest (₹)</option>
-                  <option value="lowest">Lowest (₹)</option>
-                  <option value="name">Name</option>
-                </select>
+                  {/* Sort Option */}
+                  <select
+                    className={styles.sortSelect}
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="highest">Highest (₹)</option>
+                    <option value="lowest">Lowest (₹)</option>
+                    <option value="name">Name</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -2078,34 +2061,37 @@ export function AdminDispatchView() {
                           </div>
 
                           {/* DTDC AWB & Fast Actions */}
-                          <div className={styles.mobileAwbAndActionsRow}>
-                            <div className={styles.mobileAwbWrap}>
-                              <input
-                                type="text"
-                                className={`${styles.mobileAwbInput} ${edit.justSaved ? styles.awbSavedPulse : ''}`}
-                                placeholder="DTDC Consignment No."
-                                value={edit.trackingNumber}
-                                onChange={(e) =>
-                                  setEditStates((prev) => ({
-                                    ...prev,
-                                    [o.id]: {
-                                      ...prev[o.id],
-                                      trackingNumber: e.target.value,
-                                    },
-                                  }))
-                                }
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    handleAwbSave(o.id, edit.trackingNumber);
+                          <div className={styles.mobileCardActionsSection}>
+                            {/* Tier 1: Consignment Tracking Input + Save Button */}
+                            <div className={styles.mobileAwbInputGroup}>
+                              <div className={styles.mobileAwbFieldWrap}>
+                                <Truck size={14} className={styles.mobileAwbTruckIcon} />
+                                <input
+                                  type="text"
+                                  className={`${styles.mobileAwbInput} ${edit.justSaved ? styles.awbSavedPulse : ''}`}
+                                  placeholder="DTDC Consignment No."
+                                  value={edit.trackingNumber}
+                                  onChange={(e) =>
+                                    setEditStates((prev) => ({
+                                      ...prev,
+                                      [o.id]: {
+                                        ...prev[o.id],
+                                        trackingNumber: e.target.value,
+                                      },
+                                    }))
                                   }
-                                }}
-                              />
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      handleAwbSave(o.id, edit.trackingNumber);
+                                    }
+                                  }}
+                                />
+                              </div>
                               <button
                                 type="button"
                                 onClick={() => handleAwbSave(o.id, edit.trackingNumber)}
                                 disabled={edit.isSaving}
-                                className={`${styles.awbSaveBtn} ${edit.justSaved ? styles.awbSaveBtnSaved : ''}`}
-                                style={{ minHeight: '40px', padding: '0 12px' }}
+                                className={`${styles.mobileAwbSaveBtn} ${edit.justSaved ? styles.awbSaveBtnSaved : ''}`}
                                 title="Save DTDC Consignment"
                               >
                                 {edit.justSaved ? (
@@ -2121,12 +2107,13 @@ export function AdminDispatchView() {
                               </button>
                             </div>
 
-                            <div className={styles.mobileIconButtons}>
+                            {/* Tier 2: Action Buttons (WhatsApp, Official Invoice, Track) */}
+                            <div className={styles.mobileCardActionButtonsRow}>
                               <a
                                 href={getWhatsAppLink(o)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={styles.btnWhatsAppMobile}
+                                className={styles.mobileWhatsAppBtn}
                                 title="WhatsApp Customer"
                               >
                                 <MessageCircle size={15} />
@@ -2136,19 +2123,21 @@ export function AdminDispatchView() {
                               <Link
                                 href={`/invoice/${o.id}`}
                                 target="_blank"
-                                className={styles.btnTrackMobile}
-                                title="Print Official Invoice / Packing Slip"
+                                className={styles.mobileInvoiceBtn}
+                                title="Print Official Tax Invoice / Packing Slip"
                               >
-                                <Printer size={14} color="#97411d" />
+                                <Printer size={15} color="#97411d" />
+                                <span>Invoice</span>
                               </Link>
 
                               <Link
                                 href={`/track?id=${o.id}`}
                                 target="_blank"
-                                className={styles.btnTrackMobile}
+                                className={styles.mobileTrackBtn}
                                 title="Live Customer Track"
                               >
-                                <ExternalLink size={14} />
+                                <ExternalLink size={15} />
+                                <span>Track</span>
                               </Link>
                             </div>
                           </div>

@@ -909,22 +909,33 @@
 /* CONTROLS BAR (FILTER TABS, SEARCH, SORT) */
 .controlsBar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 14px;
+  flex-direction: column;
+  gap: 12px;
   background-color: #FFFFFF;
   border: 1px solid #E5E7EB;
-  padding: 10px 16px;
+  padding: 12px 14px;
   border-radius: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .filterTabsScrollable {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   overflow-x: auto;
   white-space: nowrap;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 2px 2px 6px 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.filterTabsScrollable::-webkit-scrollbar {
+  display: none;
 }
 
 .filterBtn {
@@ -940,6 +951,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  flex-shrink: 0;
 }
 
 .filterBtn:hover {
@@ -970,30 +982,37 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .searchWrap {
+  flex: 1;
+  min-width: 0;
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.searchIcon {
-  position: absolute;
-  left: 9px;
-  color: #9CA3AF;
-  pointer-events: none;
+.filtersDropdownRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .adminSearchInput {
   border: 1px solid #E5E7EB;
   background-color: #F9FAFB;
-  padding: 6px 28px 6px 30px;
+  padding: 7px 28px 7px 32px;
   font-size: 0.8rem;
   outline: none;
-  min-width: 250px;
+  width: 100%;
+  min-width: 0;
   border-radius: 0;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
 }
 
 .adminSearchInput:focus {
@@ -1515,22 +1534,31 @@
 
 /* Stepper on Mobile */
 .cardPipelineStepperMobile {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
   align-items: center;
-  justify-content: space-between;
   background-color: #F9FAFB;
   border: 1px solid #E5E7EB;
-  padding: 8px 12px;
-  margin: 6px 0;
+  padding: 8px 10px;
+  margin: 8px 0;
+  box-sizing: border-box;
 }
 
 .miniStepNode {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 600;
   color: #9CA3AF;
+  min-width: 0;
+}
+
+.miniStepLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .miniStepCircle {
@@ -1584,65 +1612,135 @@
   font-weight: 700;
 }
 
-.mobileAwbAndActionsRow {
+.mobileCardActionsSection {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
-  margin-top: 6px;
-  flex-wrap: wrap;
+  margin-top: 10px;
+  width: 100%;
 }
 
-.mobileAwbWrap {
-  flex: 1;
-  min-width: 140px;
+.mobileAwbInputGroup {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  border: 1px solid #D1D5DB;
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.mobileAwbInputGroup:focus-within {
+  border-color: var(--accent-terracotta);
+}
+
+.mobileAwbFieldWrap {
   display: flex;
   align-items: center;
-  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  padding-left: 10px;
+  background-color: #F9FAFB;
+}
+
+.mobileAwbTruckIcon {
+  color: #9CA3AF;
+  margin-right: 6px;
+  flex-shrink: 0;
 }
 
 .mobileAwbInput {
   flex: 1;
-  border: 1px solid #D1D5DB;
-  background-color: #F9FAFB;
-  padding: 8px 10px;
-  font-size: 0.78rem;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 9px 8px;
+  font-size: 0.8rem;
   font-family: monospace;
   outline: none;
-  border-radius: 0;
+  color: #111827;
+}
+
+.mobileAwbSaveBtn {
+  background-color: #111827;
+  color: #FFFFFF;
+  border: none;
+  border-left: 1px solid #111827;
+  padding: 0 16px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
   min-height: 40px;
-}
-
-.mobileIconButtons {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btnWhatsAppMobile {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
-  background-color: #25D366;
-  color: #FFFFFF;
-  padding: 8px 12px;
-  font-size: 0.76rem;
-  font-weight: 700;
-  text-decoration: none;
-  min-height: 40px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
 }
 
-.btnCopyMobile,
-.btnTrackMobile {
-  background-color: #F3F4F6;
-  border: 1px solid #E5E7EB;
-  color: #374151;
-  padding: 8px 10px;
-  min-height: 40px;
+.mobileAwbSaveBtn:hover {
+  background-color: var(--accent-terracotta);
+}
+
+.mobileCardActionButtonsRow {
   display: flex;
   align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.mobileWhatsAppBtn {
+  flex: 1.4;
+  min-height: 40px;
+  background-color: #25D366;
+  color: #FFFFFF;
+  border: 1px solid #20bd5a;
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  cursor: pointer;
+  gap: 6px;
   text-decoration: none;
+  box-shadow: 0 1px 3px rgba(37, 211, 102, 0.2);
+  transition: all 0.15s ease;
+}
+
+.mobileWhatsAppBtn:hover {
+  background-color: #20bd5a;
+}
+
+.mobileInvoiceBtn,
+.mobileTrackBtn {
+  flex: 1;
+  min-height: 40px;
+  background-color: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  color: #374151;
+  padding: 8px 10px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.mobileInvoiceBtn:hover {
+  border-color: #97411d;
+  color: #97411d;
+  background-color: #faf5f0;
+}
+
+.mobileTrackBtn:hover {
+  border-color: #111827;
+  color: #111827;
+  background-color: #F9FAFB;
 }
 
 /* ==========================================================================
@@ -1986,7 +2084,10 @@
 
   .dashboardContainer,
   .manifestViewContainer {
-    padding: 18px 16px;
+    padding: 16px 12px;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
 
   .statsCardsGrid {
@@ -2001,18 +2102,18 @@
   .inquiriesListGrid {
     grid-template-columns: 1fr;
   }
-}
 
-@media (max-width: 768px) {
-  /* On small tablets and phones, always show clean mobile cards for manifest */
+  /* On tablets and phones (< 1024px), show responsive touch-friendly cards */
   .desktopTableWrap {
-    display: none;
+    display: none !important;
   }
 
   .mobileCardsList {
-    display: flex;
+    display: flex !important;
   }
+}
 
+@media (max-width: 768px) {
   .toggleBtnLabel {
     display: none;
   }
@@ -2039,15 +2140,30 @@
   .controlsBar {
     flex-direction: column;
     align-items: stretch;
+    padding: 12px;
   }
 
   .searchSortGroup {
     flex-direction: column;
     align-items: stretch;
+    width: 100%;
+  }
+
+  .filtersDropdownRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .sortSelect {
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .adminSearchInput {
-    min-width: 100%;
+    width: 100%;
+    min-width: 0;
   }
 
   .overviewHeaderRow {

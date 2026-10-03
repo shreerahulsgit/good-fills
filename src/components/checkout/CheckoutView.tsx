@@ -375,6 +375,23 @@ export function CheckoutView() {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
+                internalOrderId: orderData.internalOrderId,
+                customer: {
+                  fullName: formData.fullName.trim(),
+                  email: formData.email.trim(),
+                  phone: formData.phone.trim(),
+                },
+                shippingAddress: {
+                  addressLine1: formData.addressLine1.trim(),
+                  addressLine2: (formData.addressLine2 || '').trim() || undefined,
+                  city: formData.city.trim(),
+                  state: formData.state.trim(),
+                  pincode: formData.pincode.trim(),
+                },
+                items: items.map((i) => ({
+                  productId: i.product.id,
+                  quantity: i.quantity,
+                })),
               }),
             });
 

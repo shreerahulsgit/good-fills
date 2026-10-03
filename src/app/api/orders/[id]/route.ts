@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getServerOrderById } from '@/lib/server-orders';
+import { getServerOrderById, resolveOrderById } from '@/lib/server-orders';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +16,11 @@ export async function GET(
       );
     }
 
-    const order = getServerOrderById(orderId);
+    let order = getServerOrderById(orderId);
+    if (!order) {
+      order = await resolveOrderById(orderId);
+    }
+
     if (!order) {
       return NextResponse.json(
         { success: false, error: `Order ${orderId} not found` },

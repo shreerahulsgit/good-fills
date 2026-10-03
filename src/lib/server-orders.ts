@@ -1,8 +1,10 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { Order, CartItem, ShippingAddress, OrderStatus, PaymentStatus, ShipmentStatus } from '@/types';
 import { PRODUCTS } from '@/data/products';
 import { calculateDomesticShipping } from '@/lib/shipping';
+import { getRazorpayClient, isRazorpayConfigured } from '@/lib/razorpay';
 
 export interface PaymentRecord {
   id: string;
@@ -28,9 +30,13 @@ export interface AuthoritativeCartCalculation {
   validatedItems: CartItem[];
 }
 
-const DATA_DIR = path.join(process.cwd(), '.data');
-const ORDERS_FILE = path.join(DATA_DIR, 'server-orders.json');
-const WEBHOOK_EVENTS_FILE = path.join(DATA_DIR, 'webhook-events.json');
+const PRIMARY_DATA_DIR = path.join(process.cwd(), '.data');
+const PRIMARY_ORDERS_FILE = path.join(PRIMARY_DATA_DIR, 'server-orders.json');
+const PRIMARY_WEBHOOK_EVENTS_FILE = path.join(PRIMARY_DATA_DIR, 'webhook-events.json');
+
+const TMP_DATA_DIR = path.join(os.tmpdir(), 'good-fills-data');
+const TMP_ORDERS_FILE = path.join(TMP_DATA_DIR, 'server-orders.json');
+const TMP_WEBHOOK_EVENTS_FILE = path.join(TMP_DATA_DIR, 'webhook-events.json');
 
 // Memory caches
 let ordersCache: Map<string, Order> = new Map();
@@ -38,35 +44,58 @@ let paymentsCache: Map<string, PaymentRecord> = new Map();
 let processedWebhookEvents: Set<string> = new Set();
 let isInitialized = false;
 
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
+function ensureDataDirs() {
+  if (!fs.existsSync(PRIMARY_DATA_DIR)) {
     try {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    } catch {
-      // Ignore if cannot write to filesystem (read-only environments)
-    }
+      fs.mkdirSync(PRIMARY_DATA_DIR, { recursive: true });
+    } catch {}
+  }
+  if (!fs.existsSync(TMP_DATA_DIR)) {
+    try {
+      fs.mkdirSync(TMP_DATA_DIR, { recursive: true });
+    } catch {}
   }
 }
 
-function initStore() {
+export function initStore() {
   if (isInitialized) return;
   isInitialized = true;
-  ensureDataDir();
+  ensureDataDirs();
 
+  // 1. Load from Primary Data File (Committed disk)
   try {
-    if (fs.existsSync(ORDERS_FILE)) {
-      const data = JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));
+    if (fs.existsSync(PRIMARY_ORDERS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(PRIMARY_ORDERS_FILE, 'utf8'));
       if (Array.isArray(data)) {
         data.forEach((ord: Order) => ordersCache.set(ord.id, ord));
       }
     }
   } catch (err) {
-    console.error('Error loading server orders from disk:', err);
+    console.error('Error loading server orders from primary disk:', err);
   }
 
+  // 2. Load from Tmp Data File (Takes precedence for updated runtime state in serverless)
   try {
-    if (fs.existsSync(WEBHOOK_EVENTS_FILE)) {
-      const data = JSON.parse(fs.readFileSync(WEBHOOK_EVENTS_FILE, 'utf8'));
+    if (fs.existsSync(TMP_ORDERS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(TMP_ORDERS_FILE, 'utf8'));
+      if (Array.isArray(data)) {
+        data.forEach((ord: Order) => ordersCache.set(ord.id, ord));
+      }
+    }
+  } catch (err) {
+    console.error('Error loading server orders from tmp disk:', err);
+  }
+
+  // 3. Load Webhook Events
+  try {
+    if (fs.existsSync(PRIMARY_WEBHOOK_EVENTS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(PRIMARY_WEBHOOK_EVENTS_FILE, 'utf8'));
+      if (Array.isArray(data)) {
+        data.forEach((id: string) => processedWebhookEvents.add(id));
+      }
+    }
+    if (fs.existsSync(TMP_WEBHOOK_EVENTS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(TMP_WEBHOOK_EVENTS_FILE, 'utf8'));
       if (Array.isArray(data)) {
         data.forEach((id: string) => processedWebhookEvents.add(id));
       }
@@ -77,23 +106,35 @@ function initStore() {
 }
 
 function persistOrders() {
+  const arr = Array.from(ordersCache.values());
+  const serialized = JSON.stringify(arr, null, 2);
+
+  // Try writing to primary directory (local dev / persistent disk)
   try {
-    ensureDataDir();
-    const arr = Array.from(ordersCache.values());
-    fs.writeFileSync(ORDERS_FILE, JSON.stringify(arr, null, 2), 'utf8');
-  } catch (err) {
-    // Graceful fallback for read-only or serverless environments
-  }
+    ensureDataDirs();
+    fs.writeFileSync(PRIMARY_ORDERS_FILE, serialized, 'utf8');
+  } catch {}
+
+  // Always write to writable /tmp directory (works across serverless invocations)
+  try {
+    ensureDataDirs();
+    fs.writeFileSync(TMP_ORDERS_FILE, serialized, 'utf8');
+  } catch {}
 }
 
 function persistWebhookEvents() {
+  const arr = Array.from(processedWebhookEvents);
+  const serialized = JSON.stringify(arr, null, 2);
+
   try {
-    ensureDataDir();
-    const arr = Array.from(processedWebhookEvents);
-    fs.writeFileSync(WEBHOOK_EVENTS_FILE, JSON.stringify(arr, null, 2), 'utf8');
-  } catch {
-    // Ignore
-  }
+    ensureDataDirs();
+    fs.writeFileSync(PRIMARY_WEBHOOK_EVENTS_FILE, serialized, 'utf8');
+  } catch {}
+
+  try {
+    ensureDataDirs();
+    fs.writeFileSync(TMP_WEBHOOK_EVENTS_FILE, serialized, 'utf8');
+  } catch {}
 }
 
 export function clearAllOrders(): void {
@@ -141,11 +182,7 @@ export function calculateAuthoritativeCart(
 
     const product = PRODUCTS.find((p) => p.id === item.productId);
     if (!product) {
-      throw new Error(`Product not found: ${item.productId}`);
-    }
-
-    if (product.availability !== 'available') {
-      throw new Error(`Product '${product.name}' is currently unavailable.`);
+      throw new Error(`Product ID "${item.productId}" is not available in the Good Fills atelier catalog.`);
     }
 
     // Authoritative prices and weights directly from catalog
@@ -194,10 +231,16 @@ export function createPendingOrder({
   const now = new Date().toISOString();
   const orderId = generateOrderId();
 
-  const order: Order = {
+  const pendingOrder: Order = {
     id: orderId,
     createdAt: now,
-    customerId: `CUST-${customerPhone.replace(/\D/g, '').slice(-6)}`,
+    customerId: 'guest',
+    orderStatus: 'Pending',
+    paymentStatus: 'Pending',
+    paymentMethod: 'UPI',
+    shipmentStatus: 'Not Shipped',
+    courier: 'DTDC',
+    estimatedDelivery: '2–4 days',
     customerName: customerName.trim(),
     customerEmail: customerEmail.trim(),
     customerPhone: customerPhone.trim(),
@@ -207,35 +250,22 @@ export function createPendingOrder({
     shippingCost: authCart.shippingCost,
     total: authCart.grandTotal,
     weightGrams: authCart.totalWeightGrams,
-    paymentMethod: 'Razorpay',
-    paymentStatus: 'Pending',
-    orderStatus: 'Pending',
-    shipmentStatus: 'Not Shipped',
-    courier: 'DTDC',
-    estimatedDelivery: '2–4 days',
     statusHistory: [
       {
         timestamp: now,
         status: 'Pending',
         category: 'order',
-        note: 'Order initiated by customer; awaiting UPI payment authorization.',
+        note: 'Order initiated at Bengaluru Atelier. Awaiting payment authorization.',
         actor: 'customer',
-      },
-      {
-        timestamp: now,
-        status: 'Pending',
-        category: 'payment',
-        note: 'Awaiting Razorpay UPI payment confirmation.',
-        actor: 'system',
       },
     ],
   };
 
-  ordersCache.set(order.id, order);
+  ordersCache.set(orderId, pendingOrder);
   persistOrders();
 
   return {
-    order,
+    order: pendingOrder,
     authoritativeTotal: authCart.grandTotal,
     totalWeightGrams: authCart.totalWeightGrams,
   };
@@ -267,6 +297,176 @@ export function getServerOrderById(orderId: string): Order | null {
 }
 
 /**
+ * Resolves an order by fetching from Razorpay Cloud API when in-memory cache
+ * is empty due to serverless cold starts.
+ */
+export async function resolveOrderFromRazorpay(
+  razorpayOrderId: string,
+  fallback?: {
+    internalOrderId?: string;
+    customer?: { fullName: string; phone: string; email: string };
+    shippingAddress?: ShippingAddress;
+    items?: Array<{ productId: string; quantity: number }>;
+    razorpayPaymentId?: string;
+  }
+): Promise<Order | null> {
+  initStore();
+
+  const cached = getOrderByRazorpayOrderId(razorpayOrderId);
+  if (cached) return cached;
+
+  let rzpOrder: any = null;
+  let rzpPayment: any = null;
+
+  if (isRazorpayConfigured()) {
+    const razorpay = getRazorpayClient();
+    if (razorpay) {
+      try {
+        rzpOrder = await razorpay.orders.fetch(razorpayOrderId);
+      } catch (err) {
+        console.error('Error fetching order from Razorpay API:', err);
+      }
+
+      if (fallback?.razorpayPaymentId) {
+        try {
+          rzpPayment = await razorpay.payments.fetch(fallback.razorpayPaymentId);
+        } catch (err) {
+          console.error('Error fetching payment from Razorpay API:', err);
+        }
+      }
+    }
+  }
+
+  const notes = rzpOrder?.notes || {};
+  const internalId = notes.goodFillsOrderId || rzpOrder?.receipt || fallback?.internalOrderId || generateOrderId();
+  const customerName = notes.customerName || fallback?.customer?.fullName || rzpPayment?.notes?.customerName || 'Good Fills Customer';
+  const customerPhone = notes.phone || fallback?.customer?.phone || rzpPayment?.contact || '';
+  const customerEmail = notes.email || fallback?.customer?.email || rzpPayment?.email || '';
+
+  const shippingAddress: ShippingAddress = fallback?.shippingAddress || {
+    fullName: customerName,
+    phone: customerPhone,
+    email: customerEmail,
+    addressLine1: notes.addr1 || 'Bengaluru Made to Order Atelier',
+    addressLine2: notes.addr2 || '',
+    city: notes.city || 'Bengaluru',
+    state: notes.state || 'Karnataka',
+    pincode: notes.pincode || '560001',
+    country: 'India',
+  };
+
+  let clientItems: Array<{ productId: string; quantity: number }> = [];
+  if (notes.items) {
+    try {
+      const parsed = JSON.parse(notes.items);
+      if (Array.isArray(parsed)) {
+        clientItems = parsed.map((p: any) => ({
+          productId: p.id || p.productId,
+          quantity: p.q || p.quantity || 1,
+        }));
+      }
+    } catch {}
+  }
+
+  if (clientItems.length === 0 && fallback?.items && fallback.items.length > 0) {
+    clientItems = fallback.items;
+  }
+
+  if (clientItems.length === 0) {
+    // If amount is ₹1 (100 paise), default to the live test sample
+    clientItems = [{ productId: 'prod-live-test', quantity: 1 }];
+  }
+
+  let authCart: AuthoritativeCartCalculation;
+  try {
+    authCart = calculateAuthoritativeCart(clientItems);
+  } catch {
+    const fallbackPrice = rzpOrder ? Number((rzpOrder.amount / 100).toFixed(2)) : 1;
+    authCart = {
+      subtotal: fallbackPrice,
+      totalWeightGrams: 0,
+      shippingCost: 0,
+      grandTotal: fallbackPrice,
+      validatedItems: [],
+    };
+  }
+
+  const createdAt = rzpOrder?.created_at
+    ? new Date(rzpOrder.created_at * 1000).toISOString()
+    : new Date().toISOString();
+  const now = new Date().toISOString();
+
+  const isPaid = rzpOrder?.status === 'paid' || rzpPayment?.status === 'captured';
+
+  const order: Order = {
+    id: internalId,
+    createdAt,
+    customerId: 'guest',
+    orderStatus: isPaid ? 'Confirmed' : 'Pending',
+    paymentStatus: isPaid ? 'Paid' : 'Pending',
+    paymentMethod: 'UPI',
+    shipmentStatus: (notes.shipmentStatus as ShipmentStatus) || 'Not Shipped',
+    courier: 'DTDC',
+    estimatedDelivery: '2–4 days',
+    trackingNumber: notes.trackingNumber || undefined,
+    customerName,
+    customerEmail,
+    customerPhone,
+    shippingAddress,
+    items: authCart.validatedItems,
+    subtotal: Number(notes.subtotal) || authCart.subtotal,
+    shippingCost: Number(notes.shipping) || authCart.shippingCost,
+    total: rzpOrder ? Number((rzpOrder.amount / 100).toFixed(2)) : authCart.grandTotal,
+    weightGrams: Number(notes.weight) || authCart.totalWeightGrams,
+    razorpayOrderId,
+    razorpayPaymentId: fallback?.razorpayPaymentId || rzpPayment?.id || undefined,
+    statusHistory: [
+      {
+        timestamp: createdAt,
+        status: 'Pending',
+        category: 'order',
+        note: 'Order initiated via Razorpay checkout.',
+        actor: 'system',
+      },
+    ],
+  };
+
+  if (isPaid) {
+    order.statusHistory.push({
+      timestamp: now,
+      status: 'Paid',
+      category: 'payment',
+      note: `Razorpay payment captured (${order.razorpayPaymentId || 'verified'}).`,
+      actor: 'system',
+    });
+    order.statusHistory.push({
+      timestamp: now,
+      status: 'Confirmed',
+      category: 'order',
+      note: 'Payment verified. Queued for Bengaluru kitchen preparation.',
+      actor: 'system',
+    });
+  }
+
+  ordersCache.set(order.id, order);
+  persistOrders();
+  return order;
+}
+
+/**
+ * Resolves an order by internal order ID, checking memory/disk and syncing with Razorpay.
+ */
+export async function resolveOrderById(orderId: string): Promise<Order | null> {
+  initStore();
+  const direct = getServerOrderById(orderId);
+  if (direct) return direct;
+
+  // Sync across live Razorpay orders
+  await getAllServerOrdersAsync();
+  return getServerOrderById(orderId);
+}
+
+/**
  * Idempotent order payment confirmation:
  * If the order was already Paid, returns safe no-op.
  */
@@ -275,15 +475,22 @@ export function confirmOrderPayment({
   razorpayPaymentId,
   razorpaySignature,
   source = 'callback',
+  orderFallback,
 }: {
   razorpayOrderId: string;
   razorpayPaymentId: string;
   razorpaySignature?: string;
   source?: 'callback' | 'webhook';
+  orderFallback?: Order;
 }): { order: Order; alreadyPaid: boolean } {
   initStore();
 
-  const order = getOrderByRazorpayOrderId(razorpayOrderId);
+  let order = getOrderByRazorpayOrderId(razorpayOrderId);
+  if (!order && orderFallback) {
+    order = orderFallback;
+    ordersCache.set(order.id, order);
+  }
+
   if (!order) {
     throw new Error(`Order mapping not found for Razorpay Order ID: ${razorpayOrderId}`);
   }
@@ -392,7 +599,7 @@ export function recordWebhookEventProcessed(eventId: string): void {
 }
 
 /**
- * Returns all stored orders, sorted newest first
+ * Returns all stored orders, sorted newest first (synchronous cache read)
  */
 export function getAllServerOrders(): Order[] {
   initStore();
@@ -401,7 +608,60 @@ export function getAllServerOrders(): Order[] {
 }
 
 /**
- * Updates order status, shipment status, and DTDC tracking number from admin dashboard
+ * Fetches all orders from memory/disk and seamlessly synchronizes with live Razorpay API.
+ * Ensures the admin view and tracking always reflect all live captured transactions.
+ */
+export async function getAllServerOrdersAsync(): Promise<Order[]> {
+  initStore();
+
+  if (isRazorpayConfigured()) {
+    try {
+      const razorpay = getRazorpayClient();
+      if (razorpay) {
+        const [ordersRes, paymentsRes] = await Promise.all([
+          razorpay.orders.all({ count: 100 }).catch(() => ({ items: [] })),
+          razorpay.payments.all({ count: 100 }).catch(() => ({ items: [] })),
+        ]);
+
+        const capturedPayments = new Map<string, any>();
+        ((paymentsRes as any)?.items || []).forEach((p: any) => {
+          if (p.order_id && p.status === 'captured') {
+            capturedPayments.set(p.order_id, p);
+          }
+        });
+
+        for (const rzpOrder of ((ordersRes as any)?.items || [])) {
+          const existing = getOrderByRazorpayOrderId(rzpOrder.id);
+          const pmt = capturedPayments.get(rzpOrder.id);
+
+          if (!existing) {
+            // Reconstruct and save
+            await resolveOrderFromRazorpay(rzpOrder.id, {
+              razorpayPaymentId: pmt?.id,
+            });
+          } else {
+            // If Razorpay order is paid or payment captured, ensure order is marked Paid
+            if ((rzpOrder.status === 'paid' || pmt) && existing.paymentStatus !== 'Paid') {
+              existing.paymentStatus = 'Paid';
+              existing.orderStatus = existing.orderStatus === 'Pending' ? 'Confirmed' : existing.orderStatus;
+              existing.razorpayPaymentId = pmt?.id || existing.razorpayPaymentId;
+              ordersCache.set(existing.id, existing);
+              persistOrders();
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error syncing live Razorpay orders:', err);
+    }
+  }
+
+  return getAllServerOrders();
+}
+
+/**
+ * Updates order status, shipment status, and DTDC tracking number from admin dashboard.
+ * Also synchronizes update to Razorpay Order notes for persistent cloud storage.
  */
 export function updateOrderAdmin({
   orderId,
@@ -462,6 +722,25 @@ export function updateOrderAdmin({
 
   ordersCache.set(order.id, order);
   persistOrders();
+
+  // Async sync tracking notes to Razorpay cloud
+  if (order.razorpayOrderId && isRazorpayConfigured()) {
+    try {
+      const rzp = getRazorpayClient();
+      if (rzp) {
+        rzp.orders.edit(order.razorpayOrderId, {
+          notes: {
+            goodFillsOrderId: order.id,
+            trackingNumber: order.trackingNumber || '',
+            shipmentStatus: order.shipmentStatus,
+            orderStatus: order.orderStatus,
+          },
+        }).catch((err: any) => console.error('Failed to sync order notes to Razorpay:', err));
+      }
+    } catch (err) {
+      console.error('Error syncing order update to Razorpay:', err);
+    }
+  }
+
   return order;
 }
-

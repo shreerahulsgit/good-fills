@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Order, ShippingAddress } from '@/types';
 import { PRODUCTS } from '@/data/products';
+import { getAllServerOrdersAsync } from '@/lib/server-orders';
 
 export type MilestoneStatus = 'completed' | 'in_progress' | 'pending';
 
@@ -68,8 +69,11 @@ export interface TrackingTelemetryResult {
   total: number;
 }
 
+import os from 'os';
+
 const DATA_DIR = path.join(process.cwd(), '.data');
 const ORDERS_FILE = path.join(DATA_DIR, 'server-orders.json');
+const TMP_ORDERS_FILE = path.join(os.tmpdir(), 'good-fills-data', 'server-orders.json');
 
 function maskPhoneNumber(phone?: string): string {
   if (!phone) return '+91 ••••• •••••';
@@ -83,18 +87,28 @@ function maskPhoneNumber(phone?: string): string {
 }
 
 function loadOrdersFromDisk(): Order[] {
+  const map = new Map<string, Order>();
   try {
     if (fs.existsSync(ORDERS_FILE)) {
       const raw = fs.readFileSync(ORDERS_FILE, 'utf8');
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        return parsed;
+        parsed.forEach((o: Order) => map.set(o.id, o));
       }
     }
-  } catch (err) {
-    console.error('Error reading server-orders.json for tracking:', err);
-  }
-  return [];
+  } catch (err) {}
+
+  try {
+    if (fs.existsSync(TMP_ORDERS_FILE)) {
+      const raw = fs.readFileSync(TMP_ORDERS_FILE, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        parsed.forEach((o: Order) => map.set(o.id, o));
+      }
+    }
+  } catch (err) {}
+
+  return Array.from(map.values());
 }
 
 /**
@@ -344,37 +358,43 @@ export async function searchTrackingOrder(query: string): Promise<TrackingTeleme
   const cleanQuery = query.trim().toUpperCase();
   if (!cleanQuery) return null;
 
-  const orders = loadOrdersFromDisk();
+  let orders = loadOrdersFromDisk();
 
-  // 1. Direct match by Order ID (e.g. "ORD-7776")
-  const idMatch = orders.find(
-    (o) =>
-      o.id.toUpperCase() === cleanQuery ||
-      o.id.toUpperCase().replace(/\D/g, '') === cleanQuery.replace(/\D/g, '')
-  );
-  if (idMatch) {
-    return buildTrackingTelemetry(idMatch);
-  }
+  const findMatch = (list: Order[]) => {
+    // 1. Direct match by Order ID (e.g. "ORD-7776")
+    const idMatch = list.find(
+      (o) =>
+        o.id.toUpperCase() === cleanQuery ||
+        o.id.toUpperCase().replace(/\D/g, '') === cleanQuery.replace(/\D/g, '')
+    );
+    if (idMatch) return buildTrackingTelemetry(idMatch);
 
-  // 2. Direct match by DTDC Consignment number
-  const awbMatch = orders.find(
-    (o) => o.trackingNumber && o.trackingNumber.toUpperCase() === cleanQuery
-  );
-  if (awbMatch) {
-    return buildTrackingTelemetry(awbMatch);
-  }
+    // 2. Direct match by DTDC Consignment number
+    const awbMatch = list.find(
+      (o) => o.trackingNumber && o.trackingNumber.toUpperCase() === cleanQuery
+    );
+    if (awbMatch) return buildTrackingTelemetry(awbMatch);
 
-  // 3. Match by Phone Number (last 10 digits)
-  const phoneDigits = cleanQuery.replace(/\D/g, '');
-  if (phoneDigits.length >= 8) {
-    const phoneMatch = orders.find((o) => {
-      const oDigits = (o.customerPhone || '').replace(/\D/g, '');
-      return oDigits.endsWith(phoneDigits) || phoneDigits.endsWith(oDigits);
-    });
-    if (phoneMatch) {
-      return buildTrackingTelemetry(phoneMatch);
+    // 3. Match by Phone Number (last 10 digits)
+    const phoneDigits = cleanQuery.replace(/\D/g, '');
+    if (phoneDigits.length >= 8) {
+      const phoneMatch = list.find((o) => {
+        const oDigits = (o.customerPhone || '').replace(/\D/g, '');
+        return oDigits.endsWith(phoneDigits) || phoneDigits.endsWith(oDigits);
+      });
+      if (phoneMatch) return buildTrackingTelemetry(phoneMatch);
     }
+    return null;
+  };
+
+  let result = findMatch(orders);
+  if (!result) {
+    // Check live Razorpay cloud orders
+    try {
+      const cloudOrders = await getAllServerOrdersAsync();
+      result = findMatch(cloudOrders);
+    } catch {}
   }
 
-  return null;
+  return result;
 }

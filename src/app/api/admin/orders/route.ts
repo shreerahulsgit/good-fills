@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllServerOrders } from '@/lib/server-orders';
+import { getAllServerOrdersAsync } from '@/lib/server-orders';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const orders = getAllServerOrders();
+    const orders = await getAllServerOrdersAsync();
     return NextResponse.json({ success: true, orders });
   } catch (error) {
     console.error('Error fetching admin orders:', error);

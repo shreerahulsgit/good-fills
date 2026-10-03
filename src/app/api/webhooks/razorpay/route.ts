@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { verifyWebhookSignature } from '@/lib/razorpay';
 import {
+  getOrderByRazorpayOrderId,
+  resolveOrderFromRazorpay,
   confirmOrderPayment,
   recordOrderPaymentFailure,
   isWebhookEventProcessed,
@@ -54,11 +56,20 @@ export async function POST(request: Request) {
         const paymentId = payment?.id;
 
         if (razorpayOrderId && paymentId) {
-          confirmOrderPayment({
-            razorpayOrderId,
-            razorpayPaymentId: paymentId,
-            source: 'webhook',
-          });
+          let order = getOrderByRazorpayOrderId(razorpayOrderId);
+          if (!order) {
+            order = await resolveOrderFromRazorpay(razorpayOrderId, {
+              razorpayPaymentId: paymentId,
+            });
+          }
+          if (order) {
+            confirmOrderPayment({
+              razorpayOrderId,
+              razorpayPaymentId: paymentId,
+              source: 'webhook',
+              orderFallback: order,
+            });
+          }
         }
         break;
       }
@@ -84,11 +95,20 @@ export async function POST(request: Request) {
         const paymentId = payment?.id;
 
         if (razorpayOrderId && paymentId) {
-          confirmOrderPayment({
-            razorpayOrderId,
-            razorpayPaymentId: paymentId,
-            source: 'webhook',
-          });
+          let order = getOrderByRazorpayOrderId(razorpayOrderId);
+          if (!order) {
+            order = await resolveOrderFromRazorpay(razorpayOrderId, {
+              razorpayPaymentId: paymentId,
+            });
+          }
+          if (order) {
+            confirmOrderPayment({
+              razorpayOrderId,
+              razorpayPaymentId: paymentId,
+              source: 'webhook',
+              orderFallback: order,
+            });
+          }
         }
         break;
       }
@@ -98,7 +118,7 @@ export async function POST(request: Request) {
         break;
     }
 
-    // 4. Mark event ID as processed
+    // Record webhook event as processed
     recordWebhookEventProcessed(eventId);
 
     return NextResponse.json({
@@ -107,9 +127,9 @@ export async function POST(request: Request) {
       eventId,
     });
   } catch (error: any) {
-    console.error('Webhook processing error:', error);
+    console.error('Razorpay Webhook Error:', error);
     return NextResponse.json(
-      { error: 'Webhook processing failed' },
+      { error: error.message || 'Webhook processing failed' },
       { status: 500 }
     );
   }

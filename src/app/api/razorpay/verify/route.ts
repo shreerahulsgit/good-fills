@@ -8,6 +8,7 @@ import {
 } from '@/lib/razorpay';
 import {
   getOrderByRazorpayOrderId,
+  resolveOrderFromRazorpay,
   confirmOrderPayment,
   recordOrderPaymentFailure,
 } from '@/lib/server-orders';
@@ -15,7 +16,16 @@ import {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, isMock } = body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      isMock,
+      internalOrderId,
+      customer,
+      shippingAddress,
+      items,
+    } = body;
 
     if (!razorpay_order_id || !razorpay_payment_id) {
       return NextResponse.json(
@@ -24,28 +34,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. Locate internal order server-side & confirm strict mapping
-    const existingOrder = getOrderByRazorpayOrderId(razorpay_order_id);
-    if (!existingOrder) {
-      return NextResponse.json(
-        { verified: false, error: 'No matching internal order found for this payment' },
-        { status: 400 }
-      );
-    }
-
-    // 2. Idempotency check: If already paid, return safe no-op
-    if (existingOrder.paymentStatus === 'Paid') {
-      return NextResponse.json({
-        verified: true,
-        orderId: existingOrder.id,
-        paymentId: existingOrder.razorpayPaymentId || razorpay_payment_id,
-        alreadyPaid: true,
-        order: existingOrder,
-        message: 'Order has already been confirmed as Paid.',
-      });
-    }
-
-    // 3. Sandbox check (STRICTLY BLOCKED IN PRODUCTION)
+    // 1. Sandbox check (STRICTLY BLOCKED IN PRODUCTION)
     if (isMock) {
       if (isProduction()) {
         return NextResponse.json(
@@ -76,7 +65,7 @@ export async function POST(request: Request) {
       });
     }
 
-    // 4. Live/Test Gateway Mode Verification
+    // 2. Live/Test Gateway Mode Verification
     if (!isRazorpayConfigured()) {
       return NextResponse.json(
         { verified: false, error: 'Razorpay gateway is not configured' },
@@ -121,15 +110,6 @@ export async function POST(request: Request) {
         );
       }
 
-      // Confirm amount match (in paise)
-      const expectedAmountPaise = Math.round(existingOrder.total * 100);
-      if (paymentEntity.amount !== expectedAmountPaise) {
-        return NextResponse.json(
-          { verified: false, error: `Payment amount (${paymentEntity.amount}) does not match order total (${expectedAmountPaise})` },
-          { status: 400 }
-        );
-      }
-
       // Confirm currency match
       if (paymentEntity.currency !== 'INR') {
         return NextResponse.json(
@@ -152,12 +132,44 @@ export async function POST(request: Request) {
       }
     }
 
-    // Step C: Confirm payment and update order status idempotently
+    // Step C: Locate or reconstruct internal order (handles serverless cold starts)
+    let existingOrder = getOrderByRazorpayOrderId(razorpay_order_id);
+    if (!existingOrder) {
+      existingOrder = await resolveOrderFromRazorpay(razorpay_order_id, {
+        internalOrderId,
+        customer,
+        shippingAddress,
+        items,
+        razorpayPaymentId: razorpay_payment_id,
+      });
+    }
+
+    if (!existingOrder) {
+      return NextResponse.json(
+        { verified: false, error: 'No matching internal order found for this payment' },
+        { status: 400 }
+      );
+    }
+
+    // Idempotency check: If already paid, return safe no-op
+    if (existingOrder.paymentStatus === 'Paid') {
+      return NextResponse.json({
+        verified: true,
+        orderId: existingOrder.id,
+        paymentId: existingOrder.razorpayPaymentId || razorpay_payment_id,
+        alreadyPaid: true,
+        order: existingOrder,
+        message: 'Order has already been confirmed as Paid.',
+      });
+    }
+
+    // Step D: Confirm payment and update order status idempotently
     const { order, alreadyPaid } = confirmOrderPayment({
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id,
       razorpaySignature: razorpay_signature,
       source: 'callback',
+      orderFallback: existingOrder,
     });
 
     return NextResponse.json({

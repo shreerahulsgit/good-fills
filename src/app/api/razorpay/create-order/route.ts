@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 
     // 1. Authoritative Server Calculation & Internal Order Creation
     // (Never trust any clientTotal or clientPrice)
-    const { order, authoritativeTotal } = createPendingOrder({
+    const { order, authoritativeTotal, totalWeightGrams } = createPendingOrder({
       customerName: customer.fullName,
       customerEmail: customer.email,
       customerPhone: customer.phone,
@@ -67,8 +67,18 @@ export async function POST(request: Request) {
         receipt: order.id,
         notes: {
           goodFillsOrderId: order.id,
-          customerName: order.customerName,
-          phone: order.customerPhone,
+          customerName: order.customerName.slice(0, 100),
+          phone: order.customerPhone.slice(0, 30),
+          email: order.customerEmail.slice(0, 100),
+          addr1: order.shippingAddress.addressLine1.slice(0, 100),
+          addr2: (order.shippingAddress.addressLine2 || '').slice(0, 100),
+          city: order.shippingAddress.city.slice(0, 50),
+          state: order.shippingAddress.state.slice(0, 50),
+          pincode: order.shippingAddress.pincode.slice(0, 10),
+          items: JSON.stringify(items.map((i: any) => ({ id: i.productId, q: i.quantity }))).slice(0, 250),
+          subtotal: String(order.subtotal),
+          shipping: String(order.shippingCost),
+          weight: String(totalWeightGrams),
           atelier: 'Bengaluru Made to Order',
         },
       });

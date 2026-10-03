@@ -388,12 +388,13 @@
 }
 
 .coordinatesTitle {
-  font-family: var(--font-serif);
-  font-size: 1.35rem;
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: 1.18rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   color: var(--text-primary);
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 /* Live Concierge Active Indicator */
@@ -533,12 +534,13 @@
 }
 
 .faqsHeading {
-  font-family: var(--font-serif);
-  font-size: 1.35rem;
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: 1.18rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   color: var(--text-primary);
   margin-bottom: var(--space-4);
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .faqItem {
@@ -559,9 +561,11 @@
   gap: 12px;
   background: none;
   border: none;
-  font-family: var(--font-serif);
-  font-size: 1.05rem;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.45;
   color: var(--text-primary);
   text-align: left;
   cursor: pointer;
@@ -811,7 +815,7 @@
   }
 
   .coordinatesTitle {
-    font-size: 1.22rem;
+    font-size: 1.1rem;
   }
 
   .contactDetailItem {
@@ -838,13 +842,14 @@
   }
 
   .faqsHeading {
-    font-size: 1.22rem;
+    font-size: 1.1rem;
     margin-bottom: 12px;
   }
 
   .faqTrigger {
     padding: 14px 2px;
-    font-size: 0.96rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
     min-height: 48px;
   }
 
@@ -895,11 +900,11 @@
   }
 
   .coordinatesTitle {
-    font-size: 1.15rem;
+    font-size: 1.02rem;
   }
 
   .faqsHeading {
-    font-size: 1.15rem;
+    font-size: 1.02rem;
   }
 }
 

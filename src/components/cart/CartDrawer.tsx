@@ -281,6 +281,12 @@ export function CartDrawer() {
                 </div>
                 <strong style={{ color: 'var(--accent-terracotta)' }}>{formatCurrency(shipping.shippingCost)}</strong>
               </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '-2px' }}>
+                Delivery outside India?{' '}
+                <a href="tel:+919742068899" style={{ color: 'var(--accent-terracotta)', fontWeight: 600, textDecoration: 'none' }}>
+                  Call +91 97420 68899
+                </a>
+              </div>
               <div className="hairline-divider" style={{ margin: 'var(--space-2) 0' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: 600 }}>
                 <span>Total Amount</span>

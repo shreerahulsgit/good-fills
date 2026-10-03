@@ -284,12 +284,16 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
               </motion.button>
             </div>
 
-            {/* WhatsApp Atelier Consultation Row */}
+            {/* WhatsApp & Call Atelier Consultation Row */}
             <div className={styles.whatsappRow}>
               <div className={styles.whatsappLeft}>
                 <MessageCircle size={17} strokeWidth={2} className={styles.whatsappIcon} />
                 <span className={styles.whatsappText}>
-                  Need a custom family quantity, wedding gifting, or international shipping?
+                  Need bulk gifting or international delivery? Call{' '}
+                  <a href="tel:+919742068899" style={{ color: 'var(--accent-terracotta)', fontWeight: 600, textDecoration: 'underline' }}>
+                    +91 97420 68899
+                  </a>{' '}
+                  or chat with our kitchen.
                 </span>
               </div>
               <a
@@ -300,7 +304,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                 rel="noopener noreferrer"
                 className={styles.whatsappLink}
               >
-                <span>Chat on WhatsApp</span>
+                <span>WhatsApp Us</span>
                 <ArrowRight size={13} />
               </a>
             </div>

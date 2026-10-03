@@ -470,39 +470,107 @@
 }
 
 /* International Shipping Callout */
-.intlNotice {
-  background-color: #FAF6F0;
-  border: 1px dashed rgba(151, 65, 29, 0.22);
+.intlNoticeCard {
+  background-color: #FAF5F0;
+  border: 1px solid rgba(151, 65, 29, 0.2);
   border-radius: 14px;
-  padding: 14px 18px;
+  padding: 16px 20px;
   margin-top: var(--space-5);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   gap: 14px;
 }
 
-.intlNoticeText {
+.intlNoticeHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.intlNoticeIconCircle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  border: 1px solid rgba(151, 65, 29, 0.2);
+  color: var(--accent-terracotta);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.intlNoticeTitle {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.intlNoticeDesc {
   font-family: var(--font-sans);
   font-size: 0.82rem;
   color: var(--text-secondary);
   line-height: 1.5;
+  margin: 0;
+}
+
+.intlNoticeActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-left: 48px;
+}
+
+@media (max-width: 640px) {
+  .intlNoticeActions {
+    padding-left: 0;
+  }
+}
+
+.intlCallBtn {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  background-color: var(--accent-terracotta);
+  padding: 9px 18px;
+  border-radius: 30px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(151, 65, 29, 0.2);
+}
+
+.intlCallBtn:hover {
+  background-color: #7d3314;
+  transform: translateY(-1px);
 }
 
 .intlWhatsAppBtn {
   font-family: var(--font-sans);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: #128C7E;
+  background-color: #FFFFFF;
+  border: 1px solid rgba(18, 140, 126, 0.3);
+  padding: 9px 18px;
+  border-radius: 30px;
   text-decoration: none;
-  white-space: nowrap;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
+  transition: all 0.2s ease;
 }
 
 .intlWhatsAppBtn:hover {
-  text-decoration: underline;
+  background-color: #E8F5E9;
+  border-color: #128C7E;
 }
 
 /* Delivery Option Card (Bespoke Transport Slip) */

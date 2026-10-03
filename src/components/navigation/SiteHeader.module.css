@@ -4,6 +4,58 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
+   Top Announcement Bar (International Shipping Notice)
+   -------------------------------------------------------------------------- */
+.announcementBar {
+  background-color: #221813;
+  color: #FAF9F5;
+  padding: 6px 16px;
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.announcementContainer {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.announcementText {
+  color: #E2D9D0;
+  line-height: 1.4;
+}
+
+.announcementText strong {
+  color: #FAF9F5;
+  font-weight: 700;
+}
+
+.announcementLink {
+  color: #F5D3A4;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+  transition: color 0.15s ease;
+  margin-left: 2px;
+}
+
+.announcementLink:hover {
+  color: #FFFFFF;
+}
+
+@media (max-width: 640px) {
+  .announcementBar {
+    padding: 6px 10px;
+    font-size: 0.69rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
    Main Sticky Header
    -------------------------------------------------------------------------- */
 .headerRoot {

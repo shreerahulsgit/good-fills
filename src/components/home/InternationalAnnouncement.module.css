@@ -1,0 +1,221 @@
+.announcementSection {
+  padding: var(--space-12) 0;
+  background-color: var(--bg-canvas);
+}
+
+.announcementCard {
+  background: linear-gradient(135deg, #FAF6F0 0%, #F5EDE3 100%);
+  border: 1px solid rgba(151, 65, 29, 0.18);
+  border-radius: 20px;
+  padding: clamp(24px, 4vw, 44px);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(34, 24, 19, 0.04);
+}
+
+.announcementCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-terracotta) 0%, #D48E38 50%, var(--accent-terracotta) 100%);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+@media (min-width: 960px) {
+  .grid {
+    grid-template-columns: 1.25fr 0.95fr;
+    gap: var(--space-12);
+  }
+}
+
+.eyebrowRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: var(--space-3);
+}
+
+.eyebrowBadge {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-terracotta);
+  background-color: rgba(151, 65, 29, 0.08);
+  padding: 3px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.8rem, 3.2vw, 2.4rem);
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.2;
+  margin: 0 0 var(--space-3);
+  letter-spacing: -0.01em;
+}
+
+.description {
+  font-family: var(--font-sans);
+  font-size: 0.94rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin-bottom: var(--space-5);
+}
+
+/* Feature Pillars */
+.pillarsList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: var(--space-6);
+}
+
+@media (min-width: 600px) {
+  .pillarsList {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.pillarItem {
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(151, 65, 29, 0.12);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.pillarIcon {
+  color: var(--accent-terracotta);
+  margin-bottom: 6px;
+}
+
+.pillarTitle {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.pillarDesc {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Right Side Action Box */
+.actionBox {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(151, 65, 29, 0.16);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 2px 12px rgba(34, 24, 19, 0.03);
+}
+
+.actionBoxHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(34, 24, 19, 0.06);
+}
+
+.actionBoxTitle {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.phoneBadge {
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--accent-terracotta);
+}
+
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.whatsappBtn {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  background-color: #128C7E;
+  padding: 12px 20px;
+  border-radius: 10px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(18, 140, 126, 0.22);
+}
+
+.whatsappBtn:hover {
+  background-color: #0d7064;
+  transform: translateY(-1px);
+}
+
+.callBtn {
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background-color: #FAF6F0;
+  border: 1px solid rgba(151, 65, 29, 0.2);
+  padding: 11px 18px;
+  border-radius: 10px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.callBtn:hover {
+  background-color: #F2E9DE;
+  border-color: var(--accent-terracotta);
+}
+
+.noteText {
+  font-family: var(--font-sans);
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  text-align: center;
+  margin: 0;
+}
+
+.learnMoreLink {
+  color: var(--accent-terracotta);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+}

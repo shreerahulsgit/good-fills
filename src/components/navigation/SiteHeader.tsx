@@ -124,6 +124,27 @@ export function SiteHeader() {
       <header
         className={`${styles.headerRoot} ${isScrolled ? styles.headerScrolled : ''}`}
       >
+        {/* Top Announcement Bar — International Delivery */}
+        <aside className={styles.announcementBar} aria-label="International shipping announcement">
+          <div className={styles.announcementContainer}>
+            <span className={styles.announcementText}>
+              ✈️ <strong>International Delivery Available</strong> — Custom DTDC courier rates for overseas orders.{' '}
+              <a
+                href="https://wa.me/919742068899?text=Hello%20Good%20Fills!%20I%20would%20like%20to%20place%20an%20international%20order%20for%20delivery%20outside%20India."
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.announcementLink}
+              >
+                Chat on WhatsApp
+              </a>{' '}
+              or call{' '}
+              <a href="tel:+919742068899" className={styles.announcementLink}>
+                +91 97420 68899
+              </a>
+            </span>
+          </div>
+        </aside>
+
         <div className={styles.headerContainer}>
           {/* Mobile & Tablet Hamburger Toggle */}
           <button

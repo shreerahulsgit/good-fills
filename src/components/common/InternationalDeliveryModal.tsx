@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { usePreloader } from '@/lib/preloader-context';
 import { X, Globe, MessageCircle, PhoneCall, ArrowRight } from 'lucide-react';
 import styles from './InternationalDeliveryModal.module.css';
 
@@ -11,23 +13,36 @@ interface InternationalDeliveryModalProps {
 }
 
 export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOnClose }: InternationalDeliveryModalProps) {
+  const pathname = usePathname();
+  const { isLoaded, showPreloader } = usePreloader();
+
   const atelierPhone = '9742068899';
   const whatsappUrl = `https://wa.me/91${atelierPhone}?text=${encodeURIComponent(
     'Hello Good Fills! 🌿 I would like to place an order for delivery outside India. Please share details on courier rates and items.'
   )}`;
 
-  // Default to true so it is immediately visible on the bottom-right corner!
-  const [isVisible, setIsVisible] = useState(true);
+  // Start hidden so it NEVER appears on the preloader screen
+  const [isVisible, setIsVisible] = useState(false);
 
+  // Trigger on home page AFTER preload finishes
   useEffect(() => {
-    // Hide only if the user explicitly clicked the cross button in this session
-    if (typeof window !== 'undefined') {
-      const isDismissed = sessionStorage.getItem('gf_intl_corner_toast_dismissed') === 'true';
-      if (isDismissed) {
-        setIsVisible(false);
+    // Only activate after the preloader curtain has completely lifted and home page is visible
+    if (!showPreloader && isLoaded) {
+      if (pathname === '/') {
+        const isDismissed =
+          typeof window !== 'undefined' &&
+          sessionStorage.getItem('gf_intl_corner_toast_dismissed') === 'true';
+
+        if (!isDismissed) {
+          // Graceful 800ms delay after home page content is revealed
+          const timer = setTimeout(() => {
+            setIsVisible(true);
+          }, 800);
+          return () => clearTimeout(timer);
+        }
       }
     }
-  }, []);
+  }, [showPreloader, isLoaded, pathname]);
 
   // Sync with prop if explicitly provided
   useEffect(() => {
@@ -36,7 +51,7 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
     }
   }, [propIsOpen]);
 
-  // Listen to open events from anywhere (e.g. announcement bar click)
+  // Listen to open events from anywhere (e.g. top announcement bar click)
   useEffect(() => {
     const handleOpen = () => {
       setIsVisible(true);
@@ -56,7 +71,8 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
     if (propOnClose) propOnClose();
   };
 
-  if (!isVisible) return null;
+  // NEVER render on the preloader screen
+  if (showPreloader || !isVisible) return null;
 
   return (
     <aside

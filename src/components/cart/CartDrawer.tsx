@@ -283,8 +283,21 @@ export function CartDrawer() {
               </div>
               <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '-2px' }}>
                 Delivery outside India?{' '}
+                <a
+                  href={`https://wa.me/919742068899?text=${encodeURIComponent(
+                    `Hello Good Fills! 🌿\nI would like to place an International Order for delivery outside India.\n\n📦 Cart Items:\n${items
+                      .map((i) => `• ${i.quantity}x ${i.product.name} (${i.product.packSize || ''})`)
+                      .join('\n')}\n\nTotal: ₹${subtotal}\nPlease share DTDC International courier rates.`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#128C7E', fontWeight: 600, textDecoration: 'none' }}
+                >
+                  WhatsApp Us
+                </a>{' '}
+                or call{' '}
                 <a href="tel:+919742068899" style={{ color: 'var(--accent-terracotta)', fontWeight: 600, textDecoration: 'none' }}>
-                  Call +91 97420 68899
+                  +91 97420 68899
                 </a>
               </div>
               <div className="hairline-divider" style={{ margin: 'var(--space-2) 0' }} />

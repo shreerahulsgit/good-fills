@@ -183,6 +183,40 @@ export function CheckoutView() {
 
   const atelierPhone = '9742068899';
 
+  // Device capability check: can the device make cellular calls?
+  const [canMakeCalls, setCanMakeCalls] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isMobile = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setCanMakeCalls(isMobile);
+    }
+  }, []);
+
+  const getInternationalWhatsAppUrl = () => {
+    let msg = `Hello Good Fills! 🌿\n\nI would like to place an International Order for delivery outside India.\n\n`;
+
+    if (items.length > 0) {
+      msg += `📦 Cart Items:\n`;
+      items.forEach((item) => {
+        msg += `• ${item.quantity}x ${item.product.name} (${item.product.packSize || ''}) - ₹${item.product.price * item.quantity}\n`;
+      });
+      msg += `\n⚖️ Estimated Weight: ~${totalWeightGrams}g\n`;
+      msg += `💰 Products Total: ₹${subtotal}\n\n`;
+    }
+
+    if (formData.fullName.trim() || formData.city.trim()) {
+      msg += `📍 Delivery Destination:\n`;
+      if (formData.fullName.trim()) msg += `• Recipient: ${formData.fullName.trim()}\n`;
+      if (formData.city.trim()) msg += `• City: ${formData.city.trim()}\n`;
+      if (formData.addressLine1.trim()) msg += `• Address: ${formData.addressLine1.trim()}\n`;
+      msg += `\n`;
+    }
+
+    msg += `Please share the DTDC International courier quote and payment link. Thank you!`;
+    return `https://wa.me/91${atelierPhone}?text=${encodeURIComponent(msg)}`;
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -841,10 +875,27 @@ export function CheckoutView() {
                     style={{ backgroundColor: 'rgba(34, 24, 19, 0.04)', color: 'var(--text-muted)' }}
                   />
                   <span className={styles.inputHelp}>
-                    Standard checkout delivers across India. For overseas delivery,{' '}
-                    <a href={`tel:+91${atelierPhone}`} style={{ color: 'var(--accent-terracotta)', fontWeight: 600 }}>
-                      call +91 {atelierPhone}
-                    </a>.
+                    Standard checkout delivers across India.{' '}
+                    {canMakeCalls ? (
+                      <>
+                        For overseas delivery,{' '}
+                        <a href={`tel:+91${atelierPhone}`} style={{ color: 'var(--accent-terracotta)', fontWeight: 600 }}>
+                          call +91 {atelierPhone}
+                        </a>{' '}
+                        or{' '}
+                        <a href={getInternationalWhatsAppUrl()} target="_blank" rel="noopener noreferrer" style={{ color: '#128C7E', fontWeight: 600 }}>
+                          WhatsApp us
+                        </a>.
+                      </>
+                    ) : (
+                      <>
+                        For overseas delivery,{' '}
+                        <a href={getInternationalWhatsAppUrl()} target="_blank" rel="noopener noreferrer" style={{ color: '#128C7E', fontWeight: 600 }}>
+                          chat on WhatsApp
+                        </a>{' '}
+                        or dial +91 {atelierPhone}.
+                      </>
+                    )}
                   </span>
                 </div>
 
@@ -861,7 +912,7 @@ export function CheckoutView() {
                 )}
               </div>
 
-              {/* International Order Callout - Call or WhatsApp */}
+              {/* International Order Callout - Adaptive to Mobile/Desktop */}
               <div className={styles.intlNoticeCard}>
                 <div className={styles.intlNoticeHeader}>
                   <div className={styles.intlNoticeIconCircle}>
@@ -870,35 +921,52 @@ export function CheckoutView() {
                   <div>
                     <h4 className={styles.intlNoticeTitle}>Looking for International Delivery?</h4>
                     <p className={styles.intlNoticeDesc}>
-                      International courier rates depend on parcel weight and destination customs. For all orders outside India, call us directly or message on WhatsApp — our kitchen team will calculate exact DTDC International rates and assist your order personally.
+                      {canMakeCalls
+                        ? 'International courier rates depend on parcel weight and destination customs. Call our kitchen directly or chat on WhatsApp — our team will calculate exact DTDC International rates and assist you.'
+                        : 'International courier rates depend on parcel weight and destination customs. Click below to chat with our kitchen on WhatsApp with your cart items prefilled, or dial our kitchen directly.'}
                     </p>
                   </div>
                 </div>
 
                 <div className={styles.intlNoticeActions}>
-                  <a
-                    href={`tel:+91${atelierPhone}`}
-                    className={styles.intlCallBtn}
-                  >
-                    <PhoneCall size={15} />
-                    <span>Call +91 {atelierPhone}</span>
-                  </a>
+                  {canMakeCalls ? (
+                    <>
+                      <a
+                        href={`tel:+91${atelierPhone}`}
+                        className={styles.intlCallBtn}
+                      >
+                        <PhoneCall size={15} />
+                        <span>Call +91 {atelierPhone}</span>
+                      </a>
 
-                  <a
-                    href={`https://wa.me/91${atelierPhone}?text=${encodeURIComponent(
-                      `Hello Good Fills! I would like to place an international order for delivery outside India.${
-                        items.length > 0
-                          ? ` My cart items: ${items.map((i) => `${i.quantity}x ${i.product.name}`).join(', ')}.`
-                          : ''
-                      } Please share the international courier charges and payment details.`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.intlWhatsAppBtn}
-                  >
-                    <MessageCircle size={15} />
-                    <span>WhatsApp Order Desk</span>
-                  </a>
+                      <a
+                        href={getInternationalWhatsAppUrl()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.intlWhatsAppBtn}
+                      >
+                        <MessageCircle size={15} />
+                        <span>WhatsApp Order Desk</span>
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <a
+                        href={getInternationalWhatsAppUrl()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.intlWhatsAppPrimaryBtn}
+                      >
+                        <MessageCircle size={16} />
+                        <span>Chat on WhatsApp with Cart Items</span>
+                      </a>
+
+                      <div className={styles.intlPhoneFallback}>
+                        <span>Or dial from your phone:</span>
+                        <strong>+91 {atelierPhone}</strong>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

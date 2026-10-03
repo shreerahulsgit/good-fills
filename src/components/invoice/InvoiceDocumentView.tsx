@@ -118,9 +118,19 @@ export function InvoiceDocumentView({ orderId, initialOrder }: InvoiceDocumentVi
     <div className={styles.pageCanvas}>
       {/* Top Screen-Only Actions */}
       <div className={styles.actionsBar}>
-        <Link href={`/order-confirmation/${encodeURIComponent(order.id)}`} className={styles.backBtn}>
-          <ArrowLeft size={16} /> Back to Confirmation
-        </Link>
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== 'undefined' && window.history.length > 1) {
+              window.history.back();
+            } else {
+              window.location.href = `/order-confirmation/${encodeURIComponent(order.id)}`;
+            }
+          }}
+          className={styles.backBtn}
+        >
+          <ArrowLeft size={16} /> Back
+        </button>
         <div className={styles.actionBtnsRight}>
           <button type="button" onClick={handlePrint} className={styles.printBtn}>
             <Printer size={17} /> Print / Save as PDF

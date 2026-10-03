@@ -2788,6 +2788,20 @@ button {
   line-height: 1.5;
 }
 
+/* ========================================================
+   GLOBAL PRINT RULES (DOCUMENTS & INVOICES)
+   ======================================================== */
+@media print {
+  header,
+  footer,
+  .site-footer,
+  nav,
+  .site-header,
+  .no-print {
+    display: none !important;
+  }
+}
+
 
 
 

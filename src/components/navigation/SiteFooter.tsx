@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 export function SiteFooter() {
   const pathname = usePathname();
 
-  if (pathname?.startsWith('/admin')) {
+  if (pathname?.startsWith('/admin') || pathname?.includes('/invoice')) {
     return null;
   }
 

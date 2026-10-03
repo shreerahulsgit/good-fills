@@ -656,3 +656,259 @@
   line-height: 1.5;
   margin: 0;
 }
+
+/* ========================================================
+   RESPONSIVE MOBILE ARCHITECTURE (MOBILE-FIRST POLISH)
+   ======================================================== */
+
+@media (max-width: 640px) {
+  .contactPageWrapper {
+    padding-top: calc(var(--header-height) + var(--space-4));
+    padding-bottom: var(--space-12);
+  }
+
+  .contactContainer {
+    padding: 0 var(--space-4);
+  }
+
+  .minimalHeader {
+    padding-bottom: var(--space-6);
+    margin-bottom: var(--space-6);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+
+  .headerEyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+  }
+
+  .pageTitle {
+    font-size: clamp(2rem, 9vw, 2.6rem);
+    line-height: 1.15;
+    margin-bottom: var(--space-2);
+  }
+
+  .pageSubtitle {
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  /* Two high-touch action buttons split 50/50 */
+  .headerDirectActions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    width: 100%;
+  }
+
+  .headerDirectBtn {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 8px;
+    justify-content: center;
+    font-size: 0.78rem;
+    text-align: center;
+    gap: 6px;
+  }
+
+  .splitGrid {
+    gap: var(--space-6);
+  }
+
+  /* Form Desk */
+  .formPane {
+    padding: 22px 16px;
+  }
+
+  .formPaneTitle {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+
+  .formPaneDesc {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin-bottom: var(--space-5);
+  }
+
+  /* Symmetrical 2x2 Category Selector Grid */
+  .categoryLabel {
+    font-size: 0.7rem;
+    margin-bottom: 8px;
+  }
+
+  .categoryGroup {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: var(--space-5);
+  }
+
+  .categoryBtn {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 8px;
+    font-size: 0.76rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.25;
+  }
+
+  .inputRow {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    margin-bottom: 0;
+  }
+
+  .fieldGroup {
+    margin-bottom: var(--space-3);
+  }
+
+  .fieldLabel {
+    font-size: 0.7rem;
+  }
+
+  .inputControl {
+    min-height: 48px;
+    padding: 12px 14px;
+    font-size: 1rem; /* Prevents iOS Safari auto-zoom */
+  }
+
+  .textareaControl {
+    min-height: 120px;
+    padding: 12px 14px;
+    font-size: 1rem; /* Prevents iOS Safari auto-zoom */
+  }
+
+  .submitBtn {
+    min-height: 48px;
+    padding: 14px 20px;
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+  }
+
+  /* Success Message on Mobile */
+  .successMessage {
+    padding: 24px 16px;
+  }
+
+  .successTitle {
+    font-size: 1.4rem;
+  }
+
+  .successText {
+    font-size: 0.86rem;
+  }
+
+  /* Direct Coordinates Card */
+  .coordinatesCard {
+    padding: 22px 16px;
+  }
+
+  .coordinatesTitle {
+    font-size: 1.22rem;
+  }
+
+  .contactDetailItem {
+    padding: 8px 6px;
+    gap: 12px;
+  }
+
+  .detailIconBox {
+    width: 36px;
+    height: 36px;
+  }
+
+  .detailLabel {
+    font-size: 0.68rem;
+  }
+
+  .detailValue {
+    font-size: 0.86rem;
+  }
+
+  /* Direct Kitchen FAQs */
+  .faqsContainer {
+    padding: 22px 16px;
+  }
+
+  .faqsHeading {
+    font-size: 1.22rem;
+    margin-bottom: 12px;
+  }
+
+  .faqTrigger {
+    padding: 14px 2px;
+    font-size: 0.96rem;
+    min-height: 48px;
+  }
+
+  .faqBody {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    padding: 0 2px 14px 2px;
+  }
+
+  /* Trust Pillars */
+  .trustStrip {
+    margin-top: var(--space-10);
+    padding-top: var(--space-8);
+    gap: 10px;
+  }
+
+  .trustPillar {
+    padding: 16px 14px;
+    gap: 12px;
+  }
+
+  .trustIconBox {
+    width: 36px;
+    height: 36px;
+  }
+
+  .trustTitle {
+    font-size: 0.96rem;
+  }
+
+  .trustText {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageTitle {
+    font-size: 1.95rem;
+  }
+
+  .formPaneTitle {
+    font-size: 1.38rem;
+  }
+
+  .categoryBtn {
+    font-size: 0.72rem;
+    padding: 8px 6px;
+  }
+
+  .coordinatesTitle {
+    font-size: 1.15rem;
+  }
+
+  .faqsHeading {
+    font-size: 1.15rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .headerDirectActions {
+    grid-template-columns: 1fr;
+  }
+
+  .categoryGroup {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,267 +1,199 @@
-.overlay {
+/* Floating Bottom-Right Corner Toast */
+.floatingContainer {
   position: fixed;
-  inset: 0;
-  background-color: rgba(26, 20, 16, 0.65);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-4);
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  bottom: 24px;
+  right: 24px;
+  z-index: 900;
+  width: calc(100vw - 32px);
+  max-width: 360px;
+  animation: slideInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes fadeIn {
+@keyframes slideInUp {
   from {
     opacity: 0;
+    transform: translateY(20px) scale(0.96);
   }
   to {
     opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
-.modal {
+.toastCard {
   position: relative;
-  width: 100%;
-  maxWidth: 580px;
-  background: linear-gradient(145deg, #FAF6F0 0%, #F5ECE0 100%);
+  background: #FFFFFF;
   border: 1px solid rgba(151, 65, 29, 0.2);
-  border-radius: 22px;
-  padding: clamp(24px, 5vw, 38px);
-  box-shadow: 0 24px 60px -12px rgba(34, 24, 19, 0.25);
+  border-radius: 16px;
+  padding: 16px 18px 14px;
+  box-shadow: 0 12px 36px -4px rgba(34, 24, 19, 0.16), 0 4px 12px rgba(34, 24, 19, 0.08);
   overflow: hidden;
-  animation: scaleUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes scaleUp {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.topAccentLine {
+.toastCard::before {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 3.5px;
-  background: linear-gradient(90deg, var(--accent-terracotta) 0%, #D48E38 50%, var(--accent-terracotta) 100%);
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-terracotta) 0%, #D48E38 100%);
 }
 
-.closeBtn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid rgba(151, 65, 29, 0.15);
-  background-color: #FFFFFF;
-  color: var(--text-secondary);
+.cardHeader {
   display: flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.18s ease;
-}
-
-.closeBtn:hover {
-  background-color: var(--accent-terracotta);
-  color: #FFFFFF;
-  border-color: var(--accent-terracotta);
-  transform: rotate(90deg);
-}
-
-.badgeRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: var(--space-3);
+  justify-content: space-between;
+  margin-bottom: 8px;
 }
 
 .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-family: var(--font-sans);
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--accent-terracotta);
   background-color: rgba(151, 65, 29, 0.08);
-  padding: 4px 11px;
+  padding: 2px 8px;
   border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
 }
 
-.badgeSub {
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  color: var(--text-muted);
+.closeBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background-color: rgba(34, 24, 19, 0.06);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.closeBtn:hover {
+  background-color: var(--accent-terracotta);
+  color: #FFFFFF;
+  transform: rotate(90deg);
 }
 
 .title {
   font-family: var(--font-serif);
-  font-size: clamp(1.6rem, 3.2vw, 2.1rem);
-  font-weight: 500;
+  font-size: 1.15rem;
+  font-weight: 600;
   color: var(--text-primary);
-  line-height: 1.22;
-  margin: 0 0 var(--space-3);
-  letter-spacing: -0.01em;
+  margin: 0 0 4px 0;
+  line-height: 1.25;
 }
 
-.description {
-  font-family: var(--font-sans);
-  font-size: 0.88rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: var(--space-5);
-}
-
-/* Feature grid */
-.featureGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  margin-bottom: var(--space-6);
-}
-
-@media (min-width: 520px) {
-  .featureGrid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.featureCard {
-  background-color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(151, 65, 29, 0.12);
-  border-radius: 12px;
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.featureIcon {
-  color: var(--accent-terracotta);
-  margin-bottom: 2px;
-}
-
-.featureTitle {
+.desc {
   font-family: var(--font-sans);
   font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0 0 12px 0;
 }
 
-.featureText {
-  font-family: var(--font-sans);
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  line-height: 1.35;
-  margin: 0;
-}
-
-/* Actions */
 .actions {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
 }
 
 .whatsappBtn {
-  font-family: var(--font-sans);
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: #FFFFFF;
-  background-color: #128C7E;
-  padding: 13px 22px;
-  border-radius: 12px;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba(18, 140, 126, 0.24);
-}
-
-.whatsappBtn:hover {
-  background-color: #0d7064;
-  transform: translateY(-1px);
-}
-
-.callRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.callBtn {
   flex: 1;
-  font-family: var(--font-sans);
-  font-size: 0.84rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  background-color: #FFFFFF;
-  border: 1px solid rgba(151, 65, 29, 0.22);
-  padding: 11px 18px;
-  border-radius: 12px;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  transition: all 0.2s ease;
-}
-
-.callBtn:hover {
-  background-color: #FAF6F0;
-  border-color: var(--accent-terracotta);
-}
-
-.guideLink {
-  flex: 1;
-  font-family: var(--font-sans);
-  font-size: 0.84rem;
-  font-weight: 600;
-  color: var(--accent-terracotta);
-  background-color: rgba(151, 65, 29, 0.06);
-  border: 1px dashed rgba(151, 65, 29, 0.25);
-  padding: 11px 18px;
-  border-radius: 12px;
-  text-decoration: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition: all 0.2s ease;
+  background-color: #128C7E;
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.whatsappBtn:hover {
+  background-color: #0e6f63;
+}
+
+.callBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background-color: #FAF6F0;
+  border: 1px solid rgba(151, 65, 29, 0.2);
+  color: var(--accent-terracotta);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.callBtn:hover {
+  background-color: #F2E7DC;
+}
+
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(34, 24, 19, 0.08);
+}
+
+.guideLink {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent-terracotta);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .guideLink:hover {
-  background-color: rgba(151, 65, 29, 0.12);
+  text-decoration: underline;
 }
 
-.dismissBtn {
+.dismissText {
   font-family: var(--font-sans);
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   color: var(--text-muted);
   background: none;
   border: none;
-  text-decoration: underline;
-  text-underline-offset: 3px;
   cursor: pointer;
-  margin-top: 6px;
-  text-align: center;
-  transition: color 0.15s ease;
+  padding: 0;
 }
 
-.dismissBtn:hover {
+.dismissText:hover {
   color: var(--text-primary);
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .floatingContainer {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+  }
 }

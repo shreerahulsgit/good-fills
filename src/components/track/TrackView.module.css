@@ -145,16 +145,26 @@
   box-shadow: 0 10px 30px rgba(151, 65, 29, 0.08);
 }
 
+.searchInputGroup {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  background: transparent;
+}
+
 .searchIconWrapper {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 var(--space-3);
   color: var(--accent-terracotta);
+  flex-shrink: 0;
 }
 
 .searchInput {
   flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
   padding: 14px 8px;
@@ -170,6 +180,24 @@
   color: var(--text-muted);
   font-weight: 400;
   font-size: 0.95rem;
+}
+
+.clearSearchBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+  border-radius: 0;
+  flex-shrink: 0;
+}
+
+.clearSearchBtn:hover {
+  color: var(--text-primary);
 }
 
 .searchBtn {
@@ -267,6 +295,30 @@
   flex-wrap: wrap;
   gap: var(--space-3);
   border-radius: 0;
+}
+
+.statusHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.statusHeaderRight {
+  display: flex;
+  align-items: center;
+}
+
+.awbBadgeText {
+  font-size: 0.84rem;
+  color: var(--text-light-muted);
+  letter-spacing: 0.04em;
+}
+
+.awbBadgeText strong {
+  color: var(--text-light);
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
 }
 
 .badgeLive {
@@ -425,6 +477,26 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-secondary);
+}
+
+.progressLabelLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.progressStepBadge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background-color: var(--bg-cream);
+  color: var(--accent-terracotta);
+  border: 1px solid rgba(151, 65, 29, 0.25);
+  padding: 2px 8px;
+  border-radius: 0;
 }
 
 .progressPercentText {
@@ -690,6 +762,22 @@
   color: var(--text-primary);
   font-weight: 600;
   text-align: right;
+}
+
+.courierPhoneLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent-terracotta);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: color var(--transition-fast);
+}
+
+.courierPhoneLink:hover {
+  color: var(--accent-terracotta-hover);
+  text-decoration: underline;
 }
 
 .dtdcPortalBtn {
@@ -979,44 +1067,92 @@
 }
 
 @media (max-width: 640px) {
+  .trackContainer {
+    padding-bottom: var(--space-12);
+  }
+
   .consoleHero {
     padding: var(--space-6) var(--space-4) var(--space-6);
+  }
+
+  .controlBar {
+    padding: 8px 0;
   }
 
   .controlBarInner {
     flex-direction: column;
     align-items: flex-start;
     padding: 0 var(--space-4);
-    gap: 6px;
+    gap: 4px;
+  }
+
+  .gatewayBadge {
+    font-size: 0.72rem;
   }
 
   .hubRoute {
     flex-wrap: wrap;
     gap: 6px;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
   }
 
+  .heroTitle {
+    font-size: 2.15rem;
+    line-height: 1.15;
+  }
+
+  .heroSubtitle {
+    font-size: 0.96rem;
+    line-height: 1.5;
+    margin-bottom: var(--space-6);
+  }
+
+  /* Sleek Unified Mobile Search Box */
   .searchConsole {
     flex-direction: column;
-    padding: 8px;
-    gap: 8px;
+    padding: 6px;
+    gap: 6px;
+    border: 1.5px solid var(--text-primary);
+    box-shadow: 0 4px 16px rgba(34, 24, 19, 0.06);
+  }
+
+  .searchInputGroup {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-canvas);
+    border: 1px solid var(--border-hairline);
+    min-height: 48px;
+    padding: 0 4px;
+  }
+
+  .searchIconWrapper {
+    padding: 0 6px 0 10px;
+    color: var(--accent-terracotta);
   }
 
   .searchInput {
-    padding: 10px 4px;
+    padding: 12px 6px;
     font-size: 0.95rem;
+    width: 100%;
+  }
+
+  .clearSearchBtn {
+    padding: 8px 10px;
   }
 
   .searchBtn {
     width: 100%;
-    padding: 13px;
+    min-height: 48px;
+    padding: 0 var(--space-4);
     justify-content: center;
-    font-size: 0.85rem;
+    font-size: 0.88rem;
+    letter-spacing: 0.08em;
   }
 
   .dashboardGrid {
     padding: 0 var(--space-4);
-    gap: var(--space-6);
+    gap: var(--space-5);
     margin-top: var(--space-5);
   }
 
@@ -1024,62 +1160,384 @@
     padding: var(--space-5) var(--space-4);
   }
 
-  .statusHeaderStrip {
-    padding: var(--space-3) var(--space-4);
+  .statusLeadTitle {
+    font-size: 1.65rem;
+    line-height: 1.2;
+    margin-bottom: 6px;
   }
 
+  .statusLeadDesc {
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  .statusHeaderStrip {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .statusHeaderLeft {
+    gap: 8px;
+  }
+
+  .awbBadgeText {
+    font-size: 0.78rem;
+  }
+
+  /* Clean 2x2 Metrics on Mobile */
   .metricsGrid {
     grid-template-columns: 1fr 1fr;
   }
 
   .metricCell {
-    padding: var(--space-3) var(--space-4);
+    padding: 12px 14px;
+  }
+
+  .metricCell:nth-child(1) {
+    border-right: 1px solid var(--border-hairline);
+    border-bottom: 1px solid var(--border-hairline);
+  }
+
+  .metricCell:nth-child(2) {
+    border-right: none;
+    border-bottom: 1px solid var(--border-hairline);
+  }
+
+  .metricCell:nth-child(3) {
+    border-right: 1px solid var(--border-hairline);
+    border-top: none;
+  }
+
+  .metricCell:nth-child(4) {
+    border-right: none;
+    border-top: none;
+  }
+
+  .metricLabel {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 3px;
   }
 
   .metricValue {
-    font-size: 0.98rem;
+    font-size: 0.95rem;
+    gap: 4px;
+  }
+
+  .copyAwbBtn {
+    padding: 2px 6px;
+    font-size: 0.68rem;
   }
 
   .progressSection {
-    padding: var(--space-4);
+    padding: 14px 16px;
   }
 
+  .progressLabelRow {
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 0.76rem;
+  }
+
+  .progressLabelLeft {
+    gap: 8px;
+  }
+
+  .progressPercentText {
+    font-size: 0.88rem;
+  }
+
+  /* Mobile App Timeline */
   .timelineCard {
-    padding: var(--space-5) var(--space-4);
+    padding: 18px 14px;
+  }
+
+  .timelineCardHeader {
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+  }
+
+  .timelineTitle {
+    font-size: 1.25rem;
+  }
+
+  .timelineSlaNote {
+    font-size: 0.72rem;
+  }
+
+  .milestonesList {
+    gap: 16px;
   }
 
   .milestonesList::before {
     left: 13px;
+    top: 14px;
+    bottom: 14px;
+    width: 2px;
   }
 
   .milestoneMarker {
     width: 28px;
     height: 28px;
-    font-size: 0.75rem;
+    font-size: 0.74rem;
   }
 
   .milestoneItem {
-    gap: var(--space-3);
+    gap: 12px;
   }
 
   .milestoneContent {
-    padding: var(--space-3) var(--space-4);
+    padding: 12px 14px;
   }
 
+  .milestoneTopRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    margin-bottom: 4px;
+  }
+
+  .milestoneTitle {
+    font-size: 0.98rem;
+  }
+
+  .milestoneTime {
+    font-size: 0.72rem;
+  }
+
+  .milestoneLocation {
+    font-size: 0.78rem;
+    margin-bottom: 6px;
+  }
+
+  .milestoneNote {
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  /* Courier Card */
   .sideCard {
-    padding: var(--space-5) var(--space-4);
+    padding: 18px 14px;
   }
 
+  .sideCardTitle {
+    font-size: 1.15rem;
+    margin-bottom: 12px;
+  }
+
+  .courierRow {
+    padding: 7px 0;
+    font-size: 0.84rem;
+  }
+
+  .dtdcPortalBtn {
+    margin-top: 14px;
+    padding: 12px;
+    min-height: 44px;
+    font-size: 0.82rem;
+  }
+
+  /* Items Row */
+  .itemRow {
+    padding: 10px 0;
+    gap: 12px;
+  }
+
+  .itemThumb {
+    width: 52px;
+    height: 52px;
+  }
+
+  .itemName {
+    font-size: 0.9rem;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .itemMeta {
+    font-size: 0.76rem;
+  }
+
+  .itemPrice {
+    font-size: 0.92rem;
+  }
+
+  .specsBox {
+    padding-top: 10px;
+    gap: 6px;
+    font-size: 0.78rem;
+  }
+
+  /* Concierge / Support Card */
   .conciergeCard {
-    padding: var(--space-5) var(--space-4);
+    padding: 18px 14px;
   }
 
+  .conciergeTitle {
+    font-size: 1.22rem;
+  }
+
+  .conciergeDesc {
+    font-size: 0.84rem;
+    line-height: 1.45;
+    margin-bottom: 16px;
+  }
+
+  .whatsappBtn {
+    min-height: 48px;
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+
+  .callSupportBtn {
+    min-height: 46px;
+    padding: 11px;
+    font-size: 0.82rem;
+  }
+
+  /* Awaiting / Empty state */
   .awaitingConsole {
     padding: var(--space-8) var(--space-4);
+    margin-top: var(--space-4);
+  }
+
+  .awaitingIconWrap {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 12px;
+  }
+
+  .awaitingTitle {
+    font-size: 1.65rem;
+  }
+
+  .awaitingText {
+    font-size: 0.92rem;
+    margin-bottom: var(--space-6);
   }
 
   .logisticsProcessGrid {
     grid-template-columns: 1fr;
-    gap: var(--space-3);
+    gap: 10px;
+  }
+
+  .processStepCard {
+    padding: 14px;
+  }
+
+  .stepTitle {
+    font-size: 1.05rem;
+  }
+
+  .stepDesc {
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .consoleHero {
+    padding: var(--space-5) 12px var(--space-5);
+  }
+
+  .heroTitle {
+    font-size: 1.85rem;
+  }
+
+  .heroSubtitle {
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+  }
+
+  .dashboardGrid {
+    padding: 0 12px;
+    gap: 14px;
+    margin-top: 14px;
+  }
+
+  .statusHeadlineBody {
+    padding: 14px 12px;
+  }
+
+  .statusLeadTitle {
+    font-size: 1.45rem;
+  }
+
+  .statusLeadDesc {
+    font-size: 0.86rem;
+  }
+
+  .metricCell {
+    padding: 10px 10px;
+  }
+
+  .metricLabel {
+    font-size: 0.65rem;
+  }
+
+  .metricValue {
+    font-size: 0.88rem;
+  }
+
+  .timelineCard {
+    padding: 14px 12px;
+  }
+
+  .milestonesList::before {
+    left: 12px;
+  }
+
+  .milestoneMarker {
+    width: 26px;
+    height: 26px;
+    font-size: 0.7rem;
+  }
+
+  .milestoneItem {
+    gap: 10px;
+  }
+
+  .milestoneContent {
+    padding: 10px 12px;
+  }
+
+  .sideCard {
+    padding: 14px 12px;
+  }
+
+  .conciergeCard {
+    padding: 16px 12px;
+  }
+
+  .awaitingConsole {
+    padding: 24px 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .heroTitle {
+    font-size: 1.65rem;
+  }
+
+  .statusLeadTitle {
+    font-size: 1.3rem;
+  }
+
+  .metricsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .metricCell:nth-child(1),
+  .metricCell:nth-child(2),
+  .metricCell:nth-child(3),
+  .metricCell:nth-child(4) {
+    border-right: none;
+    border-bottom: 1px solid var(--border-hairline);
+  }
+
+  .metricCell:nth-child(4) {
+    border-bottom: none;
   }
 }

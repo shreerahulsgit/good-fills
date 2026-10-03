@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Order, ShippingAddress } from '@/types';
+import { PRODUCTS } from '@/data/products';
 
 export type MilestoneStatus = 'completed' | 'in_progress' | 'pending';
 
@@ -283,17 +284,23 @@ export function buildTrackingTelemetry(order: Order, forcedStage?: number): Trac
     helpline: '1800 209 6006',
   };
 
-  const items = (order.items || []).map((it) => ({
-    id: it.product?.id || 'prod-01',
-    name: it.product?.name || 'Artisanal Porridge Flour',
-    packSize: it.product?.packSize || '250g',
-    quantity: it.quantity || 1,
-    price: it.product?.price || 225,
-    imagePrimary:
-      it.product?.images?.primary ||
-      'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80',
-    productWeightGrams: it.product?.productWeightGrams || 250,
-  }));
+  const items = (order.items || []).map((it) => {
+    const matchedProduct = PRODUCTS.find(
+      (p) => p.id === it.product?.id || p.slug === it.product?.slug || p.name.toLowerCase() === (it.product?.name || '').toLowerCase()
+    );
+    return {
+      id: it.product?.id || matchedProduct?.id || 'prod-01',
+      name: it.product?.name || matchedProduct?.name || 'Artisanal Porridge Flour',
+      packSize: it.product?.packSize || matchedProduct?.packSize || '250g',
+      quantity: it.quantity || 1,
+      price: it.product?.price || matchedProduct?.price || 225,
+      imagePrimary:
+        matchedProduct?.images?.primary ||
+        it.product?.images?.primary ||
+        '/images/products/kids-nutrition-powder.jpg',
+      productWeightGrams: it.product?.productWeightGrams || matchedProduct?.productWeightGrams || 250,
+    };
+  });
 
   return {
     orderId,

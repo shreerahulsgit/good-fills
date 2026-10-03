@@ -21,7 +21,8 @@ import {
   ArrowRight, 
   RefreshCw,
   Box,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react';
 import { TrackingTelemetryResult } from '@/lib/tracking';
 import styles from './TrackView.module.css';
@@ -153,17 +154,30 @@ export function TrackView() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: luxuryEase, delay: 0.22 }}
           >
-            <div className={styles.searchIconWrapper}>
-              <Search size={20} />
+            <div className={styles.searchInputGroup}>
+              <div className={styles.searchIconWrapper}>
+                <Search size={19} />
+              </div>
+              <input
+                type="text"
+                className={styles.searchInput}
+                placeholder="Enter Order ID (e.g. ORD-3595) or mobile..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Order ID or Mobile Number"
+              />
+              {searchQuery.trim().length > 0 && (
+                <button
+                  type="button"
+                  className={styles.clearSearchBtn}
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear search input"
+                  title="Clear"
+                >
+                  <X size={15} />
+                </button>
+              )}
             </div>
-            <input
-              type="text"
-              className={styles.searchInput}
-              placeholder="Enter your Order ID (e.g. ORD-7776) or 10-digit mobile number..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Order ID or Mobile Number"
-            />
             <motion.button
               type="submit"
               className={styles.searchBtn}
@@ -220,7 +234,7 @@ export function TrackView() {
             {/* Main Status Card */}
             <div className={styles.statusMasterCard}>
               <div className={styles.statusHeaderStrip}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className={styles.statusHeaderLeft}>
                   {activeOrder.statusBadgeType === 'live' && (
                     <span className={styles.badgeLive}>
                       <span className={styles.pulseDot} />
@@ -239,11 +253,10 @@ export function TrackView() {
                       Kitchen Preparation
                     </span>
                   )}
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-light-muted)' }}>
-                    DTDC AWB:{' '}
-                    <strong style={{ color: 'var(--text-light)' }}>
-                      {activeOrder.courier.awbNumber}
-                    </strong>
+                </div>
+                <div className={styles.statusHeaderRight}>
+                  <span className={styles.awbBadgeText}>
+                    DTDC AWB: <strong>{activeOrder.courier.awbNumber}</strong>
                   </span>
                 </div>
               </div>
@@ -305,7 +318,12 @@ export function TrackView() {
             {/* Animated Progress Bar */}
             <div className={styles.progressSection}>
               <div className={styles.progressLabelRow}>
-                <span>Order &amp; Delivery Progress</span>
+                <div className={styles.progressLabelLeft}>
+                  <span>Order &amp; Delivery Progress</span>
+                  <span className={styles.progressStepBadge}>
+                    {activeOrder.isDelivered ? 'Step 5 of 5' : `Step ${Math.min(5, Math.max(1, Math.round(activeOrder.overallProgressPercent / 20)))} of 5`}
+                  </span>
+                </div>
                 <span className={styles.progressPercentText}>{activeOrder.overallProgressPercent}%</span>
               </div>
               <div className={styles.progressTrack}>
@@ -403,7 +421,10 @@ export function TrackView() {
                     </div>
                     <div className={styles.courierRow}>
                       <span className={styles.courierKey}>DTDC Helpline</span>
-                      <span className={styles.courierVal}>{activeOrder.courier.helpline}</span>
+                      <a href={`tel:${activeOrder.courier.helpline.replace(/\s+/g, '')}`} className={styles.courierPhoneLink}>
+                        <Phone size={12} />
+                        <span>{activeOrder.courier.helpline}</span>
+                      </a>
                     </div>
                     <div className={styles.courierRow}>
                       <span className={styles.courierKey}>Recipient</span>

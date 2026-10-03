@@ -470,143 +470,48 @@
 }
 
 /* International Shipping Callout */
-.intlNoticeCard {
-  background-color: #FAF5F0;
-  border: 1px solid rgba(151, 65, 29, 0.2);
+.intlNotice {
+  background-color: #FAF6F0;
+  border: 1px dashed rgba(151, 65, 29, 0.22);
   border-radius: 14px;
-  padding: 16px 20px;
+  padding: 14px 18px;
   margin-top: var(--space-5);
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   gap: 14px;
 }
 
-.intlNoticeHeader {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
+@media (max-width: 640px) {
+  .intlNotice {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
 }
 
-.intlNoticeIconCircle {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: #FFFFFF;
-  border: 1px solid rgba(151, 65, 29, 0.2);
-  color: var(--accent-terracotta);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.intlNoticeTitle {
-  font-family: var(--font-serif);
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 4px 0;
-}
-
-.intlNoticeDesc {
+.intlNoticeText {
   font-family: var(--font-sans);
   font-size: 0.82rem;
   color: var(--text-secondary);
   line-height: 1.5;
-  margin: 0;
 }
 
-.intlNoticeActions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding-left: 48px;
-}
-
-@media (max-width: 640px) {
-  .intlNoticeActions {
-    padding-left: 0;
-  }
-}
-
-.intlCallBtn {
-  font-family: var(--font-sans);
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #FFFFFF;
-  background-color: var(--accent-terracotta);
-  padding: 9px 18px;
-  border-radius: 30px;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(151, 65, 29, 0.2);
-}
-
-.intlCallBtn:hover {
-  background-color: #7d3314;
-  transform: translateY(-1px);
-}
 
 .intlWhatsAppBtn {
   font-family: var(--font-sans);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: #128C7E;
-  background-color: #FFFFFF;
-  border: 1px solid rgba(18, 140, 126, 0.3);
-  padding: 9px 18px;
-  border-radius: 30px;
   text-decoration: none;
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  transition: all 0.2s ease;
+  gap: 5px;
 }
 
 .intlWhatsAppBtn:hover {
-  background-color: #E8F5E9;
-  border-color: #128C7E;
-}
-
-.intlWhatsAppPrimaryBtn {
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #FFFFFF;
-  background-color: #25D366;
-  padding: 10px 22px;
-  border-radius: 30px;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(37, 211, 102, 0.25);
-}
-
-.intlWhatsAppPrimaryBtn:hover {
-  background-color: #20bd5a;
-  transform: translateY(-1px);
-}
-
-.intlPhoneFallback {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-sans);
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.intlPhoneFallback strong {
-  color: var(--text-primary);
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  text-decoration: underline;
 }
 
 /* Delivery Option Card (Bespoke Transport Slip) */

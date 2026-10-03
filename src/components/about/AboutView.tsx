@@ -186,31 +186,6 @@ export function AboutView() {
               className={styles.heroBannerImage}
             />
           </motion.div>
-
-          {/* Architectural Trust Metrics Strip */}
-          <motion.div
-            className={styles.statsRow}
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: luxuryEase, delay: 0.32 }}
-          >
-            <div className={styles.statItem}>
-              <span className={styles.statValue}>100%</span>
-              <span className={styles.statLabel}>Made to Order</span>
-            </div>
-            <div className={styles.statItem}>
-              <span className={styles.statValue}>48 Hours</span>
-              <span className={styles.statLabel}>Natural Sprouting</span>
-            </div>
-            <div className={styles.statItem}>
-              <span className={styles.statValue}>0%</span>
-              <span className={styles.statLabel}>Preservatives</span>
-            </div>
-            <div className={styles.statItem}>
-              <span className={styles.statValue}>6 Months</span>
-              <span className={styles.statLabel}>Natural Freshness</span>
-            </div>
-          </motion.div>
         </div>
       </section>
 

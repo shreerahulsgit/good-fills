@@ -18,7 +18,7 @@
    ======================================================== */
 .heroSection {
   position: relative;
-  padding: var(--space-10) 0 var(--space-16);
+  padding: var(--space-8) 0 var(--space-12);
   background-color: var(--bg-canvas);
   border-bottom: 1px solid var(--border-hairline);
 }
@@ -95,7 +95,7 @@
   width: 100%;
   aspect-ratio: 16 / 9;
   max-height: 640px;
-  margin: 0 0 var(--space-8);
+  margin: 0;
   position: relative;
   overflow: hidden;
   border-radius: 0;

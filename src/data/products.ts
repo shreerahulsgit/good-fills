@@ -490,6 +490,37 @@ export const PRODUCTS: Product[] = [
     images: PRODUCT_ASSETS['filter-coffee-powder'],
     fssaiCompliant: true,
     madeToOrder: true
+  },
+  // 17. Live Gateway Verification Sample (₹1 Test Item)
+  {
+    id: 'prod-live-test',
+    slug: 'live-test-sample',
+    name: 'Atelier ₹1 Live Test Sample',
+    category: 'nutrition-wellness',
+    price: 1,
+    packSize: '1 Test Unit',
+    productWeightGrams: 0,
+    shortDescription: 'Temporary ₹1 verification sample to test live UPI payment and settlement.',
+    description: 'A temporary ₹1 test creation for verifying live Razorpay payment processing, webhook delivery, and instant bank settlement.',
+    ingredients: ['100% Quality Sprouted Grain'],
+    ingredientsVerified: true,
+    benefits: [
+      'Instant ₹1 live UPI gateway verification',
+      'Zero shipping charge test',
+      'Confirms live bank settlement'
+    ],
+    storageInstructions: 'Atelier test creation.',
+    shelfLife: 'Immediate',
+    availability: 'available',
+    featured: true,
+    images: {
+      primary: '/logo.png',
+      packaging: '/logo.png',
+      detail: '/logo.png',
+      lifestyle: '/logo.png'
+    },
+    fssaiCompliant: true,
+    madeToOrder: true
   }
 ];
 

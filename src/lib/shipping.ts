@@ -17,7 +17,7 @@ export function calculateDomesticShipping(totalWeightGrams: number): ShippingCal
       totalWeightGrams: 0,
       totalWeightKg: 0,
       shippingCost: 0,
-      slabDescription: 'Cart empty',
+      slabDescription: 'Complimentary (₹0)',
       courierName: 'DTDC',
       estimatedDelivery: '2–4 days'
     };

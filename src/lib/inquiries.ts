@@ -16,40 +16,7 @@ export interface Inquiry {
 const DATA_DIR = path.join(process.cwd(), '.data');
 const INQUIRIES_FILE = path.join(DATA_DIR, 'inquiries.json');
 
-const SEED_INQUIRIES: Inquiry[] = [
-  {
-    id: 'INQ-4821',
-    createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-    name: 'Kavya Ramesh',
-    phone: '+91 98450 11223',
-    email: 'kavya.ramesh@gmail.com',
-    category: 'Infant Nutrition & Weaning',
-    orderId: 'ORD-5658',
-    message: 'Can I request baby cereal mix ground slightly finer for a 6-month-old infant? We are introducing solids this week.',
-    status: 'new',
-  },
-  {
-    id: 'INQ-3914',
-    createdAt: new Date(Date.now() - 14 * 3600 * 1000).toISOString(),
-    name: 'Ananya Deshmukh',
-    phone: '+91 97110 44556',
-    email: 'ananya.d@outlook.com',
-    category: 'Custom Milling Request',
-    message: 'Looking to order 15 boxes of Sprouted Ragi Porridge and Kids Herbal Bath powder as traditional baby shower gifts.',
-    status: 'new',
-  },
-  {
-    id: 'INQ-2109',
-    createdAt: new Date(Date.now() - 26 * 3600 * 1000).toISOString(),
-    name: 'Rajesh Subramanian',
-    phone: '+91 94432 78901',
-    email: 'rajesh.sub@yahoo.co.in',
-    category: 'Order Status & DTDC Courier',
-    orderId: 'ORD-3595',
-    message: 'Inquiring about delivery ETA in Chennai for our postpartum ubtan batch. Kindly share DTDC tracking update.',
-    status: 'replied',
-  },
-];
+const SEED_INQUIRIES: Inquiry[] = [];
 
 let inquiriesCache: Inquiry[] | null = null;
 
@@ -74,7 +41,7 @@ function loadInquiries(): Inquiry[] {
     if (fs.existsSync(INQUIRIES_FILE)) {
       const raw = fs.readFileSync(INQUIRIES_FILE, 'utf8');
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
         inquiriesCache = parsed;
         return inquiriesCache;
       }
@@ -83,10 +50,14 @@ function loadInquiries(): Inquiry[] {
     console.error('Error loading inquiries from disk:', err);
   }
 
-  // Seed default inquiries
-  inquiriesCache = [...SEED_INQUIRIES];
+  inquiriesCache = [];
   persistInquiries(inquiriesCache);
   return inquiriesCache;
+}
+
+export function clearAllInquiries(): void {
+  inquiriesCache = [];
+  persistInquiries([]);
 }
 
 function persistInquiries(list: Inquiry[]) {

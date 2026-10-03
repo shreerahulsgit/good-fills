@@ -704,22 +704,10 @@ export function AdminDispatchView() {
 
   // Monthly Breakdown for Bar Chart
   const monthlyBarData = useMemo(() => {
-    const baseline = [
-      { month: 'Jan', monthFull: 'January', orders: 14, dispatched: 12 },
-      { month: 'Feb', monthFull: 'February', orders: 20, dispatched: 18 },
-      { month: 'Mar', monthFull: 'March', orders: 28, dispatched: 26 },
-      { month: 'Apr', monthFull: 'April', orders: 36, dispatched: 32 },
-      { month: 'May', monthFull: 'May', orders: 48, dispatched: 44 },
-      { month: 'Jun', monthFull: 'June', orders: 62, dispatched: 58 },
-      { month: 'Jul', monthFull: 'July', orders: 50, dispatched: 46 },
-      { month: 'Aug', monthFull: 'August', orders: 42, dispatched: 38 },
-      { month: 'Sep', monthFull: 'September', orders: 35, dispatched: 32 },
-      { month: 'Oct', monthFull: 'October', orders: 0, dispatched: 0 },
-      { month: 'Nov', monthFull: 'November', orders: 40, dispatched: 35 },
-      { month: 'Dec', monthFull: 'December', orders: 54, dispatched: 50 },
-    ];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const fullNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-    // Compute actual orders & dispatches for current year
+    // Compute actual orders & dispatches for each month
     const counts: Record<number, { orders: number; dispatched: number }> = {};
     orders.forEach((o) => {
       const d = new Date(o.createdAt);
@@ -732,17 +720,12 @@ export function AdminDispatchView() {
       }
     });
 
-    return baseline.map((b, idx) => {
-      const real = counts[idx];
-      if (real && real.orders > 0) {
-        return {
-          ...b,
-          orders: real.orders,
-          dispatched: real.dispatched,
-        };
-      }
-      return b;
-    });
+    return monthNames.map((month, idx) => ({
+      month,
+      monthFull: fullNames[idx],
+      orders: counts[idx]?.orders || 0,
+      dispatched: counts[idx]?.dispatched || 0,
+    }));
   }, [orders]);
 
   // Relative Date Helper
@@ -1155,16 +1138,17 @@ export function AdminDispatchView() {
 
                 {/* Responsive SVG Bar Chart */}
                 {(() => {
-                  const maxVal = Math.max(...monthlyBarData.map((m) => Math.max(m.orders, m.dispatched)), 10);
-                  const ceiling = Math.ceil(maxVal * 1.25);
-                  const activeTooltipIdx = hoveredBarIdx !== null ? hoveredBarIdx : 9; // Oct by default
+                  const maxVal = Math.max(...monthlyBarData.map((m) => Math.max(m.orders, m.dispatched)), 5);
+                  const ceiling = Math.max(Math.ceil(maxVal * 1.25), 5);
+                  const currentMonthIdx = new Date().getMonth();
+                  const activeTooltipIdx = hoveredBarIdx !== null ? hoveredBarIdx : currentMonthIdx;
                   const activeItem = monthlyBarData[activeTooltipIdx] || monthlyBarData[0];
                   const slotWidth = 500 / 12; // 41.67
                   const activeSlotX = 20 + activeTooltipIdx * slotWidth;
                   const activeCenterX = activeSlotX + slotWidth / 2;
                   const activeMinY = Math.min(
-                    175 - Math.max(4, (activeItem.orders / ceiling) * 135),
-                    175 - Math.max(3, (activeItem.dispatched / ceiling) * 135)
+                    175 - (activeItem.orders > 0 ? Math.max(4, (activeItem.orders / ceiling) * 135) : 0),
+                    175 - (activeItem.dispatched > 0 ? Math.max(3, (activeItem.dispatched / ceiling) * 135) : 0)
                   );
 
                   return (
@@ -1202,10 +1186,10 @@ export function AdminDispatchView() {
                           const greenX = slotX + offset;
                           const blueX = greenX + barW + gap;
 
-                          const greenH = Math.max(4, Math.round((m.orders / ceiling) * 135));
+                          const greenH = m.orders > 0 ? Math.max(4, Math.round((m.orders / ceiling) * 135)) : 0;
                           const greenY = 175 - greenH;
 
-                          const blueH = Math.max(3, Math.round((m.dispatched / ceiling) * 135));
+                          const blueH = m.dispatched > 0 ? Math.max(3, Math.round((m.dispatched / ceiling) * 135)) : 0;
                           const blueY = 175 - blueH;
 
                           const isHovered = hoveredBarIdx === i;
@@ -1226,38 +1210,42 @@ export function AdminDispatchView() {
                               />
 
                               {/* Green Bar: Orders Received */}
-                              <rect
-                                x={greenX}
-                                y={greenY}
-                                width={barW}
-                                height={greenH}
-                                fill="url(#greenBarGrad)"
-                                rx="1"
-                                style={{
-                                  transition: 'all 0.2s ease',
-                                  opacity: hoveredBarIdx === null || isHovered ? 1 : 0.65,
-                                  cursor: 'pointer',
-                                }}
-                                onMouseEnter={() => setHoveredBarIdx(i)}
-                                onMouseLeave={() => setHoveredBarIdx(null)}
-                              />
+                              {greenH > 0 && (
+                                <rect
+                                  x={greenX}
+                                  y={greenY}
+                                  width={barW}
+                                  height={greenH}
+                                  fill="url(#greenBarGrad)"
+                                  rx="1"
+                                  style={{
+                                    transition: 'all 0.2s ease',
+                                    opacity: hoveredBarIdx === null || isHovered ? 1 : 0.65,
+                                    cursor: 'pointer',
+                                  }}
+                                  onMouseEnter={() => setHoveredBarIdx(i)}
+                                  onMouseLeave={() => setHoveredBarIdx(null)}
+                                />
+                              )}
 
                               {/* Blue Bar: DTDC Dispatched */}
-                              <rect
-                                x={blueX}
-                                y={blueY}
-                                width={barW}
-                                height={blueH}
-                                fill="url(#blueBarGrad)"
-                                rx="1"
-                                style={{
-                                  transition: 'all 0.2s ease',
-                                  opacity: hoveredBarIdx === null || isHovered ? 1 : 0.65,
-                                  cursor: 'pointer',
-                                }}
-                                onMouseEnter={() => setHoveredBarIdx(i)}
-                                onMouseLeave={() => setHoveredBarIdx(null)}
-                              />
+                              {blueH > 0 && (
+                                <rect
+                                  x={blueX}
+                                  y={blueY}
+                                  width={barW}
+                                  height={blueH}
+                                  fill="url(#blueBarGrad)"
+                                  rx="1"
+                                  style={{
+                                    transition: 'all 0.2s ease',
+                                    opacity: hoveredBarIdx === null || isHovered ? 1 : 0.65,
+                                    cursor: 'pointer',
+                                  }}
+                                  onMouseEnter={() => setHoveredBarIdx(i)}
+                                  onMouseLeave={() => setHoveredBarIdx(null)}
+                                />
+                              )}
                             </g>
                           );
                         })}
@@ -1314,39 +1302,45 @@ export function AdminDispatchView() {
                 </div>
 
                 <div className={styles.recentOrdersList}>
-                  {analyticsData.recentOrders.map((o) => {
-                    const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
-                    const firstItem = o.items?.[0]?.product.name || 'Stone-Milled Creation';
-                    return (
-                      <div key={o.id} className={styles.recentOrderItem}>
-                        <div className={styles.recentItemThumb}>
-                          <Package size={17} color="var(--accent-terracotta)" />
-                        </div>
-                        <div className={styles.recentItemInfo}>
-                          <div className={styles.recentItemName}>{o.customerName}</div>
-                          <div className={styles.recentItemSub}>
-                            {firstItem} • {getRelativeDateLabel(o.createdAt)}
+                  {analyticsData.recentOrders.length === 0 ? (
+                    <div style={{ padding: '36px 16px', textAlign: 'center', color: '#9CA3AF', fontSize: '0.82rem' }}>
+                      No orders placed yet. Live orders will appear here automatically.
+                    </div>
+                  ) : (
+                    analyticsData.recentOrders.map((o) => {
+                      const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
+                      const firstItem = o.items?.[0]?.product.name || 'Stone-Milled Creation';
+                      return (
+                        <div key={o.id} className={styles.recentOrderItem}>
+                          <div className={styles.recentItemThumb}>
+                            <Package size={17} color="var(--accent-terracotta)" />
+                          </div>
+                          <div className={styles.recentItemInfo}>
+                            <div className={styles.recentItemName}>{o.customerName}</div>
+                            <div className={styles.recentItemSub}>
+                              {firstItem} • {getRelativeDateLabel(o.createdAt)}
+                            </div>
+                          </div>
+                          <div className={styles.recentItemRight}>
+                            <div className={styles.recentItemPrice}>₹{o.total}</div>
+                            <span
+                              className={
+                                u === 'Delivered'
+                                  ? styles.pillDeliveredSmall
+                                  : u === 'Shipped' || u === 'Out for Delivery'
+                                  ? styles.pillShippedSmall
+                                  : u === 'Processing'
+                                  ? styles.pillProcessingSmall
+                                  : styles.pillConfirmedSmall
+                              }
+                            >
+                              {u === 'Processing' ? 'Packed' : u}
+                            </span>
                           </div>
                         </div>
-                        <div className={styles.recentItemRight}>
-                          <div className={styles.recentItemPrice}>₹{o.total}</div>
-                          <span
-                            className={
-                              u === 'Delivered'
-                                ? styles.pillDeliveredSmall
-                                : u === 'Shipped' || u === 'Out for Delivery'
-                                ? styles.pillShippedSmall
-                                : u === 'Processing'
-                                ? styles.pillProcessingSmall
-                                : styles.pillConfirmedSmall
-                            }
-                          >
-                            {u === 'Processing' ? 'Packed' : u}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
 
                 <button
@@ -1382,60 +1376,68 @@ export function AdminDispatchView() {
                       </tr>
                     </thead>
                     <tbody>
-                      {orders
-                        .filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus) !== 'Delivered')
-                        .slice(0, 4)
-                        .map((o) => {
-                          const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
-                          const next = getNextStatusConfig(u);
-                          return (
-                            <tr key={o.id}>
-                              <td>
-                                <strong style={{ color: 'var(--accent-terracotta)' }}>#{o.id}</strong>
-                                <div style={{ fontSize: '0.72rem', color: '#6B7280' }}>
-                                  {o.items?.length || 1} items • ₹{o.total}
-                                </div>
-                              </td>
-                              <td>
-                                <div style={{ fontWeight: 600, color: '#111827' }}>{o.customerName}</div>
-                                <div style={{ fontSize: '0.72rem', color: '#9CA3AF' }}>{o.shippingAddress?.city}</div>
-                              </td>
-                              <td>
-                                <span
-                                  className={
-                                    u === 'Shipped'
-                                      ? styles.pillShippedSmall
-                                      : u === 'Processing'
-                                      ? styles.pillProcessingSmall
-                                      : styles.pillConfirmedSmall
-                                  }
-                                >
-                                  {getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus)}
-                                </span>
-                              </td>
-                              <td>
-                                {next ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleQuickAdvance(o.id, next.nextStatus)}
-                                    className={`${styles.oneClickNextBtn} ${
-                                      next.colorScheme === 'amber'
-                                        ? styles.nextBtnAmber
-                                        : next.colorScheme === 'blue'
-                                        ? styles.nextBtnBlue
-                                        : styles.nextBtnGreen
-                                    }`}
-                                    style={{ padding: '4px 9px', fontSize: '0.7rem' }}
+                      {orders.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus) !== 'Delivered').length === 0 ? (
+                        <tr>
+                          <td colSpan={4} style={{ textAlign: 'center', padding: '32px 16px', color: '#9CA3AF', fontSize: '0.82rem' }}>
+                            No actionable orders in the queue. All orders are fulfilled or pending placement.
+                          </td>
+                        </tr>
+                      ) : (
+                        orders
+                          .filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus) !== 'Delivered')
+                          .slice(0, 4)
+                          .map((o) => {
+                            const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
+                            const next = getNextStatusConfig(u);
+                            return (
+                              <tr key={o.id}>
+                                <td>
+                                  <strong style={{ color: 'var(--accent-terracotta)' }}>#{o.id}</strong>
+                                  <div style={{ fontSize: '0.72rem', color: '#6B7280' }}>
+                                    {o.items?.length || 1} items • ₹{o.total}
+                                  </div>
+                                </td>
+                                <td>
+                                  <div style={{ fontWeight: 600, color: '#111827' }}>{o.customerName}</div>
+                                  <div style={{ fontSize: '0.72rem', color: '#9CA3AF' }}>{o.shippingAddress?.city}</div>
+                                </td>
+                                <td>
+                                  <span
+                                    className={
+                                      u === 'Shipped'
+                                        ? styles.pillShippedSmall
+                                        : u === 'Processing'
+                                        ? styles.pillProcessingSmall
+                                        : styles.pillConfirmedSmall
+                                    }
                                   >
-                                    <span>{next.label}</span>
-                                  </button>
-                                ) : (
-                                  <span style={{ fontSize: '0.72rem', color: '#065F46', fontWeight: 700 }}>✓ Done</span>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
+                                    {getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus)}
+                                  </span>
+                                </td>
+                                <td>
+                                  {next ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleQuickAdvance(o.id, next.nextStatus)}
+                                      className={`${styles.oneClickNextBtn} ${
+                                        next.colorScheme === 'amber'
+                                          ? styles.nextBtnAmber
+                                          : next.colorScheme === 'blue'
+                                          ? styles.nextBtnBlue
+                                          : styles.nextBtnGreen
+                                      }`}
+                                      style={{ padding: '4px 9px', fontSize: '0.7rem' }}
+                                    >
+                                      <span>{next.label}</span>
+                                    </button>
+                                  ) : (
+                                    <span style={{ fontSize: '0.72rem', color: '#065F46', fontWeight: 700 }}>✓ Done</span>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })
+                      )}
                     </tbody>
                   </table>
                 </div>

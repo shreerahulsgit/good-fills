@@ -96,6 +96,23 @@ function persistWebhookEvents() {
   }
 }
 
+export function clearAllOrders(): void {
+  initStore();
+  ordersCache.clear();
+  paymentsCache.clear();
+  processedWebhookEvents.clear();
+  persistOrders();
+  persistWebhookEvents();
+}
+
+export function reloadOrdersFromDisk(): void {
+  ordersCache.clear();
+  paymentsCache.clear();
+  processedWebhookEvents.clear();
+  isInitialized = false;
+  initStore();
+}
+
 export function generateOrderId(): string {
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
   return `ORD-${randomSuffix}`;

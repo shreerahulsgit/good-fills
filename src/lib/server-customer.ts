@@ -49,6 +49,10 @@ function saveCustomers(customers: Record<string, CustomerUser>) {
   }
 }
 
+export function clearAllCustomers(): void {
+  saveCustomers({});
+}
+
 /**
  * Retrieves a customer profile by email or user ID, along with their past orders.
  */

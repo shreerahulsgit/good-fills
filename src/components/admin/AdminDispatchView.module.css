@@ -469,43 +469,48 @@
 }
 
 .dotGreen {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #2ECC71;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background-color: #10B981;
 }
 
 .dotBlue {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #3498DB;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background-color: #3B82F6;
 }
 
 .svgChartContainer {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 210px;
   margin-top: 10px;
 }
 
 .svgChart {
   width: 100%;
   height: 100%;
+  overflow: visible;
 }
 
 .chartBadgePeak {
   position: absolute;
   background-color: #111827;
   color: #FFFFFF;
-  padding: 4px 8px;
+  padding: 5px 9px;
   font-size: 0.68rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   transform: translate(-50%, -100%);
   pointer-events: none;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border-radius: 0;
+  white-space: nowrap;
+  z-index: 10;
+  transition: left 0.15s ease, top 0.15s ease;
 }
 
 .chartBadgePeak::after {
@@ -519,6 +524,33 @@
   border-color: #111827 transparent transparent transparent;
 }
 
+.barTooltipMonth {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #F3F4F6;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.barTooltipStats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.barTooltipOrders {
+  color: #34D399;
+  font-weight: 700;
+}
+
+.barTooltipDispatched {
+  color: #93C5FD;
+  font-weight: 700;
+}
+
 .chartXLabels {
   display: flex;
   justify-content: space-between;
@@ -526,6 +558,17 @@
   color: #9CA3AF;
   margin-top: 8px;
   padding: 0 6px;
+}
+
+.chartXLabelItem {
+  flex: 1;
+  text-align: center;
+  transition: color 0.15s ease;
+}
+
+.chartXLabelActive {
+  color: #111827;
+  font-weight: 700;
 }
 
 /* RECENT ORDERS PANEL */

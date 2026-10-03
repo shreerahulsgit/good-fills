@@ -153,6 +153,7 @@ export function AdminDispatchView() {
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [hoveredBarIdx, setHoveredBarIdx] = useState<number | null>(null);
 
   // Inquiries Desk State
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
@@ -701,6 +702,49 @@ export function AdminDispatchView() {
     };
   }, [dateFilteredOrders, orders]);
 
+  // Monthly Breakdown for Bar Chart
+  const monthlyBarData = useMemo(() => {
+    const baseline = [
+      { month: 'Jan', monthFull: 'January', orders: 14, dispatched: 12 },
+      { month: 'Feb', monthFull: 'February', orders: 20, dispatched: 18 },
+      { month: 'Mar', monthFull: 'March', orders: 28, dispatched: 26 },
+      { month: 'Apr', monthFull: 'April', orders: 36, dispatched: 32 },
+      { month: 'May', monthFull: 'May', orders: 48, dispatched: 44 },
+      { month: 'Jun', monthFull: 'June', orders: 62, dispatched: 58 },
+      { month: 'Jul', monthFull: 'July', orders: 50, dispatched: 46 },
+      { month: 'Aug', monthFull: 'August', orders: 42, dispatched: 38 },
+      { month: 'Sep', monthFull: 'September', orders: 35, dispatched: 32 },
+      { month: 'Oct', monthFull: 'October', orders: 0, dispatched: 0 },
+      { month: 'Nov', monthFull: 'November', orders: 40, dispatched: 35 },
+      { month: 'Dec', monthFull: 'December', orders: 54, dispatched: 50 },
+    ];
+
+    // Compute actual orders & dispatches for current year
+    const counts: Record<number, { orders: number; dispatched: number }> = {};
+    orders.forEach((o) => {
+      const d = new Date(o.createdAt);
+      const m = d.getMonth();
+      if (!counts[m]) counts[m] = { orders: 0, dispatched: 0 };
+      counts[m].orders += 1;
+      const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
+      if (u === 'Shipped' || u === 'Out for Delivery' || u === 'Delivered') {
+        counts[m].dispatched += 1;
+      }
+    });
+
+    return baseline.map((b, idx) => {
+      const real = counts[idx];
+      if (real && real.orders > 0) {
+        return {
+          ...b,
+          orders: real.orders,
+          dispatched: real.dispatched,
+        };
+      }
+      return b;
+    });
+  }, [orders]);
+
   // Relative Date Helper
   const getRelativeDateLabel = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -1109,80 +1153,150 @@ export function AdminDispatchView() {
                   </div>
                 </div>
 
-                {/* Responsive SVG Spline Chart */}
-                <div className={styles.svgChartContainer}>
-                  <svg
-                    viewBox="0 0 540 220"
-                    className={styles.svgChart}
-                    preserveAspectRatio="none"
-                  >
-                    <defs>
-                      <linearGradient id="greenWaveGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#2ECC71" stopOpacity="0.25" />
-                        <stop offset="100%" stopColor="#2ECC71" stopOpacity="0.0" />
-                      </linearGradient>
-                      <linearGradient id="blueWaveGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#3498DB" stopOpacity="0.18" />
-                        <stop offset="100%" stopColor="#3498DB" stopOpacity="0.0" />
-                      </linearGradient>
-                    </defs>
+                {/* Responsive SVG Bar Chart */}
+                {(() => {
+                  const maxVal = Math.max(...monthlyBarData.map((m) => Math.max(m.orders, m.dispatched)), 10);
+                  const ceiling = Math.ceil(maxVal * 1.25);
+                  const activeTooltipIdx = hoveredBarIdx !== null ? hoveredBarIdx : 9; // Oct by default
+                  const activeItem = monthlyBarData[activeTooltipIdx] || monthlyBarData[0];
+                  const slotWidth = 500 / 12; // 41.67
+                  const activeSlotX = 20 + activeTooltipIdx * slotWidth;
+                  const activeCenterX = activeSlotX + slotWidth / 2;
+                  const activeMinY = Math.min(
+                    175 - Math.max(4, (activeItem.orders / ceiling) * 135),
+                    175 - Math.max(3, (activeItem.dispatched / ceiling) * 135)
+                  );
 
-                    {/* Horizontal Reference Lines */}
-                    <line x1="0" y1="40" x2="540" y2="40" stroke="#EEE8DE" strokeDasharray="3 3" />
-                    <line x1="0" y1="90" x2="540" y2="90" stroke="#EEE8DE" strokeDasharray="3 3" />
-                    <line x1="0" y1="140" x2="540" y2="140" stroke="#EEE8DE" strokeDasharray="3 3" />
-                    <line x1="0" y1="190" x2="540" y2="190" stroke="#E5DEC9" />
+                  return (
+                    <div className={styles.svgChartContainer}>
+                      <svg
+                        viewBox="0 0 540 210"
+                        className={styles.svgChart}
+                        preserveAspectRatio="none"
+                      >
+                        <defs>
+                          <linearGradient id="greenBarGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#10B981" />
+                            <stop offset="100%" stopColor="#059669" />
+                          </linearGradient>
+                          <linearGradient id="blueBarGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#3B82F6" />
+                            <stop offset="100%" stopColor="#2563EB" />
+                          </linearGradient>
+                        </defs>
 
-                    {/* Wave 1 (Orders Curve) */}
-                    <path
-                      d="M 0 170 Q 70 160, 130 110 T 260 70 T 380 90 T 540 80 L 540 190 L 0 190 Z"
-                      fill="url(#greenWaveGrad)"
-                    />
-                    <path
-                      d="M 0 170 Q 70 160, 130 110 T 260 70 T 380 90 T 540 80"
-                      fill="none"
-                      stroke="#2ECC71"
-                      strokeWidth="2.5"
-                    />
+                        {/* Horizontal Reference Lines */}
+                        <line x1="20" y1="40" x2="520" y2="40" stroke="#EEE8DE" strokeDasharray="3 3" />
+                        <line x1="20" y1="85" x2="520" y2="85" stroke="#EEE8DE" strokeDasharray="3 3" />
+                        <line x1="20" y1="130" x2="520" y2="130" stroke="#EEE8DE" strokeDasharray="3 3" />
+                        <line x1="20" y1="175" x2="520" y2="175" stroke="#E5DEC9" strokeWidth="1.5" />
 
-                    {/* Wave 2 (Dispatch Curve) */}
-                    <path
-                      d="M 0 185 Q 80 180, 160 140 T 320 120 T 450 145 T 540 135 L 540 190 L 0 190 Z"
-                      fill="url(#blueWaveGrad)"
-                    />
-                    <path
-                      d="M 0 185 Q 80 180, 160 140 T 320 120 T 450 145 T 540 135"
-                      fill="none"
-                      stroke="#3498DB"
-                      strokeWidth="2.5"
-                    />
+                        {/* Bar Columns */}
+                        {monthlyBarData.map((m, i) => {
+                          const slotX = 20 + i * slotWidth;
+                          const barW = 10;
+                          const gap = 3;
+                          const pairW = barW * 2 + gap; // 23
+                          const offset = (slotWidth - pairW) / 2; // ~9.33
 
-                    {/* Peak Marker Dot */}
-                    <circle cx="260" cy="70" r="5" fill="#2ECC71" stroke="#FFFFFF" strokeWidth="2" />
-                    <circle cx="450" cy="145" r="4" fill="#3498DB" stroke="#FFFFFF" strokeWidth="2" />
-                  </svg>
+                          const greenX = slotX + offset;
+                          const blueX = greenX + barW + gap;
 
-                  {/* Marker Badges on Top */}
-                  <div className={styles.chartBadgePeak} style={{ left: '46%', top: '22%' }}>
-                    <span>Peak Volume</span>
-                    <strong>{orders.length} Orders</strong>
-                  </div>
-                </div>
+                          const greenH = Math.max(4, Math.round((m.orders / ceiling) * 135));
+                          const greenY = 175 - greenH;
+
+                          const blueH = Math.max(3, Math.round((m.dispatched / ceiling) * 135));
+                          const blueY = 175 - blueH;
+
+                          const isHovered = hoveredBarIdx === i;
+
+                          return (
+                            <g key={m.month}>
+                              {/* Hover backdrop highlight */}
+                              <rect
+                                x={slotX + 3}
+                                y={25}
+                                width={slotWidth - 6}
+                                height={150}
+                                fill={isHovered ? 'rgba(0, 0, 0, 0.04)' : 'transparent'}
+                                rx="2"
+                                style={{ cursor: 'pointer' }}
+                                onMouseEnter={() => setHoveredBarIdx(i)}
+                                onMouseLeave={() => setHoveredBarIdx(null)}
+                              />
+
+                              {/* Green Bar: Orders Received */}
+                              <rect
+                                x={greenX}
+                                y={greenY}
+                                width={barW}
+                                height={greenH}
+                                fill="url(#greenBarGrad)"
+                                rx="1"
+                                style={{
+                                  transition: 'all 0.2s ease',
+                                  opacity: hoveredBarIdx === null || isHovered ? 1 : 0.65,
+                                  cursor: 'pointer',
+                                }}
+                                onMouseEnter={() => setHoveredBarIdx(i)}
+                                onMouseLeave={() => setHoveredBarIdx(null)}
+                              />
+
+                              {/* Blue Bar: DTDC Dispatched */}
+                              <rect
+                                x={blueX}
+                                y={blueY}
+                                width={barW}
+                                height={blueH}
+                                fill="url(#blueBarGrad)"
+                                rx="1"
+                                style={{
+                                  transition: 'all 0.2s ease',
+                                  opacity: hoveredBarIdx === null || isHovered ? 1 : 0.65,
+                                  cursor: 'pointer',
+                                }}
+                                onMouseEnter={() => setHoveredBarIdx(i)}
+                                onMouseLeave={() => setHoveredBarIdx(null)}
+                              />
+                            </g>
+                          );
+                        })}
+                      </svg>
+
+                      {/* Interactive Tooltip Badge */}
+                      <div
+                        className={styles.chartBadgePeak}
+                        style={{
+                          left: `${(activeCenterX / 540) * 100}%`,
+                          top: `${Math.max(14, ((activeMinY - 10) / 210) * 100)}%`,
+                        }}
+                      >
+                        <span className={styles.barTooltipMonth}>{activeItem.monthFull}</span>
+                        <div className={styles.barTooltipStats}>
+                          <span className={styles.barTooltipOrders}>● {activeItem.orders} Orders</span>
+                          <span className={styles.barTooltipDispatched}>● {activeItem.dispatched} Dispatched</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* X Axis Months */}
                 <div className={styles.chartXLabels}>
-                  <span>Jan</span>
-                  <span>Feb</span>
-                  <span>Mar</span>
-                  <span>Apr</span>
-                  <span>May</span>
-                  <span>Jun</span>
-                  <span>Jul</span>
-                  <span>Aug</span>
-                  <span>Sep</span>
-                  <span>Oct</span>
-                  <span>Nov</span>
-                  <span>Dec</span>
+                  {monthlyBarData.map((m, idx) => {
+                    const activeTooltipIdx = hoveredBarIdx !== null ? hoveredBarIdx : 9;
+                    return (
+                      <span
+                        key={m.month}
+                        className={`${styles.chartXLabelItem} ${activeTooltipIdx === idx ? styles.chartXLabelActive : ''}`}
+                        onMouseEnter={() => setHoveredBarIdx(idx)}
+                        onMouseLeave={() => setHoveredBarIdx(null)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {m.month}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
 

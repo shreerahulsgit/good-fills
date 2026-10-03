@@ -9,6 +9,7 @@ import { useCustomerAuth } from '@/lib/customer-auth-context';
 import { CATEGORIES } from '@/data/products';
 import { SearchModal } from '@/components/navigation/SearchModal';
 import { CartDrawer } from '@/components/cart/CartDrawer';
+import { InternationalDeliveryModal } from '@/components/common/InternationalDeliveryModal';
 import {
   ShoppingBag,
   Search,
@@ -24,6 +25,7 @@ import {
   Truck,
   MessageCircle,
   Sparkles,
+  Globe,
 } from 'lucide-react';
 import styles from './SiteHeader.module.css';
 
@@ -39,6 +41,20 @@ export function SiteHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+  const [isIntlModalOpen, setIsIntlModalOpen] = useState(false);
+
+  // Auto-open international delivery modal once per session
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hasDismissed = sessionStorage.getItem('gf_intl_popup_dismissed');
+      if (!hasDismissed) {
+        const timer = setTimeout(() => {
+          setIsIntlModalOpen(true);
+        }, 3200);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
 
   const shopDropdownTimerRef = useRef<NodeJS.Timeout | null>(null);
   const accountDropdownRef = useRef<HTMLDivElement>(null);
@@ -129,18 +145,14 @@ export function SiteHeader() {
           <div className={styles.announcementContainer}>
             <span className={styles.announcementText}>
               ✈️ <strong>International Delivery Available</strong> — Custom DTDC courier rates for overseas orders.{' '}
-              <a
-                href="https://wa.me/919742068899?text=Hello%20Good%20Fills!%20I%20would%20like%20to%20place%20an%20international%20order%20for%20delivery%20outside%20India."
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => setIsIntlModalOpen(true)}
                 className={styles.announcementLink}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
               >
-                Chat on WhatsApp
-              </a>{' '}
-              or call{' '}
-              <a href="tel:+919742068899" className={styles.announcementLink}>
-                +91 97420 68899
-              </a>
+                Learn more &amp; order &rarr;
+              </button>
             </span>
           </div>
         </aside>
@@ -559,6 +571,30 @@ export function SiteHeader() {
                   </div>
                   <ArrowRight size={15} color="#27ae60" style={{ flexShrink: 0 }} />
                 </a>
+
+                {/* International Delivery Popup Trigger */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsIntlModalOpen(true);
+                  }}
+                  className={styles.drawerConciergeCard}
+                  style={{ marginTop: '8px', border: '1px solid rgba(151, 65, 29, 0.2)', backgroundColor: '#FAF6F0' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Globe size={18} color="var(--accent-terracotta)" style={{ flexShrink: 0 }} />
+                    <div style={{ textAlign: 'left' }}>
+                      <div className={styles.drawerConciergeTitle} style={{ color: 'var(--text-primary)' }}>
+                        International Delivery
+                      </div>
+                      <div className={styles.drawerConciergeSubtitle} style={{ color: 'var(--text-muted)' }}>
+                        Custom DTDC worldwide courier
+                      </div>
+                    </div>
+                  </div>
+                  <ArrowRight size={15} color="var(--accent-terracotta)" style={{ flexShrink: 0 }} />
+                </button>
               </div>
 
               {/* Drawer Footer: Sign Out (if logged in) or Sign In (if guest) */}
@@ -595,8 +631,9 @@ export function SiteHeader() {
         )}
       </AnimatePresence>
 
-      {/* Embedded Search Modal and Cart Drawer */}
+      {/* Embedded Modals & Cart Drawer */}
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <InternationalDeliveryModal isOpen={isIntlModalOpen} onClose={() => setIsIntlModalOpen(false)} />
       <CartDrawer />
     </>
   );

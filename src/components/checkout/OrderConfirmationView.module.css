@@ -349,6 +349,29 @@
 .shopMoreBtn:hover {
   background-color: var(--bg-surface);
   border-color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.invoiceBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #97411d;
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 14px rgba(151, 65, 29, 0.25);
+}
+
+.invoiceBtn:hover {
+  background-color: #7f3414;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(151, 65, 29, 0.35);
 }
 
 @media (max-width: 640px) {
@@ -370,6 +393,7 @@
     width: 100%;
   }
 
+  .invoiceBtn,
   .whatsappConfirmBtn,
   .shopMoreBtn {
     width: 100%;

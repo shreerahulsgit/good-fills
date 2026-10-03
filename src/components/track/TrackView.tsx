@@ -22,7 +22,8 @@ import {
   RefreshCw,
   Box,
   Sparkles,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 import { TrackingTelemetryResult } from '@/lib/tracking';
 import styles from './TrackView.module.css';
@@ -255,6 +256,27 @@ export function TrackView() {
                   )}
                 </div>
                 <div className={styles.statusHeaderRight}>
+                  <Link
+                    href={`/invoice/${activeOrder.orderId}`}
+                    target="_blank"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      color: 'var(--accent-terracotta)',
+                      textDecoration: 'none',
+                      marginRight: '12px',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      backgroundColor: 'rgba(151, 65, 29, 0.08)'
+                    }}
+                    title="View & Download Official Invoice"
+                  >
+                    <FileText size={12} />
+                    <span>Official Invoice</span>
+                  </Link>
                   <span className={styles.awbBadgeText}>
                     DTDC AWB: <strong>{activeOrder.courier.awbNumber}</strong>
                   </span>

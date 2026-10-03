@@ -37,7 +37,8 @@ import {
   Store,
   DollarSign,
   TrendingDown,
-  PieChart as PieChartIcon
+  PieChart as PieChartIcon,
+  Printer
 } from 'lucide-react';
 import { Order, OrderStatus, ShipmentStatus } from '@/types';
 import { PRODUCTS } from '@/data/products';
@@ -1910,6 +1911,15 @@ export function AdminDispatchView() {
 
                             <td style={{ textAlign: 'right' }}>
                               <div className={styles.tableActionsRow}>
+                                <Link
+                                  href={`/invoice/${o.id}`}
+                                  target="_blank"
+                                  className={styles.actionIconBtn}
+                                  title="Print Official Invoice / Packing Slip"
+                                >
+                                  <Printer size={13} color="#97411d" />
+                                </Link>
+
                                 <a
                                   href={getWhatsAppLink(o)}
                                   target="_blank"
@@ -2122,6 +2132,15 @@ export function AdminDispatchView() {
                                 <MessageCircle size={15} />
                                 <span>WhatsApp</span>
                               </a>
+
+                              <Link
+                                href={`/invoice/${o.id}`}
+                                target="_blank"
+                                className={styles.btnTrackMobile}
+                                title="Print Official Invoice / Packing Slip"
+                              >
+                                <Printer size={14} color="#97411d" />
+                              </Link>
 
                               <Link
                                 href={`/track?id=${o.id}`}

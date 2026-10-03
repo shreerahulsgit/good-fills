@@ -12,6 +12,7 @@ import {
   Calendar,
   CreditCard,
   Package,
+  FileText,
 } from 'lucide-react';
 import { Order } from '@/types';
 import { getOrderById, saveOrder } from '@/lib/orders';
@@ -279,6 +280,15 @@ export function OrderConfirmationView({ orderId }: OrderConfirmationViewProps) {
 
           {/* Action CTAs */}
           <div className={styles.actionsRow}>
+            <Link
+              href={`/invoice/${encodeURIComponent(order ? order.id : orderId)}`}
+              target="_blank"
+              className={styles.invoiceBtn}
+            >
+              <FileText size={16} />
+              <span>Download Official Invoice (PDF)</span>
+            </Link>
+
             <a
               href={`https://wa.me/91${atelierPhone}?text=${waText}`}
               target="_blank"

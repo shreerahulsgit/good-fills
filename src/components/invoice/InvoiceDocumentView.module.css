@@ -1,0 +1,441 @@
+.pageCanvas {
+  min-height: 100vh;
+  background-color: #f7f5f0;
+  padding: 40px 20px 80px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #2b2523;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Actions Header Bar (Visible on screen, hidden on print) */
+.actionsBar {
+  max-width: 820px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #786b66;
+  text-decoration: none;
+  background: #ffffff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #e5dfd7;
+  transition: all 0.2s ease;
+}
+
+.backBtn:hover {
+  color: #97411d;
+  border-color: #97411d;
+  background: #faf7f2;
+}
+
+.actionBtnsRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.printBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #97411d;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(151, 65, 29, 0.25);
+  transition: all 0.2s ease;
+}
+
+.printBtn:hover {
+  background: #803415;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(151, 65, 29, 0.35);
+}
+
+/* A4 Printable Sheet Container */
+.invoiceSheet {
+  max-width: 820px;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  border: 1px solid #ebe5dc;
+  padding: 48px 52px;
+  box-sizing: border-box;
+}
+
+/* Top Header */
+.invoiceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 28px;
+  border-bottom: 2px solid #f0eae1;
+  gap: 24px;
+}
+
+.brandCol {
+  flex: 1;
+}
+
+.brandLogo {
+  height: 52px;
+  width: auto;
+  max-width: 220px;
+  object-fit: contain;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.brandTagline {
+  font-size: 0.85rem;
+  color: #97411d;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.atelierAddress {
+  font-size: 0.82rem;
+  color: #6c635d;
+  line-height: 1.45;
+}
+
+.metaCol {
+  text-align: right;
+}
+
+.invoiceTitle {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #2b2523;
+  letter-spacing: 0.02em;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+}
+
+.invoiceNumber {
+  font-family: monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #97411d;
+  margin-bottom: 8px;
+}
+
+.metaRow {
+  font-size: 0.82rem;
+  color: #6c635d;
+  margin-bottom: 4px;
+}
+
+.statusPillPaid {
+  display: inline-block;
+  background: #dcfce7;
+  color: #15803d;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+/* Two-column Customer Details */
+.partySection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  padding: 24px 0;
+  border-bottom: 1px solid #f0eae1;
+}
+
+.partyBox {
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.partyLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #97411d;
+  margin-bottom: 8px;
+}
+
+.partyName {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #2b2523;
+  margin-bottom: 4px;
+}
+
+.partyText {
+  color: #554d48;
+}
+
+/* Items Table */
+.itemsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+  font-size: 0.88rem;
+}
+
+.itemsTable th {
+  background: #faf7f2;
+  color: #554d48;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 12px 14px;
+  border-top: 1px solid #ebe5dc;
+  border-bottom: 1px solid #ebe5dc;
+}
+
+.itemsTable td {
+  padding: 14px;
+  border-bottom: 1px solid #f2ede6;
+  color: #38312e;
+}
+
+.itemColDesc {
+  text-align: left;
+}
+
+.itemColQty {
+  text-align: center;
+  width: 70px;
+}
+
+.itemColRate {
+  text-align: right;
+  width: 110px;
+}
+
+.itemColAmount {
+  text-align: right;
+  width: 120px;
+  font-weight: 600;
+}
+
+.itemName {
+  font-weight: 700;
+  color: #2b2523;
+  margin-bottom: 2px;
+}
+
+.itemSub {
+  font-size: 0.76rem;
+  color: #786b66;
+}
+
+/* Summary Grid: Words & QR on left, Calculation on right */
+.summarySection {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 32px;
+  padding-top: 24px;
+  border-bottom: 1px solid #f0eae1;
+  padding-bottom: 28px;
+}
+
+.wordsBox {
+  font-size: 0.85rem;
+}
+
+.wordsLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #786b66;
+  margin-bottom: 4px;
+}
+
+.wordsText {
+  font-weight: 700;
+  color: #2b2523;
+  font-style: italic;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.qrContainer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #faf7f2;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px dashed #dfd7cc;
+  max-width: 320px;
+}
+
+.qrImage {
+  width: 72px;
+  height: 72px;
+  display: block;
+  background: #fff;
+  padding: 2px;
+  border-radius: 4px;
+}
+
+.qrTextTitle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #2b2523;
+  margin-bottom: 2px;
+}
+
+.qrTextDesc {
+  font-size: 0.7rem;
+  color: #786b66;
+  line-height: 1.35;
+}
+
+/* Calculation Table */
+.calcTable {
+  width: 100%;
+  font-size: 0.88rem;
+}
+
+.calcRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  color: #554d48;
+}
+
+.calcRowTotal {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  margin-top: 8px;
+  border-top: 2px solid #2b2523;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #97411d;
+}
+
+/* Signature & Seal Block */
+.bottomSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 28px;
+  gap: 24px;
+}
+
+.termsCol {
+  flex: 1;
+  font-size: 0.76rem;
+  color: #786b66;
+  line-height: 1.45;
+}
+
+.termsHeading {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #2b2523;
+  margin-bottom: 4px;
+}
+
+.signatureCol {
+  text-align: center;
+  width: 240px;
+}
+
+.signatureWrap {
+  margin-bottom: 6px;
+  position: relative;
+  display: inline-block;
+}
+
+.signatureSvg {
+  height: 48px;
+  width: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.signatureLine {
+  width: 180px;
+  height: 1px;
+  background: #3a322e;
+  margin: 6px auto;
+}
+
+.signatoryName {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #2b2523;
+  margin: 0;
+}
+
+.signatoryTitle {
+  font-size: 0.74rem;
+  color: #97411d;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.atelierBadge {
+  font-size: 0.68rem;
+  color: #786b66;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+/* Print Optimization */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm 15mm;
+  }
+
+  .pageCanvas {
+    background: #ffffff !important;
+    padding: 0 !important;
+  }
+
+  .actionsBar {
+    display: none !important;
+  }
+
+  .invoiceSheet {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .printBtn,
+  .backBtn {
+    display: none !important;
+  }
+}

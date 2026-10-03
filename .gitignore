@@ -23,6 +23,8 @@
 .env.test.local
 .env.production.local
 rzp-test-key.csv
+rzp-key.csv
+*.csv
 *.pem
 *.key
 *.cert

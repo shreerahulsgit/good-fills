@@ -29,7 +29,12 @@ export function isSandboxAllowed(): boolean {
   if (isProduction()) {
     return false;
   }
-  return process.env.NEXT_PUBLIC_MOCK_PAYMENT_MODE !== 'false';
+  const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
+  if (keyId.startsWith('rzp_live_')) {
+    return false;
+  }
+  const mode = process.env.NEXT_PUBLIC_MOCK_PAYMENT_MODE;
+  return mode !== 'false' && mode !== 'disabled';
 }
 
 export function getRazorpayClient(): Razorpay | null {

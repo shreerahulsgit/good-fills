@@ -112,6 +112,10 @@ export function SiteHeader() {
     return name.trim().split(/\s+/)[0];
   };
 
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <>
       {/* --------------------------------------------------------

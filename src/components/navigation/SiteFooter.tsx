@@ -2,10 +2,17 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ArrowRight, Phone, Mail, Instagram, MessageCircle, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export function SiteFooter() {
+  const pathname = usePathname();
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <footer className="site-footer" id="footer">
       <div className="container footer-outer-container">

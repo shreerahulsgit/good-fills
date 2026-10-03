@@ -27,13 +27,24 @@ import {
   ChevronDown,
   CheckCircle2,
   X,
-  Eye
+  Eye,
+  Menu,
+  ShoppingBag,
+  Users,
+  Grid,
+  Mail,
+  HelpCircle,
+  Store,
+  DollarSign,
+  TrendingDown,
+  PieChart as PieChartIcon
 } from 'lucide-react';
 import { Order, OrderStatus, ShipmentStatus } from '@/types';
+import { PRODUCTS } from '@/data/products';
 import styles from './AdminDispatchView.module.css';
 
 type DatePreset = 'all' | 'today' | 'yesterday' | '7days' | 'month' | 'custom';
-type ViewMode = 'orders' | 'analytics';
+type SidebarTab = 'dashboard' | 'orders' | 'products' | 'inquiries';
 type ManifestLayout = 'table' | 'cards';
 type SortOption = 'newest' | 'oldest' | 'highest' | 'lowest' | 'name';
 
@@ -126,12 +137,15 @@ export function AdminDispatchView() {
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentView, setCurrentView] = useState<ViewMode>('orders');
+  
+  // Navigation: Sidebar Tab
+  const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTab>('dashboard');
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  
+  // Orders View Sub-options
   const [manifestLayout, setManifestLayout] = useState<ManifestLayout>('table');
-
-  // Filter & Sort States
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'Confirmed' | 'Processing' | 'Shipped' | 'Delivered'>('all');
+  const [activeOrderTab, setActiveOrderTab] = useState<'all' | 'Confirmed' | 'Processing' | 'Shipped' | 'Delivered'>('all');
   const [datePreset, setDatePreset] = useState<DatePreset>('all');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
@@ -213,7 +227,6 @@ export function AdminDispatchView() {
         sessionStorage.setItem('goodfills_admin_pin', adminPin);
         setOrders(data.orders || []);
 
-        // Initialize edit states for each order
         const initialEditStates: Record<string, any> = {};
         (data.orders || []).forEach((o: Order) => {
           initialEditStates[o.id] = {
@@ -274,7 +287,7 @@ export function AdminDispatchView() {
 
     const currentAwb = editStates[orderId]?.trackingNumber || '';
 
-    // 1. Optimistic update
+    // Optimistic update
     setOrders((prev) =>
       prev.map((o) =>
         o.id === orderId
@@ -296,7 +309,7 @@ export function AdminDispatchView() {
     setOpenStatusMenuId(null);
     showToast(`Order #${orderId} marked as ${getUnifiedStatusLabel(newOrderStatus, newShipmentStatus)}`, 'success');
 
-    // 2. Call backend
+    // Call backend
     try {
       const res = await fetch('/api/admin/orders/update', {
         method: 'POST',
@@ -485,10 +498,10 @@ export function AdminDispatchView() {
   const processedOrders = useMemo(() => {
     let result = dateFilteredOrders.filter((o) => {
       const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
-      if (activeTab === 'Confirmed' && u !== 'Confirmed') return false;
-      if (activeTab === 'Processing' && u !== 'Processing') return false;
-      if (activeTab === 'Shipped' && u !== 'Shipped' && u !== 'Out for Delivery') return false;
-      if (activeTab === 'Delivered' && u !== 'Delivered') return false;
+      if (activeOrderTab === 'Confirmed' && u !== 'Confirmed') return false;
+      if (activeOrderTab === 'Processing' && u !== 'Processing') return false;
+      if (activeOrderTab === 'Shipped' && u !== 'Shipped' && u !== 'Out for Delivery') return false;
+      if (activeOrderTab === 'Delivered' && u !== 'Delivered') return false;
 
       if (searchTerm.trim()) {
         const q = searchTerm.toLowerCase();
@@ -512,7 +525,7 @@ export function AdminDispatchView() {
     });
 
     return result;
-  }, [dateFilteredOrders, activeTab, searchTerm, sortBy]);
+  }, [dateFilteredOrders, activeOrderTab, searchTerm, sortBy]);
 
   // Analytics Calculations
   const analyticsData = useMemo(() => {
@@ -524,23 +537,23 @@ export function AdminDispatchView() {
 
     let totalWeightGrams = 0;
     let totalPacksSold = 0;
-    const productCounts: Record<string, { name: string; packSize: string; quantity: number; revenue: number }> = {};
-    const cityCounts: Record<string, number> = {};
+    const productCounts: Record<string, { id: string; name: string; packSize: string; quantity: number; revenue: number; price: number; image?: string }> = {};
 
     subset.forEach((o) => {
       totalWeightGrams += o.weightGrams || 250;
-      const city = o.shippingAddress?.city || 'Bengaluru';
-      cityCounts[city] = (cityCounts[city] || 0) + 1;
 
       (o.items || []).forEach((it) => {
         totalPacksSold += it.quantity;
         const pId = it.product.id;
         if (!productCounts[pId]) {
           productCounts[pId] = {
+            id: it.product.id,
             name: it.product.name,
             packSize: it.product.packSize,
+            price: it.product.price,
             quantity: 0,
             revenue: 0,
+            image: it.product.images?.primary || '/logo.png',
           };
         }
         productCounts[pId].quantity += it.quantity;
@@ -553,23 +566,34 @@ export function AdminDispatchView() {
     const shippedCount = subset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus) === 'Shipped' || getUnifiedStatus(o.orderStatus, o.shipmentStatus) === 'Out for Delivery').length;
     const deliveredCount = subset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus) === 'Delivered').length;
 
-    // Check if any confirmed order has been waiting > 24 hours
-    const now = Date.now();
-    const hasUrgentAgingOrders = subset.some((o) => {
-      const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
-      if (u !== 'Confirmed') return false;
-      const ageHours = (now - new Date(o.createdAt).getTime()) / (1000 * 3600);
-      return ageHours >= 24;
-    });
-
     const shippedTotal = subset.filter((o) => o.orderStatus === 'Shipped' || o.orderStatus === 'Delivered').length;
     const assignedAwbCount = subset.filter((o) => o.trackingNumber && o.trackingNumber.trim().length > 0).length;
     const awbRate = shippedTotal > 0 ? Math.round((assignedAwbCount / shippedTotal) * 100) : 100;
 
+    // Top products array sorted by quantity
     const topProducts = Object.values(productCounts).sort((a, b) => b.quantity - a.quantity);
-    const topCities = Object.entries(cityCounts)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count);
+
+    // If top products has fewer than 4, fill in catalog products
+    if (topProducts.length < 4) {
+      PRODUCTS.forEach((p) => {
+        if (!productCounts[p.id]) {
+          topProducts.push({
+            id: p.id,
+            name: p.name,
+            packSize: p.packSize,
+            price: p.price,
+            quantity: 0,
+            revenue: 0,
+            image: p.images?.primary || '/logo.png',
+          });
+        }
+      });
+    }
+
+    // Recent 5 orders for Overview widget
+    const recentOrders = [...orders]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 5);
 
     return {
       totalRevenue,
@@ -583,12 +607,11 @@ export function AdminDispatchView() {
       processingCount,
       shippedCount,
       deliveredCount,
-      hasUrgentAgingOrders,
       awbRate,
-      topProducts,
-      topCities,
+      topProducts: topProducts.slice(0, 5),
+      recentOrders,
     };
-  }, [dateFilteredOrders]);
+  }, [dateFilteredOrders, orders]);
 
   // Relative Date Helper
   const getRelativeDateLabel = (dateStr: string) => {
@@ -666,18 +689,16 @@ export function AdminDispatchView() {
   if (!isAuthenticated) {
     return (
       <main className={styles.adminContainer}>
-        <div className={styles.adminHeaderBar}>
-          <div className={styles.headerBarInner}>
-            <div className={styles.brandWrap}>
-              <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-                <img src="/logo.png" alt="Good Fills" style={{ height: '32px', width: 'auto', display: 'block' }} />
-              </Link>
-              <span className={styles.badgeAdmin}>Dispatch Console</span>
-            </div>
-            <Link href="/" className={styles.viewStoreBtn}>
-              Back to Store <ArrowRight size={13} />
+        <div className={styles.adminTopBarMobile}>
+          <div className={styles.brandWrap}>
+            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+              <img src="/logo.png" alt="Good Fills" style={{ height: '30px', width: 'auto', display: 'block' }} />
             </Link>
+            <span className={styles.badgeAdmin}>Dispatch Console</span>
           </div>
+          <Link href="/" className={styles.viewStoreBtn}>
+            Back to Store <ArrowRight size={13} />
+          </Link>
         </div>
 
         <div className={styles.loginWrapper}>
@@ -686,7 +707,7 @@ export function AdminDispatchView() {
           </div>
           <h2 className={styles.loginTitle}>Kitchen Dispatch Login</h2>
           <p className={styles.loginSubtitle}>
-            Enter the 4-digit manager PIN to access order fulfillment, analytics, and DTDC consignment updates.
+            Enter the 4-digit manager PIN to access the Good Fills executive dashboard, order fulfillment, and DTDC consignments.
           </p>
 
           <form onSubmit={handleUnlock}>
@@ -717,360 +738,627 @@ export function AdminDispatchView() {
     );
   }
 
+  // Today's formatted date for Overview header
+  const todayFormatted = new Date().toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
+
   return (
-    <main className={styles.adminContainer}>
-      {/* 1. TOP DEDICATED ADMIN COCKPIT HEADER */}
-      <header className={styles.adminHeaderBar}>
-        <div className={styles.headerBarInner}>
-          <div className={styles.brandWrap}>
-            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img src="/logo.png" alt="Good Fills" style={{ height: '30px', width: 'auto', display: 'block' }} />
+    <div className={styles.adminDashboardRoot}>
+      {/* ====================================================================
+          1. LEFT SIDEBAR (Desktop Fixed, Mobile Drawer)
+          ==================================================================== */}
+      <aside className={`${styles.sidebar} ${isMobileDrawerOpen ? styles.sidebarOpenMobile : ''}`}>
+        <div className={styles.sidebarInner}>
+          {/* Logo / Brand Header */}
+          <div className={styles.sidebarBrand}>
+            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <img src="/logo.png" alt="Good Fills" style={{ height: '32px', width: 'auto' }} />
             </Link>
-            <div className={styles.headerDivider} />
-            <div className={styles.adminTitleBlock}>
-              <span className={styles.adminHeaderTitle}>Atelier Dispatch Console</span>
-              <div className={styles.liveHearthBadge}>
-                <span className={styles.pulseDot} />
-                <span>Live Sync Active</span>
-              </div>
-            </div>
-          </div>
-
-          {/* View Switcher: Orders vs Analytics */}
-          <div className={styles.viewSwitchGroup}>
             <button
               type="button"
-              className={`${styles.viewSwitchBtn} ${currentView === 'orders' ? styles.viewSwitchBtnActive : ''}`}
-              onClick={() => setCurrentView('orders')}
+              className={styles.closeDrawerBtn}
+              onClick={() => setIsMobileDrawerOpen(false)}
+              aria-label="Close menu"
             >
-              <ListOrdered size={15} />
-              <span>Manifest ({orders.length})</span>
+              <X size={18} />
             </button>
+          </div>
+
+          {/* Main Navigation Menu */}
+          <nav className={styles.sidebarNav}>
             <button
               type="button"
-              className={`${styles.viewSwitchBtn} ${currentView === 'analytics' ? styles.viewSwitchBtnActive : ''}`}
-              onClick={() => setCurrentView('analytics')}
+              className={`${styles.navItem} ${activeSidebarTab === 'dashboard' ? styles.navItemActive : ''}`}
+              onClick={() => {
+                setActiveSidebarTab('dashboard');
+                setIsMobileDrawerOpen(false);
+              }}
             >
-              <BarChart3 size={15} />
-              <span>Sales &amp; Logistics</span>
+              <Grid size={18} />
+              <span>Dashboard</span>
+              {activeSidebarTab === 'dashboard' && <div className={styles.activePillMarker} />}
             </button>
-          </div>
 
-          {/* Header Action Shortcuts */}
-          <div className={styles.headerActions}>
-            <Link href="/track" target="_blank" className={styles.viewStoreBtn} title="Open Customer Order Tracking">
-              <Eye size={13} />
-              <span>Tracking Portal</span>
+            <button
+              type="button"
+              className={`${styles.navItem} ${activeSidebarTab === 'orders' ? styles.navItemActive : ''}`}
+              onClick={() => {
+                setActiveSidebarTab('orders');
+                setIsMobileDrawerOpen(false);
+              }}
+            >
+              <ListOrdered size={18} />
+              <span>Orders</span>
+              <span className={styles.navCountBadge}>{orders.length}</span>
+              {activeSidebarTab === 'orders' && <div className={styles.activePillMarker} />}
+            </button>
+
+            <button
+              type="button"
+              className={`${styles.navItem} ${activeSidebarTab === 'products' ? styles.navItemActive : ''}`}
+              onClick={() => {
+                setActiveSidebarTab('products');
+                setIsMobileDrawerOpen(false);
+              }}
+            >
+              <Package size={18} />
+              <span>Products</span>
+              <span className={styles.navCountBadge}>{PRODUCTS.length}</span>
+              {activeSidebarTab === 'products' && <div className={styles.activePillMarker} />}
+            </button>
+
+            <button
+              type="button"
+              className={`${styles.navItem} ${activeSidebarTab === 'inquiries' ? styles.navItemActive : ''}`}
+              onClick={() => {
+                setActiveSidebarTab('inquiries');
+                setIsMobileDrawerOpen(false);
+              }}
+            >
+              <MessageCircle size={18} />
+              <span>Inquiries</span>
+              {activeSidebarTab === 'inquiries' && <div className={styles.activePillMarker} />}
+            </button>
+          </nav>
+
+          {/* Lower Sidebar Shortcuts */}
+          <div className={styles.sidebarFooter}>
+            <div className={styles.sidebarFooterTitle}>Shortcuts</div>
+            <Link href="/shop" target="_blank" className={styles.footerLink}>
+              <Store size={15} />
+              <span>Live Store ↗</span>
             </Link>
-            <Link href="/shop" target="_blank" className={styles.viewStoreBtn} title="View Live Store">
-              <span>Store ↗</span>
+            <Link href="/track" target="_blank" className={styles.footerLink}>
+              <Eye size={15} />
+              <span>Tracking Portal ↗</span>
             </Link>
-            <button onClick={handleLogout} className={styles.logoutBtn} title="Lock Dispatch Console">
-              <LogOut size={12} />
-              <span>Lock</span>
+            <button onClick={handleLogout} className={styles.footerLinkBtn}>
+              <LogOut size={15} />
+              <span>Lock Console</span>
             </button>
           </div>
         </div>
-      </header>
+      </aside>
 
-      <div className={styles.adminMain}>
-        {/* 2. DATE FILTER & MANIFEST CONTROLS BAR */}
-        <div className={styles.dateFilterBar}>
-          <div className={styles.datePresets}>
-            <span className={styles.dateFilterLabel}>
-              <Calendar size={13} />
-              <span>Period:</span>
-            </span>
+      {/* Backdrop overlay for mobile drawer */}
+      {isMobileDrawerOpen && (
+        <div
+          className={styles.mobileBackdrop}
+          onClick={() => setIsMobileDrawerOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
-            {(['all', 'today', 'yesterday', '7days', 'month', 'custom'] as DatePreset[]).map((preset) => {
-              const labelMap: Record<DatePreset, string> = {
-                all: `All Time (${orders.length})`,
-                today: 'Today',
-                yesterday: 'Yesterday',
-                '7days': 'Last 7 Days',
-                month: 'This Month',
-                custom: 'Custom Range',
-              };
-              return (
-                <button
-                  key={preset}
-                  className={`${styles.datePresetBtn} ${datePreset === preset ? styles.datePresetBtnActive : ''}`}
-                  onClick={() => setDatePreset(preset)}
-                >
-                  {labelMap[preset]}
-                </button>
-              );
-            })}
+      {/* ====================================================================
+          2. MAIN CONTENT STAGE
+          ==================================================================== */}
+      <div className={styles.mainContentStage}>
+        {/* TOP MOBILE & TABLET HEADER BAR */}
+        <header className={styles.mobileTopBar}>
+          <div className={styles.mobileTopLeft}>
+            <button
+              type="button"
+              onClick={() => setIsMobileDrawerOpen(true)}
+              className={styles.hamburgerBtn}
+              aria-label="Open sidebar navigation"
+            >
+              <Menu size={20} />
+            </button>
+            <img src="/logo.png" alt="Good Fills" style={{ height: '24px', width: 'auto' }} />
           </div>
 
-          {datePreset === 'custom' && (
-            <div className={styles.customDateInputs}>
-              <input
-                type="date"
-                className={styles.datePickerInput}
-                value={customStartDate}
-                onChange={(e) => setCustomStartDate(e.target.value)}
-                placeholder="Start Date"
-              />
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>to</span>
-              <input
-                type="date"
-                className={styles.datePickerInput}
-                value={customEndDate}
-                onChange={(e) => setCustomEndDate(e.target.value)}
-                placeholder="End Date"
-              />
+          <div className={styles.mobileTopRight}>
+            <div className={styles.liveIndicatorDot}>
+              <span className={styles.pulseDot} />
+              <span>Live</span>
             </div>
-          )}
-
-          <div className={styles.dateBarRight}>
-            {/* View Mode Toggle (Table vs Cards) */}
-            {currentView === 'orders' && (
-              <div className={styles.layoutToggleGroup}>
-                <button
-                  type="button"
-                  className={`${styles.layoutToggleBtn} ${manifestLayout === 'table' ? styles.layoutToggleActive : ''}`}
-                  onClick={() => setManifestLayout('table')}
-                  title="Dense Manifest Table View"
-                >
-                  <LayoutList size={14} />
-                  <span>Table</span>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.layoutToggleBtn} ${manifestLayout === 'cards' ? styles.layoutToggleActive : ''}`}
-                  onClick={() => setManifestLayout('cards')}
-                  title="Detailed Dispatch Cards View"
-                >
-                  <LayoutGrid size={14} />
-                  <span>Cards</span>
-                </button>
-              </div>
-            )}
-
-            <button type="button" onClick={exportManifestCSV} className={styles.exportBtn}>
-              <Download size={13} />
-              <span>Export CSV</span>
+            <button onClick={handleLogout} className={styles.mobileLockBtn} title="Lock">
+              <LogOut size={14} />
             </button>
           </div>
+        </header>
+
+        {/* MOBILE HORIZONTAL SCROLLABLE TAB STRIP (Instant 1-Tap Switching) */}
+        <div className={styles.mobileTabStrip}>
+          <button
+            type="button"
+            className={`${styles.mobileTabBtn} ${activeSidebarTab === 'dashboard' ? styles.mobileTabBtnActive : ''}`}
+            onClick={() => setActiveSidebarTab('dashboard')}
+          >
+            <Grid size={14} />
+            <span>Overview</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.mobileTabBtn} ${activeSidebarTab === 'orders' ? styles.mobileTabBtnActive : ''}`}
+            onClick={() => setActiveSidebarTab('orders')}
+          >
+            <ListOrdered size={14} />
+            <span>Orders ({orders.length})</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.mobileTabBtn} ${activeSidebarTab === 'products' ? styles.mobileTabBtnActive : ''}`}
+            onClick={() => setActiveSidebarTab('products')}
+          >
+            <Package size={14} />
+            <span>Creations ({PRODUCTS.length})</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.mobileTabBtn} ${activeSidebarTab === 'inquiries' ? styles.mobileTabBtnActive : ''}`}
+            onClick={() => setActiveSidebarTab('inquiries')}
+          >
+            <MessageCircle size={14} />
+            <span>Inquiries</span>
+          </button>
         </div>
 
-        {/* 3. INTERACTIVE CLICK-TO-FILTER METRICS COCKPIT */}
-        <div className={styles.statsRow}>
-          {/* Card 1: Gross Sales */}
-          <div
-            className={`${styles.statCard} ${activeTab === 'all' ? styles.statCardSelected : ''}`}
-            onClick={() => setActiveTab('all')}
-            role="button"
-            tabIndex={0}
-            title="Click to view All Orders"
-          >
-            <div className={styles.statHeader}>
-              <span className={styles.statLabel}>Gross Sales Volume</span>
-              <TrendingUp size={15} className={styles.statIcon} />
-            </div>
-            <div className={styles.statVal}>₹{analyticsData.totalRevenue.toLocaleString('en-IN')}</div>
-            <div className={styles.statSub}>
-              Subtotal: ₹{analyticsData.subtotalRevenue.toLocaleString('en-IN')} • Shipping: ₹{analyticsData.shippingRevenue.toLocaleString('en-IN')}
-            </div>
-            <div className={styles.cardFilterHint}>Showing {orders.length} total orders</div>
-          </div>
-
-          {/* Card 2: Kitchen Action Required (Confirmed) */}
-          <div
-            className={`${styles.statCard} ${styles.statCardUrgent} ${activeTab === 'Confirmed' ? styles.statCardSelected : ''}`}
-            onClick={() => setActiveTab('Confirmed')}
-            role="button"
-            tabIndex={0}
-            title="Click to filter Confirmed orders requiring roasting & stone-milling"
-          >
-            <div className={styles.statHeader}>
-              <span className={styles.statLabel} style={{ color: 'var(--accent-terracotta)' }}>
-                Roasting &amp; Milling Queue
-              </span>
-              {analyticsData.hasUrgentAgingOrders ? (
-                <span className={styles.urgentPulseBadge} title="Orders waiting > 24h">
-                  <AlertCircle size={14} />
-                  <span>Priority</span>
-                </span>
-              ) : (
-                <Package size={15} className={styles.statIcon} />
-              )}
-            </div>
-            <div className={styles.statVal} style={{ color: 'var(--accent-terracotta)' }}>
-              {analyticsData.confirmedCount} orders
-            </div>
-            <div className={styles.statSub}>
-              Awaiting packaging &amp; dispatch • AOV: <strong>₹{analyticsData.aov}</strong>
-            </div>
-            <div className={styles.cardFilterHint}>Click to view Confirmed Queue ➔</div>
-          </div>
-
-          {/* Card 3: Prepared & Packed */}
-          <div
-            className={`${styles.statCard} ${activeTab === 'Processing' ? styles.statCardSelected : ''}`}
-            onClick={() => setActiveTab('Processing')}
-            role="button"
-            tabIndex={0}
-            title="Click to filter orders ready for DTDC pickup"
-          >
-            <div className={styles.statHeader}>
-              <span className={styles.statLabel}>Prepared &amp; Packed</span>
-              <Scale size={15} className={styles.statIcon} />
-            </div>
-            <div className={styles.statVal} style={{ color: '#b7950b' }}>
-              {analyticsData.processingCount} orders
-            </div>
-            <div className={styles.statSub}>
-              {analyticsData.totalPacksSold} packs ready • <strong>{analyticsData.totalWeightKg} kg</strong>
-            </div>
-            <div className={styles.cardFilterHint}>Ready for DTDC pickup ➔</div>
-          </div>
-
-          {/* Card 4: DTDC In Transit & Delivered */}
-          <div
-            className={`${styles.statCard} ${activeTab === 'Shipped' ? styles.statCardSelected : ''}`}
-            onClick={() => setActiveTab('Shipped')}
-            role="button"
-            tabIndex={0}
-            title="Click to filter active DTDC transit orders"
-          >
-            <div className={styles.statHeader}>
-              <span className={styles.statLabel}>In Transit (DTDC)</span>
-              <Truck size={15} className={styles.statIcon} />
-            </div>
-            <div className={styles.statVal} style={{ color: '#27ae60' }}>
-              {analyticsData.shippedCount} active
-            </div>
-            <div className={styles.statSub}>
-              AWB Rate: <strong>{analyticsData.awbRate}%</strong> • {analyticsData.deliveredCount} Delivered
-            </div>
-            <div className={styles.cardFilterHint}>Click to view In Transit ➔</div>
-          </div>
-        </div>
-
-        {/* 4A. ANALYTICS EXTENDED VIEW */}
-        {currentView === 'analytics' && (
-          <section className={styles.analyticsSection}>
-            {/* Visual Pipeline Bar */}
-            <div className={styles.analyticsPanel}>
-              <div className={styles.panelHeader}>
-                <h3 className={styles.panelTitle}>Order Fulfillment Pipeline</h3>
-                <span className={styles.panelBadge}>Live Logistics Funnel</span>
+        {/* ====================================================================
+            TAB A: DASHBOARD OVERVIEW (Matching reference image)
+            ==================================================================== */}
+        {activeSidebarTab === 'dashboard' && (
+          <div className={styles.dashboardContainer}>
+            {/* Overview Header with Date */}
+            <div className={styles.overviewHeaderRow}>
+              <div>
+                <h1 className={styles.overviewTitle}>Overview</h1>
+                <p className={styles.overviewDateText}>{todayFormatted}</p>
               </div>
 
-              <div className={styles.pipelineBarWrap}>
-                <div className={styles.pipelineLabels}>
-                  <span>Confirmed: {analyticsData.confirmedCount}</span>
-                  <span>Prepared &amp; Packed: {analyticsData.processingCount}</span>
-                  <span>In Transit: {analyticsData.shippedCount}</span>
-                  <span>Delivered: {analyticsData.deliveredCount}</span>
-                </div>
-                <div className={styles.pipelineTrack}>
-                  <div
-                    className={styles.pipelineSegConfirmed}
-                    style={{
-                      width: `${(analyticsData.confirmedCount / (analyticsData.orderCount || 1)) * 100}%`,
-                    }}
-                    title={`Confirmed: ${analyticsData.confirmedCount}`}
-                  />
-                  <div
-                    className={styles.pipelineSegProcessing}
-                    style={{
-                      width: `${(analyticsData.processingCount / (analyticsData.orderCount || 1)) * 100}%`,
-                    }}
-                    title={`Prepared: ${analyticsData.processingCount}`}
-                  />
-                  <div
-                    className={styles.pipelineSegShipped}
-                    style={{
-                      width: `${(analyticsData.shippedCount / (analyticsData.orderCount || 1)) * 100}%`,
-                    }}
-                    title={`In Transit: ${analyticsData.shippedCount}`}
-                  />
-                  <div
-                    className={styles.pipelineSegDelivered}
-                    style={{
-                      width: `${(analyticsData.deliveredCount / (analyticsData.orderCount || 1)) * 100}%`,
-                    }}
-                    title={`Delivered: ${analyticsData.deliveredCount}`}
-                  />
-                </div>
+              <div className={styles.dateDropdownWrapper}>
+                <Calendar size={14} className={styles.dateIcon} />
+                <select
+                  className={styles.overviewDateSelect}
+                  value={datePreset}
+                  onChange={(e) => setDatePreset(e.target.value as DatePreset)}
+                >
+                  <option value="all">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="yesterday">Yesterday</option>
+                  <option value="7days">Last 7 Days</option>
+                  <option value="month">This Month</option>
+                </select>
               </div>
             </div>
 
-            {/* Two Column Grid */}
-            <div className={styles.analyticsGrid2Col}>
-              <div className={styles.analyticsPanel}>
-                <div className={styles.panelHeader}>
-                  <h3 className={styles.panelTitle}>Most Ordered Creations</h3>
-                  <span className={styles.panelBadge}>{analyticsData.topProducts.length} Items</span>
+            {/* 4 COLORFUL STAT CARDS (2x2 on mobile, 4 in row on desktop) */}
+            <div className={styles.statsCardsGrid}>
+              {/* Card 1: Total Sales */}
+              <div
+                className={styles.statCardRef}
+                onClick={() => {
+                  setActiveSidebarTab('orders');
+                  setActiveOrderTab('all');
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                <div className={`${styles.statIconBadge} ${styles.badgePink}`}>
+                  <ShoppingBag size={20} color="#E0567A" />
                 </div>
-                <div className={styles.topProductsList}>
-                  {analyticsData.topProducts.map((p, i) => (
-                    <div key={i} className={styles.topProductRow}>
-                      <span className={styles.productRank}>#{i + 1}</span>
-                      <div className={styles.productDetails}>
-                        <div className={styles.productName}>{p.name}</div>
-                        <div className={styles.productPack}>{p.packSize}</div>
-                      </div>
-                      <div className={styles.productStats}>
-                        <div className={styles.productUnits}>{p.quantity} packs</div>
-                        <div className={styles.productRev}>₹{p.revenue.toLocaleString('en-IN')}</div>
-                      </div>
+                <div className={styles.statContent}>
+                  <span className={styles.statTitleRef}>Total Sales</span>
+                  <div className={styles.statNumberRef}>₹{analyticsData.totalRevenue.toLocaleString('en-IN')}</div>
+                </div>
+              </div>
+
+              {/* Card 2: Total Orders */}
+              <div
+                className={styles.statCardRef}
+                onClick={() => {
+                  setActiveSidebarTab('orders');
+                  setActiveOrderTab('Confirmed');
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                <div className={`${styles.statIconBadge} ${styles.badgePurple}`}>
+                  <ListOrdered size={20} color="#7952B3" />
+                </div>
+                <div className={styles.statContent}>
+                  <span className={styles.statTitleRef}>Total Orders</span>
+                  <div className={styles.statNumberRef}>{analyticsData.orderCount}</div>
+                </div>
+              </div>
+
+              {/* Card 3: Total Items / Packs */}
+              <div
+                className={styles.statCardRef}
+                onClick={() => {
+                  setActiveSidebarTab('orders');
+                  setActiveOrderTab('Processing');
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                <div className={`${styles.statIconBadge} ${styles.badgeOrange}`}>
+                  <Package size={20} color="#E67E22" />
+                </div>
+                <div className={styles.statContent}>
+                  <span className={styles.statTitleRef}>Total Packs</span>
+                  <div className={styles.statNumberRef}>{analyticsData.totalPacksSold}</div>
+                </div>
+              </div>
+
+              {/* Card 4: DTDC Transit & Revenue */}
+              <div
+                className={styles.statCardRef}
+                onClick={() => {
+                  setActiveSidebarTab('orders');
+                  setActiveOrderTab('Shipped');
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                <div className={`${styles.statIconBadge} ${styles.badgeBlue}`}>
+                  <Truck size={20} color="#2980B9" />
+                </div>
+                <div className={styles.statContent}>
+                  <span className={styles.statTitleRef}>DTDC In Transit</span>
+                  <div className={styles.statNumberRef}>{analyticsData.shippedCount} orders</div>
+                </div>
+              </div>
+            </div>
+
+            {/* MIDDLE ROW: SALE ANALYTIC CHART (LEFT) & ORDER RECENTLY (RIGHT) */}
+            <div className={styles.chartAndRecentRow}>
+              {/* Left: Sale & Dispatch Trend Wave Chart */}
+              <div className={styles.chartPanel}>
+                <div className={styles.panelHeaderRow}>
+                  <div className={styles.chartTitle}>Sale &amp; Dispatch Analytics</div>
+                  <div className={styles.chartLegendRow}>
+                    <div className={styles.legendItem}>
+                      <span className={styles.dotGreen} />
+                      <span>Sales Volume</span>
                     </div>
-                  ))}
+                    <div className={styles.legendItem}>
+                      <span className={styles.dotBlue} />
+                      <span>DTDC Dispatched</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Responsive SVG Spline Chart */}
+                <div className={styles.svgChartContainer}>
+                  <svg
+                    viewBox="0 0 540 220"
+                    className={styles.svgChart}
+                    preserveAspectRatio="none"
+                  >
+                    <defs>
+                      <linearGradient id="greenWaveGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#2ECC71" stopOpacity="0.25" />
+                        <stop offset="100%" stopColor="#2ECC71" stopOpacity="0.0" />
+                      </linearGradient>
+                      <linearGradient id="blueWaveGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#3498DB" stopOpacity="0.18" />
+                        <stop offset="100%" stopColor="#3498DB" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Horizontal Reference Lines */}
+                    <line x1="0" y1="40" x2="540" y2="40" stroke="#EEE8DE" strokeDasharray="3 3" />
+                    <line x1="0" y1="90" x2="540" y2="90" stroke="#EEE8DE" strokeDasharray="3 3" />
+                    <line x1="0" y1="140" x2="540" y2="140" stroke="#EEE8DE" strokeDasharray="3 3" />
+                    <line x1="0" y1="190" x2="540" y2="190" stroke="#E5DEC9" />
+
+                    {/* Wave 1 (Sales Curve) */}
+                    <path
+                      d="M 0 170 Q 70 160, 130 110 T 260 70 T 380 90 T 540 80 L 540 190 L 0 190 Z"
+                      fill="url(#greenWaveGrad)"
+                    />
+                    <path
+                      d="M 0 170 Q 70 160, 130 110 T 260 70 T 380 90 T 540 80"
+                      fill="none"
+                      stroke="#2ECC71"
+                      strokeWidth="2.5"
+                    />
+
+                    {/* Wave 2 (Dispatch Curve) */}
+                    <path
+                      d="M 0 185 Q 80 180, 160 140 T 320 120 T 450 145 T 540 135 L 540 190 L 0 190 Z"
+                      fill="url(#blueWaveGrad)"
+                    />
+                    <path
+                      d="M 0 185 Q 80 180, 160 140 T 320 120 T 450 145 T 540 135"
+                      fill="none"
+                      stroke="#3498DB"
+                      strokeWidth="2.5"
+                    />
+
+                    {/* Peak Marker Dot */}
+                    <circle cx="260" cy="70" r="5" fill="#2ECC71" stroke="#FFFFFF" strokeWidth="2" />
+                    <circle cx="450" cy="145" r="4" fill="#3498DB" stroke="#FFFFFF" strokeWidth="2" />
+                  </svg>
+
+                  {/* Marker Badges on Top */}
+                  <div className={styles.chartBadgePeak} style={{ left: '46%', top: '22%' }}>
+                    <span>Peak Dispatch</span>
+                    <strong>₹{analyticsData.totalRevenue}</strong>
+                  </div>
+                </div>
+
+                {/* X Axis Months */}
+                <div className={styles.chartXLabels}>
+                  <span>Jan</span>
+                  <span>Feb</span>
+                  <span>Mar</span>
+                  <span>Apr</span>
+                  <span>May</span>
+                  <span>Jun</span>
+                  <span>Jul</span>
+                  <span>Aug</span>
+                  <span>Sep</span>
+                  <span>Oct</span>
+                  <span>Nov</span>
+                  <span>Dec</span>
                 </div>
               </div>
 
-              <div className={styles.analyticsPanel}>
-                <div className={styles.panelHeader}>
-                  <h3 className={styles.panelTitle}>Dispatch Health &amp; Operations</h3>
-                  <span className={styles.panelBadge}>DTDC Express Hub</span>
+              {/* Right: Order Recently Widget */}
+              <div className={styles.recentOrdersPanel}>
+                <div className={styles.panelHeaderRow}>
+                  <div className={styles.chartTitle}>Recent Orders</div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveSidebarTab('orders')}
+                    className={styles.viewAllBtnSmall}
+                  >
+                    View All ➔
+                  </button>
                 </div>
-                <div className={styles.healthList}>
-                  <div className={styles.healthRow}>
-                    <span className={styles.healthKey}>Carrier Courier Partner</span>
-                    <span className={styles.healthVal}>DTDC Express Limited</span>
+
+                <div className={styles.recentOrdersList}>
+                  {analyticsData.recentOrders.map((o) => {
+                    const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
+                    const firstItem = o.items?.[0]?.product.name || 'Stone-Milled Creation';
+                    return (
+                      <div key={o.id} className={styles.recentOrderItem}>
+                        <div className={styles.recentItemThumb}>
+                          <Package size={17} color="var(--accent-terracotta)" />
+                        </div>
+                        <div className={styles.recentItemInfo}>
+                          <div className={styles.recentItemName}>{o.customerName}</div>
+                          <div className={styles.recentItemSub}>
+                            {firstItem} • {getRelativeDateLabel(o.createdAt)}
+                          </div>
+                        </div>
+                        <div className={styles.recentItemRight}>
+                          <div className={styles.recentItemPrice}>₹{o.total}</div>
+                          <span
+                            className={
+                              u === 'Delivered'
+                                ? styles.pillDeliveredSmall
+                                : u === 'Shipped' || u === 'Out for Delivery'
+                                ? styles.pillShippedSmall
+                                : u === 'Processing'
+                                ? styles.pillProcessingSmall
+                                : styles.pillConfirmedSmall
+                            }
+                          >
+                            {u === 'Processing' ? 'Packed' : u}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveSidebarTab('orders')}
+                  className={styles.viewAllOrdersBlockBtn}
+                >
+                  <span>Go to Full Orders Manifest ({orders.length})</span>
+                  <ArrowRight size={13} />
+                </button>
+              </div>
+            </div>
+
+            {/* BOTTOM ROW: TOP SELLING PRODUCTS (LEFT) & DONUT PROFITS (RIGHT) */}
+            <div className={styles.productsAndDonutRow}>
+              {/* Left: Top Selling Creations Table */}
+              <div className={styles.topCreationsPanel}>
+                <div className={styles.panelHeaderRow}>
+                  <div className={styles.chartTitle}>Top Ordered Creations</div>
+                  <span className={styles.panelBadgeSmall}>Catalog Insights</span>
+                </div>
+
+                <div className={styles.tableResponsiveWrapSimple}>
+                  <table className={styles.simpleTable}>
+                    <thead>
+                      <tr>
+                        <th>Creation</th>
+                        <th>Pack Size</th>
+                        <th>Units Sold</th>
+                        <th>Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analyticsData.topProducts.map((p) => (
+                        <tr key={p.id}>
+                          <td>
+                            <div className={styles.productCellWrap}>
+                              <div className={styles.productAvatar}>
+                                <img
+                                  src={p.image || '/logo.png'}
+                                  alt={p.name}
+                                  className={styles.productImgThumb}
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = '/logo.png';
+                                  }}
+                                />
+                              </div>
+                              <span className={styles.productRowName}>{p.name}</span>
+                            </div>
+                          </td>
+                          <td style={{ color: 'var(--text-muted)' }}>{p.packSize}</td>
+                          <td>
+                            <strong>{p.quantity} packs</strong>
+                          </td>
+                          <td style={{ color: 'var(--accent-terracotta)', fontWeight: 700 }}>
+                            ₹{p.revenue.toLocaleString('en-IN')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Right: Order Fulfillment Status Donut */}
+              <div className={styles.donutPanel}>
+                <div className={styles.panelHeaderRow}>
+                  <div className={styles.chartTitle}>Kitchen Fulfillment</div>
+                  <PieChartIcon size={16} color="var(--text-muted)" />
+                </div>
+
+                <div className={styles.donutChartContainer}>
+                  {/* SVG Donut */}
+                  <svg viewBox="0 0 160 160" className={styles.svgDonut}>
+                    <circle
+                      cx="80"
+                      cy="80"
+                      r="60"
+                      fill="none"
+                      stroke="#EBF5FB"
+                      strokeWidth="20"
+                    />
+                    {/* Confirmed Segment */}
+                    <circle
+                      cx="80"
+                      cy="80"
+                      r="60"
+                      fill="none"
+                      stroke="#2471A3"
+                      strokeWidth="20"
+                      strokeDasharray="140 377"
+                      strokeDashoffset="0"
+                    />
+                    {/* Packed Segment */}
+                    <circle
+                      cx="80"
+                      cy="80"
+                      r="60"
+                      fill="none"
+                      stroke="#B7950B"
+                      strokeWidth="20"
+                      strokeDasharray="90 377"
+                      strokeDashoffset="-140"
+                    />
+                    {/* Shipped Segment */}
+                    <circle
+                      cx="80"
+                      cy="80"
+                      r="60"
+                      fill="none"
+                      stroke="#229954"
+                      strokeWidth="20"
+                      strokeDasharray="100 377"
+                      strokeDashoffset="-230"
+                    />
+                  </svg>
+                  <div className={styles.donutCenterLabel}>
+                    <span className={styles.donutCenterSub}>Total</span>
+                    <strong className={styles.donutCenterMain}>{analyticsData.orderCount}</strong>
+                    <span className={styles.donutCenterSub}>Orders</span>
                   </div>
-                  <div className={styles.healthRow}>
-                    <span className={styles.healthKey}>Dispatch Turnaround Target</span>
-                    <span className={styles.healthVal}>24 to 48 Hours</span>
+                </div>
+
+                {/* Donut Legend */}
+                <div className={styles.donutLegendGrid}>
+                  <div className={styles.donutLegendItem}>
+                    <span className={styles.legendDotConfirmed} />
+                    <span>Confirmed ({analyticsData.confirmedCount})</span>
                   </div>
-                  <div className={styles.healthRow}>
-                    <span className={styles.healthKey}>AWB Number Recording Rate</span>
-                    <span className={styles.healthVal}>{analyticsData.awbRate}%</span>
+                  <div className={styles.donutLegendItem}>
+                    <span className={styles.legendDotPacked} />
+                    <span>Packed ({analyticsData.processingCount})</span>
                   </div>
-                  <div className={styles.healthRow}>
-                    <span className={styles.healthKey}>Active Delivery Destinations</span>
-                    <span className={styles.healthVal}>
-                      {analyticsData.topCities.map((c) => `${c.name} (${c.count})`).join(', ') || 'Bengaluru'}
-                    </span>
+                  <div className={styles.donutLegendItem}>
+                    <span className={styles.legendDotShipped} />
+                    <span>In Transit ({analyticsData.shippedCount})</span>
                   </div>
-                  <div className={styles.healthRow}>
-                    <span className={styles.healthKey}>Payment Verification Rate</span>
-                    <span className={styles.healthVal} style={{ color: '#27ae60' }}>
-                      100% UPI (Razorpay Verified)
-                    </span>
-                  </div>
-                  <div className={styles.healthRow}>
-                    <span className={styles.healthKey}>Kitchen Origin Hub</span>
-                    <span className={styles.healthVal}>Bengaluru, Karnataka (560041)</span>
+                  <div className={styles.donutLegendItem}>
+                    <span className={styles.legendDotDelivered} />
+                    <span>Delivered ({analyticsData.deliveredCount})</span>
                   </div>
                 </div>
               </div>
             </div>
-          </section>
+          </div>
         )}
 
-        {/* 4B. ORDERS LIST & MANIFEST VIEW */}
-        {currentView === 'orders' && (
-          <section>
-            {/* Filter Tabs & Search Controls */}
+        {/* ====================================================================
+            TAB B: ORDERS MANIFEST (Full Control with 1-Click Status Advance)
+            ==================================================================== */}
+        {activeSidebarTab === 'orders' && (
+          <div className={styles.manifestViewContainer}>
+            {/* Header Strip with Period & Actions */}
+            <div className={styles.manifestHeaderStrip}>
+              <div>
+                <h1 className={styles.overviewTitle}>Orders &amp; Dispatch Manifest</h1>
+                <p className={styles.overviewDateText}>
+                  {orders.length} total orders recorded • DTDC Pan-India Courier Hub
+                </p>
+              </div>
+
+              <div className={styles.manifestHeaderActions}>
+                <div className={styles.layoutToggleGroup}>
+                  <button
+                    type="button"
+                    className={`${styles.layoutToggleBtn} ${manifestLayout === 'table' ? styles.layoutToggleActive : ''}`}
+                    onClick={() => setManifestLayout('table')}
+                  >
+                    <LayoutList size={13} />
+                    <span className={styles.toggleBtnLabel}>Table</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.layoutToggleBtn} ${manifestLayout === 'cards' ? styles.layoutToggleActive : ''}`}
+                    onClick={() => setManifestLayout('cards')}
+                  >
+                    <LayoutGrid size={13} />
+                    <span className={styles.toggleBtnLabel}>Cards</span>
+                  </button>
+                </div>
+
+                <button type="button" onClick={exportManifestCSV} className={styles.exportBtn}>
+                  <Download size={13} />
+                  <span>Export CSV</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Controls Bar: Status Filter Tabs, Search & Sort */}
             <div className={styles.controlsBar}>
-              <div className={styles.filterTabs}>
+              <div className={styles.filterTabsScrollable}>
                 {(['all', 'Confirmed', 'Processing', 'Shipped', 'Delivered'] as const).map((tab) => {
-                  const isActive = activeTab === tab;
+                  const isActive = activeOrderTab === tab;
                   const count =
                     tab === 'all'
                       ? dateFilteredOrders.length
@@ -1081,9 +1369,9 @@ export function AdminDispatchView() {
                         }).length;
 
                   const tabLabelMap = {
-                    all: 'All Orders',
+                    all: 'All',
                     Confirmed: 'Confirmed',
-                    Processing: 'Prepared & Packed',
+                    Processing: 'Packed',
                     Shipped: 'In Transit',
                     Delivered: 'Delivered',
                   };
@@ -1093,16 +1381,9 @@ export function AdminDispatchView() {
                       key={tab}
                       type="button"
                       className={`${styles.filterBtn} ${isActive ? styles.filterBtnActive : ''}`}
-                      onClick={() => setActiveTab(tab)}
+                      onClick={() => setActiveOrderTab(tab)}
                     >
-                      {isActive && (
-                        <motion.div
-                          layoutId="activeFilterPill"
-                          className={styles.activePillBackground}
-                          transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                        />
-                      )}
-                      <span className={styles.tabText}>
+                      <span>
                         {tabLabelMap[tab]} ({count})
                       </span>
                     </button>
@@ -1116,7 +1397,7 @@ export function AdminDispatchView() {
                   <input
                     type="text"
                     className={styles.adminSearchInput}
-                    placeholder="Search Order ID, name, phone, city, or AWB..."
+                    placeholder="Search ID, name, phone, city, AWB..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -1137,11 +1418,11 @@ export function AdminDispatchView() {
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
                 >
-                  <option value="newest">Sort: Newest First</option>
-                  <option value="oldest">Sort: Oldest First</option>
-                  <option value="highest">Sort: Highest Value (₹)</option>
-                  <option value="lowest">Sort: Lowest Value (₹)</option>
-                  <option value="name">Sort: Customer Name</option>
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="highest">Highest (₹)</option>
+                  <option value="lowest">Lowest (₹)</option>
+                  <option value="name">Name</option>
                 </select>
               </div>
             </div>
@@ -1149,54 +1430,48 @@ export function AdminDispatchView() {
             {/* EMPTY STATE */}
             {processedOrders.length === 0 ? (
               <div className={styles.emptyManifestWrap}>
-                <Package size={40} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
+                <Package size={36} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
                 <h4 className={styles.emptyTitle}>No Orders Found</h4>
-                <p className={styles.emptySubtitle}>
-                  Try clearing your search term or selecting a different date range.
-                </p>
-                {(searchTerm || activeTab !== 'all' || datePreset !== 'all') && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearchTerm('');
-                      setActiveTab('all');
-                      setDatePreset('all');
-                    }}
-                    className={styles.resetFiltersBtn}
-                  >
-                    Reset All Filters
-                  </button>
-                )}
+                <p className={styles.emptySubtitle}>Try resetting filters or searching with another term.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setActiveOrderTab('all');
+                    setDatePreset('all');
+                  }}
+                  className={styles.resetFiltersBtn}
+                >
+                  Reset All Filters
+                </button>
               </div>
-            ) : manifestLayout === 'table' ? (
-              /* ============================================================
-                 A. DENSE MANIFEST TABLE VIEW (Fast Processing & Dispatch)
-                 ============================================================ */
-              <div className={styles.tableResponsiveWrap}>
-                <table className={styles.manifestTable}>
-                  <thead>
-                    <tr>
-                      <th style={{ width: '40px', textAlign: 'center' }}>
-                        <input
-                          type="checkbox"
-                          checked={selectedOrderIds.length > 0 && selectedOrderIds.length === processedOrders.length}
-                          onChange={toggleSelectAll}
-                          className={styles.checkboxInput}
-                          title="Select All Orders"
-                        />
-                      </th>
-                      <th>Order ID &amp; Age</th>
-                      <th>Customer &amp; Destination</th>
-                      <th>Creations &amp; Weight</th>
-                      <th>Amount</th>
-                      <th>Live Status</th>
-                      <th style={{ minWidth: '180px' }}>1-Click Next Step</th>
-                      <th style={{ minWidth: '160px' }}>DTDC AWB Consignment</th>
-                      <th style={{ textAlign: 'right' }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <AnimatePresence>
+            ) : (
+              <>
+                {/* 1. DENSE TABLE (Shown on Desktop when Table selected) */}
+                <div className={`${styles.desktopTableWrap} ${manifestLayout === 'cards' ? styles.hideOnDesktopIfCards : ''}`}>
+                  <table className={styles.manifestTable}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: '38px', textAlign: 'center' }}>
+                          <input
+                            type="checkbox"
+                            checked={selectedOrderIds.length > 0 && selectedOrderIds.length === processedOrders.length}
+                            onChange={toggleSelectAll}
+                            className={styles.checkboxInput}
+                            title="Select All"
+                          />
+                        </th>
+                        <th>Order ID &amp; Age</th>
+                        <th>Customer &amp; City</th>
+                        <th>Items &amp; Weight</th>
+                        <th>Amount</th>
+                        <th>Live Status</th>
+                        <th style={{ minWidth: '170px' }}>1-Click Next Action</th>
+                        <th style={{ minWidth: '140px' }}>DTDC Consignment</th>
+                        <th style={{ textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
                       {processedOrders.map((o) => {
                         const edit = editStates[o.id] || {
                           orderStatus: o.orderStatus || 'Confirmed',
@@ -1212,15 +1487,7 @@ export function AdminDispatchView() {
                         const isStatusOpen = openStatusMenuId === o.id;
 
                         return (
-                          <motion.tr
-                            key={o.id}
-                            className={`${styles.manifestRow} ${isSelected ? styles.manifestRowSelected : ''}`}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            {/* Checkbox */}
+                          <tr key={o.id} className={`${styles.manifestRow} ${isSelected ? styles.manifestRowSelected : ''}`}>
                             <td style={{ textAlign: 'center' }}>
                               <input
                                 type="checkbox"
@@ -1230,7 +1497,6 @@ export function AdminDispatchView() {
                               />
                             </td>
 
-                            {/* Order ID & Time */}
                             <td>
                               <div className={styles.tableIdCol}>
                                 <span className={styles.tableOrderId}>{o.id}</span>
@@ -1243,7 +1509,6 @@ export function AdminDispatchView() {
                               </div>
                             </td>
 
-                            {/* Customer & City */}
                             <td>
                               <div className={styles.tableCustomerCol}>
                                 <span className={styles.tableCustomerName}>{o.customerName}</span>
@@ -1254,7 +1519,6 @@ export function AdminDispatchView() {
                               </div>
                             </td>
 
-                            {/* Items & Weight */}
                             <td>
                               <div className={styles.tableItemsCol}>
                                 <span className={styles.tablePacksBadge}>
@@ -1270,7 +1534,6 @@ export function AdminDispatchView() {
                               </div>
                             </td>
 
-                            {/* Amount & Payment */}
                             <td>
                               <div className={styles.tableAmountCol}>
                                 <span className={styles.tableTotalVal}>₹{o.total}</span>
@@ -1280,7 +1543,6 @@ export function AdminDispatchView() {
                               </div>
                             </td>
 
-                            {/* Live Status Pill with Quick Selector */}
                             <td>
                               <div className={styles.statusPopoverContainer}>
                                 <button
@@ -1300,16 +1562,15 @@ export function AdminDispatchView() {
                                       ? styles.pillCancelled
                                       : styles.pillConfirmed
                                   }`}
-                                  title="Click to jump to any status directly"
+                                  title="Click to jump to any status"
                                 >
                                   <span>{getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus)}</span>
                                   <ChevronDown size={11} />
                                 </button>
 
-                                {/* Dropdown menu to jump to any status */}
                                 {isStatusOpen && (
                                   <div className={styles.statusDropdownMenu}>
-                                    <div className={styles.dropdownHeader}>Change Status</div>
+                                    <div className={styles.dropdownHeader}>Select Status</div>
                                     <button
                                       type="button"
                                       className={styles.statusOptionBtn}
@@ -1351,7 +1612,6 @@ export function AdminDispatchView() {
                               </div>
                             </td>
 
-                            {/* 1-Click Status Progression Action */}
                             <td>
                               {nextConfig ? (
                                 <motion.button
@@ -1369,7 +1629,6 @@ export function AdminDispatchView() {
                                   }`}
                                   whileHover={{ scale: 1.02 }}
                                   whileTap={{ scale: 0.96 }}
-                                  title={`Advance order to ${nextConfig.nextStatus}`}
                                 >
                                   {edit.isSaving ? (
                                     <span className={styles.savingSpinnerMini} />
@@ -1388,7 +1647,6 @@ export function AdminDispatchView() {
                               )}
                             </td>
 
-                            {/* DTDC AWB Consignment Field */}
                             <td>
                               <div className={styles.tableAwbWrap}>
                                 <input
@@ -1420,7 +1678,6 @@ export function AdminDispatchView() {
                               </div>
                             </td>
 
-                            {/* Quick Customer Communication Actions */}
                             <td style={{ textAlign: 'right' }}>
                               <div className={styles.tableActionsRow}>
                                 <a
@@ -1428,7 +1685,7 @@ export function AdminDispatchView() {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className={styles.actionIconBtn}
-                                  title="Send WhatsApp update to customer"
+                                  title="WhatsApp Customer"
                                 >
                                   <MessageCircle size={14} color="#25D366" />
                                 </a>
@@ -1442,7 +1699,7 @@ export function AdminDispatchView() {
                                     )
                                   }
                                   className={styles.actionIconBtn}
-                                  title="Copy courier address to clipboard"
+                                  title="Copy Courier Address"
                                 >
                                   <Copy size={13} />
                                 </button>
@@ -1451,25 +1708,21 @@ export function AdminDispatchView() {
                                   href={`/track?id=${o.id}`}
                                   target="_blank"
                                   className={styles.actionIconBtn}
-                                  title="Open live customer tracking page"
+                                  title="Live Tracking Page"
                                 >
                                   <ExternalLink size={13} />
                                 </Link>
                               </div>
                             </td>
-                          </motion.tr>
+                          </tr>
                         );
                       })}
-                    </AnimatePresence>
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              /* ============================================================
-                 B. DETAILED DISPATCH CARDS VIEW (Full Inspection)
-                 ============================================================ */
-              <div className={styles.ordersList}>
-                <AnimatePresence>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 2. RESPONSIVE MOBILE & CARD CARDS (Always used on mobile for flawless touch experience) */}
+                <div className={`${styles.mobileCardsList} ${manifestLayout === 'cards' ? styles.showOnDesktopIfCards : ''}`}>
                   {processedOrders.map((o) => {
                     const edit = editStates[o.id] || {
                       orderStatus: o.orderStatus || 'Confirmed',
@@ -1478,126 +1731,164 @@ export function AdminDispatchView() {
                       isSaving: false,
                       justSaved: false,
                     };
-
                     const uStatus = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
                     const nextConfig = getNextStatusConfig(uStatus);
                     const relativeAge = getRelativeDateLabel(o.createdAt);
                     const isSelected = selectedOrderIds.includes(o.id);
 
-                    const formattedDate = new Date(o.createdAt).toLocaleString('en-IN', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true,
-                    });
-
-                    // Stage indices for pipeline stepper
                     const statusOrder: UnifiedStatus[] = ['Confirmed', 'Processing', 'Shipped', 'Delivered'];
                     const currentStageIndex = statusOrder.indexOf(
                       uStatus === 'Out for Delivery' ? 'Shipped' : uStatus
                     );
 
                     return (
-                      <motion.div
+                      <div
                         key={o.id}
-                        className={`${styles.orderRowCard} ${isSelected ? styles.cardSelected : ''}`}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -12 }}
-                        transition={{ duration: 0.25 }}
+                        className={`${styles.mobileOrderCard} ${isSelected ? styles.cardSelected : ''}`}
                       >
-                        {/* CARD TOP HEADER */}
-                        <div className={styles.orderCardTop}>
-                          <div className={styles.orderMainId}>
+                        {/* Top ID & Live Status */}
+                        <div className={styles.mobileCardHeader}>
+                          <div className={styles.mobileIdWrap}>
                             <input
                               type="checkbox"
                               checked={isSelected}
                               onChange={() => toggleSelectOrder(o.id)}
                               className={styles.checkboxInput}
                             />
-                            <span>{o.id}</span>
-                            <div className={styles.orderDateWrap}>
-                              <span className={styles.orderDate}>{formattedDate}</span>
-                              <span className={styles.dateAgeBadge}>{relativeAge}</span>
-                            </div>
+                            <strong className={styles.mobileOrderIdText}>{o.id}</strong>
+                            <span className={styles.dateAgeBadge}>{relativeAge}</span>
                           </div>
 
-                          <div className={styles.cardHeaderRight}>
-                            <span className={styles.paymentMethodBadge}>
-                              {o.paymentMethod || 'Razorpay UPI'} • {o.paymentStatus || 'Paid'}
-                            </span>
-                            <span
-                              className={
-                                uStatus === 'Delivered'
-                                  ? styles.pillDelivered
-                                  : uStatus === 'Shipped' || uStatus === 'Out for Delivery'
-                                  ? styles.pillShipped
-                                  : uStatus === 'Processing'
-                                  ? styles.pillProcessing
-                                  : uStatus === 'Cancelled'
-                                  ? styles.pillCancelled
-                                  : styles.pillConfirmed
-                              }
-                            >
-                              {getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus)}
-                            </span>
-                          </div>
+                          <span
+                            className={
+                              uStatus === 'Delivered'
+                                ? styles.pillDeliveredSmall
+                                : uStatus === 'Shipped' || uStatus === 'Out for Delivery'
+                                ? styles.pillShippedSmall
+                                : uStatus === 'Processing'
+                                ? styles.pillProcessingSmall
+                                : styles.pillConfirmedSmall
+                            }
+                          >
+                            {getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus)}
+                          </span>
                         </div>
 
-                        {/* VISUAL PIPELINE STEPPER BAR */}
-                        <div className={styles.cardPipelineStepper}>
-                          {[
-                            { key: 'Confirmed', label: '1. Confirmed' },
-                            { key: 'Processing', label: '2. Packed' },
-                            { key: 'Shipped', label: '3. In Transit' },
-                            { key: 'Delivered', label: '4. Delivered' },
-                          ].map((step, idx) => {
-                            const isDone = currentStageIndex >= idx;
-                            const isCurrent = currentStageIndex === idx;
+                        {/* Customer & Items Brief */}
+                        <div className={styles.mobileCardContent}>
+                          <div className={styles.mobileCustomerRow}>
+                            <span className={styles.mobileCustomerName}>{o.customerName}</span>
+                            <span className={styles.mobileCustomerCity}>
+                              {o.shippingAddress?.city || 'Bengaluru'}
+                            </span>
+                          </div>
 
-                            return (
-                              <div
-                                key={step.key}
-                                className={`${styles.pipelineStepNode} ${
-                                  isDone ? styles.stepDone : ''
-                                } ${isCurrent ? styles.stepActive : ''}`}
-                              >
-                                <div className={styles.stepCircle}>
-                                  {isDone && !isCurrent ? <Check size={11} /> : idx + 1}
-                                </div>
-                                <span className={styles.stepLabel}>{step.label}</span>
+                          <div className={styles.mobileAddressLine}>
+                            {o.shippingAddress?.addressLine1}, {o.shippingAddress?.pincode} • Phone: <strong>{o.customerPhone}</strong>
+                          </div>
+
+                          {/* Items summary */}
+                          <div className={styles.mobileItemsList}>
+                            {o.items?.map((it, idx) => (
+                              <div key={idx} className={styles.mobileItemChip}>
+                                <span className={styles.chipQty}>{it.quantity}x</span>
+                                <span>{it.product.name}</span>
                               </div>
-                            );
-                          })}
-                        </div>
+                            ))}
+                          </div>
 
-                        {/* CARD BODY (3 COLUMNS) */}
-                        <div className={styles.orderCardBody}>
-                          {/* Column 1: Customer Details & Contact Actions */}
-                          <div className={styles.customerBlock}>
-                            <div className={styles.customerName}>{o.customerName}</div>
-                            <div className={styles.customerContact}>
-                              Phone: <strong>{o.customerPhone}</strong>
-                            </div>
-                            <div className={styles.customerContact}>{o.customerEmail}</div>
-                            <div className={styles.customerAddress}>
-                              {o.shippingAddress?.addressLine1}, {o.shippingAddress?.city}{' '}
-                              ({o.shippingAddress?.pincode})
+                          {/* Stepper Progression Bar */}
+                          <div className={styles.cardPipelineStepperMobile}>
+                            {['Confirmed', 'Packed', 'In Transit', 'Delivered'].map((stepName, idx) => {
+                              const isDone = currentStageIndex >= idx;
+                              const isCurrent = currentStageIndex === idx;
+                              return (
+                                <div
+                                  key={stepName}
+                                  className={`${styles.miniStepNode} ${isDone ? styles.stepDone : ''} ${isCurrent ? styles.stepActive : ''}`}
+                                >
+                                  <div className={styles.miniStepCircle}>
+                                    {isDone && !isCurrent ? <Check size={9} /> : idx + 1}
+                                  </div>
+                                  <span className={styles.miniStepLabel}>{stepName}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* 1-Click Fast Progression Button */}
+                          <div className={styles.mobileAdvanceSection}>
+                            {nextConfig ? (
+                              <motion.button
+                                type="button"
+                                onClick={() => handleQuickAdvance(o.id, nextConfig.nextStatus)}
+                                disabled={edit.isSaving}
+                                className={`${styles.mobileBigAdvanceBtn} ${
+                                  nextConfig.colorScheme === 'amber'
+                                    ? styles.nextBtnAmber
+                                    : nextConfig.colorScheme === 'blue'
+                                    ? styles.nextBtnBlue
+                                    : nextConfig.colorScheme === 'green'
+                                    ? styles.nextBtnGreen
+                                    : styles.nextBtnGray
+                                }`}
+                                whileTap={{ scale: 0.98 }}
+                              >
+                                {edit.isSaving ? (
+                                  <span>Advancing...</span>
+                                ) : (
+                                  <>
+                                    <span>{nextConfig.label}</span>
+                                    <ArrowRight size={13} />
+                                  </>
+                                )}
+                              </motion.button>
+                            ) : (
+                              <div className={styles.fulfilledCompleteBadgeMobile}>
+                                <CheckCircle2 size={15} />
+                                <span>Order Delivered &amp; Closed</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* DTDC AWB & Fast Actions */}
+                          <div className={styles.mobileAwbAndActionsRow}>
+                            <div className={styles.mobileAwbWrap}>
+                              <input
+                                type="text"
+                                className={`${styles.mobileAwbInput} ${edit.justSaved ? styles.awbSavedPulse : ''}`}
+                                placeholder="DTDC AWB Consignment No."
+                                value={edit.trackingNumber}
+                                onChange={(e) =>
+                                  setEditStates((prev) => ({
+                                    ...prev,
+                                    [o.id]: {
+                                      ...prev[o.id],
+                                      trackingNumber: e.target.value,
+                                    },
+                                  }))
+                                }
+                                onBlur={(e) => handleAwbSave(o.id, e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    handleAwbSave(o.id, (e.target as HTMLInputElement).value);
+                                  }
+                                }}
+                              />
                             </div>
 
-                            {/* Customer Communication Buttons */}
-                            <div className={styles.customerActionRow}>
+                            <div className={styles.mobileIconButtons}>
                               <a
                                 href={getWhatsAppLink(o)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={styles.btnWhatsApp}
+                                className={styles.btnWhatsAppMobile}
+                                title="WhatsApp Customer"
                               >
-                                <MessageCircle size={13} color="#25D366" />
-                                <span>WhatsApp Update</span>
+                                <MessageCircle size={15} />
+                                <span>WhatsApp</span>
                               </a>
+
                               <button
                                 type="button"
                                 onClick={() =>
@@ -1606,160 +1897,177 @@ export function AdminDispatchView() {
                                     'Address'
                                   )
                                 }
-                                className={styles.btnCopyAddress}
+                                className={styles.btnCopyMobile}
+                                title="Copy Address"
                               >
-                                <Copy size={12} />
-                                <span>Copy Address</span>
+                                <Copy size={14} />
                               </button>
-                            </div>
-                          </div>
-
-                          {/* Column 2: Items Ordered Breakdown */}
-                          <div className={styles.itemsBlock}>
-                            <div className={styles.itemsSummaryHeader}>Stone-Milled Batch Checklist:</div>
-                            <div className={styles.itemsSummary}>
-                              {o.items?.map((it, idx) => (
-                                <div key={idx} className={styles.itemRow}>
-                                  <span className={styles.itemQtyBadge}>{it.quantity}x</span>
-                                  <div className={styles.itemInfo}>
-                                    <span className={styles.itemTitle}>{it.product.name}</span>
-                                    <span className={styles.itemPack}>({it.product.packSize})</span>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                            <div className={styles.orderTotalAmount}>
-                              Total: <strong>₹{o.total}</strong>{' '}
-                              <span style={{ fontSize: '0.78rem', fontWeight: 400, color: 'var(--text-muted)' }}>
-                                ({o.weightGrams || 250}g net)
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Column 3: Dispatch & Status Control Hub */}
-                          <div className={styles.dispatchBlock}>
-                            {/* 1-Click Fast Progression Action */}
-                            <div className={styles.controlFieldGroup}>
-                              <label className={styles.fieldLabel}>Next Stage Progression</label>
-                              {nextConfig ? (
-                                <motion.button
-                                  type="button"
-                                  onClick={() => handleQuickAdvance(o.id, nextConfig.nextStatus)}
-                                  disabled={edit.isSaving}
-                                  className={`${styles.bigAdvanceBtn} ${
-                                    nextConfig.colorScheme === 'amber'
-                                      ? styles.nextBtnAmber
-                                      : nextConfig.colorScheme === 'blue'
-                                      ? styles.nextBtnBlue
-                                      : nextConfig.colorScheme === 'green'
-                                      ? styles.nextBtnGreen
-                                      : styles.nextBtnGray
-                                  }`}
-                                  whileHover={{ scale: 1.01, y: -1 }}
-                                  whileTap={{ scale: 0.98 }}
-                                >
-                                  {edit.isSaving ? (
-                                    <span>Saving Status...</span>
-                                  ) : (
-                                    <>
-                                      <span>{nextConfig.label}</span>
-                                      <ArrowRight size={14} />
-                                    </>
-                                  )}
-                                </motion.button>
-                              ) : (
-                                <div className={styles.fulfilledCompleteBadgeLarge}>
-                                  <CheckCircle2 size={16} />
-                                  <span>Order Fully Delivered &amp; Closed</span>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* DTDC AWB Consignment Field */}
-                            <div className={styles.controlFieldGroup}>
-                              <div className={styles.fieldLabelRow}>
-                                <label className={styles.fieldLabel}>DTDC Consignment AWB</label>
-                                {edit.trackingNumber && (
-                                  <a
-                                    href={`https://www.dtdc.in/tracking/shipment-tracking.asp?trNo=${edit.trackingNumber}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={styles.dtdcVerifyLink}
-                                  >
-                                    Verify on DTDC ↗
-                                  </a>
-                                )}
-                              </div>
-                              <div className={styles.tableAwbWrap}>
-                                <input
-                                  type="text"
-                                  className={`${styles.awbInput} ${edit.justSaved ? styles.awbSavedPulse : ''}`}
-                                  placeholder="e.g. D12345678"
-                                  value={edit.trackingNumber}
-                                  onChange={(e) =>
-                                    setEditStates((prev) => ({
-                                      ...prev,
-                                      [o.id]: {
-                                        ...prev[o.id],
-                                        trackingNumber: e.target.value,
-                                      },
-                                    }))
-                                  }
-                                  onBlur={(e) => handleAwbSave(o.id, e.target.value)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      handleAwbSave(o.id, (e.target as HTMLInputElement).value);
-                                    }
-                                  }}
-                                />
-                                {edit.justSaved && (
-                                  <span className={styles.awbCheckFeedback}>
-                                    <Check size={14} />
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Secondary Actions */}
-                            <div className={styles.actionBtnGroup}>
-                              <select
-                                className={styles.selectInputSmall}
-                                value={uStatus}
-                                onChange={(e) =>
-                                  handleQuickAdvance(o.id, e.target.value as UnifiedStatus)
-                                }
-                                title="Change status to any stage"
-                              >
-                                <option value="Confirmed">Order Confirmed</option>
-                                <option value="Processing">Prepared &amp; Packed</option>
-                                <option value="Shipped">In Transit (DTDC)</option>
-                                <option value="Out for Delivery">Out for Delivery</option>
-                                <option value="Delivered">Delivered</option>
-                                <option value="Cancelled">Cancelled</option>
-                              </select>
 
                               <Link
                                 href={`/track?id=${o.id}`}
                                 target="_blank"
-                                className={styles.viewTrackingLink}
+                                className={styles.btnTrackMobile}
+                                title="Live Customer Track"
                               >
-                                <span>Customer View</span>
-                                <ExternalLink size={12} />
+                                <ExternalLink size={14} />
                               </Link>
                             </div>
                           </div>
                         </div>
-                      </motion.div>
+                      </div>
                     );
                   })}
-                </AnimatePresence>
-              </div>
+                </div>
+              </>
             )}
-          </section>
+          </div>
+        )}
+
+        {/* ====================================================================
+            TAB C: PRODUCTS CATALOG (Stock & Availability)
+            ==================================================================== */}
+        {activeSidebarTab === 'products' && (
+          <div className={styles.dashboardContainer}>
+            <div className={styles.overviewHeaderRow}>
+              <div>
+                <h1 className={styles.overviewTitle}>Creations Catalog</h1>
+                <p className={styles.overviewDateText}>
+                  {PRODUCTS.length} Stone-Milled &amp; Pure Botanical Recipes
+                </p>
+              </div>
+
+              <Link href="/shop" target="_blank" className={styles.exportBtn}>
+                <Store size={13} />
+                <span>View Live Store ↗</span>
+              </Link>
+            </div>
+
+            <div className={styles.tableResponsiveWrapSimple}>
+              <table className={styles.simpleTable}>
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Pack Size</th>
+                    <th>Price</th>
+                    <th>Shelf Life</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PRODUCTS.map((prod) => (
+                    <tr key={prod.id}>
+                      <td>
+                        <div className={styles.productCellWrap}>
+                          <div className={styles.productAvatar}>
+                            <img
+                              src={prod.images?.primary || '/logo.png'}
+                              alt={prod.name}
+                              className={styles.productImgThumb}
+                            />
+                          </div>
+                          <div>
+                            <span className={styles.productRowName}>{prod.name}</span>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{prod.slug}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ textTransform: 'capitalize' }}>
+                        {prod.category.replace('-', ' & ')}
+                      </td>
+                      <td>{prod.packSize}</td>
+                      <td>
+                        <strong>₹{prod.price}</strong>
+                      </td>
+                      <td>{prod.shelfLife}</td>
+                      <td>
+                        <span className={styles.pillDeliveredSmall}>Available</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ====================================================================
+            TAB D: INQUIRIES DESK
+            ==================================================================== */}
+        {activeSidebarTab === 'inquiries' && (
+          <div className={styles.dashboardContainer}>
+            <div className={styles.overviewHeaderRow}>
+              <div>
+                <h1 className={styles.overviewTitle}>Kitchen Inquiries Desk</h1>
+                <p className={styles.overviewDateText}>
+                  Messages submitted by patrons from the Contact &amp; Atelier page
+                </p>
+              </div>
+
+              <Link href="/contact" target="_blank" className={styles.exportBtn}>
+                <ExternalLink size={13} />
+                <span>Open Contact Page ↗</span>
+              </Link>
+            </div>
+
+            <div className={styles.inquiriesListGrid}>
+              <div className={styles.inquiryCard}>
+                <div className={styles.inquiryHeader}>
+                  <div>
+                    <strong className={styles.inquiryName}>Kavya Ramesh</strong>
+                    <div className={styles.inquiryPhone}>+91 98450 11223 • Bengaluru</div>
+                  </div>
+                  <span className={styles.inquiryBadge}>Custom Grinding</span>
+                </div>
+                <p className={styles.inquiryBody}>
+                  "Can I request baby cereal mix ground slightly finer for a 6-month-old infant? We are introducing solids this week."
+                </p>
+                <div className={styles.inquiryFooter}>
+                  <span className={styles.inquiryTime}>Today, 10:15 AM</span>
+                  <a
+                    href="https://wa.me/919845011223?text=Hello%20Kavya!%20Yes,%20our%20kitchen%20can%20custom-mill%20the%20Baby%20Cereal%20Mix%20extra-fine%20for%20your%206-month-old."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.btnWhatsApp}
+                  >
+                    <MessageCircle size={13} color="#25D366" />
+                    <span>Reply via WhatsApp</span>
+                  </a>
+                </div>
+              </div>
+
+              <div className={styles.inquiryCard}>
+                <div className={styles.inquiryHeader}>
+                  <div>
+                    <strong className={styles.inquiryName}>Ananya Deshmukh</strong>
+                    <div className={styles.inquiryPhone}>+91 97110 44556 • Mysuru</div>
+                  </div>
+                  <span className={styles.inquiryBadge}>Bulk / Gifting</span>
+                </div>
+                <p className={styles.inquiryBody}>
+                  "Looking to order 15 boxes of Sprouted Ragi Porridge and Kids Herbal Bath powder as traditional baby shower gifts."
+                </p>
+                <div className={styles.inquiryFooter}>
+                  <span className={styles.inquiryTime}>Yesterday, 04:30 PM</span>
+                  <a
+                    href="https://wa.me/919711044556?text=Hello%20Ananya!%20We%20would%20love%20to%20prepare%2015%20fresh%20traditional%20gift%20boxes%20for%20your%20baby%20shower."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.btnWhatsApp}
+                  >
+                    <MessageCircle size={13} color="#25D366" />
+                    <span>Reply via WhatsApp</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
-      {/* 5. FLOATING BULK ACTIONS BAR (When 1+ Orders Selected) */}
+      {/* ====================================================================
+          3. FLOATING BULK ACTIONS BAR (When 1+ Orders Selected)
+          ==================================================================== */}
       <AnimatePresence>
         {selectedOrderIds.length > 0 && (
           <motion.div
@@ -1782,7 +2090,7 @@ export function AdminDispatchView() {
                   className={styles.bulkActionBtn}
                 >
                   <Package size={13} />
-                  <span>Mark as Prepared &amp; Packed</span>
+                  <span>Mark as Packed</span>
                 </button>
 
                 <button
@@ -1791,7 +2099,7 @@ export function AdminDispatchView() {
                   className={styles.bulkActionBtn}
                 >
                   <Truck size={13} />
-                  <span>Mark as In Transit (DTDC)</span>
+                  <span>Mark as In Transit</span>
                 </button>
 
                 <button
@@ -1800,7 +2108,7 @@ export function AdminDispatchView() {
                   className={styles.bulkActionBtnSecondary}
                 >
                   <Download size={13} />
-                  <span>Export Selection</span>
+                  <span>Export</span>
                 </button>
 
                 <button
@@ -1817,7 +2125,9 @@ export function AdminDispatchView() {
         )}
       </AnimatePresence>
 
-      {/* 6. FLOATING TOAST NOTIFICATION STACK */}
+      {/* ====================================================================
+          4. FLOATING TOAST NOTIFICATION STACK
+          ==================================================================== */}
       <div className={styles.toastContainer}>
         <AnimatePresence>
           {toasts.map((toast) => (
@@ -1847,6 +2157,6 @@ export function AdminDispatchView() {
           ))}
         </AnimatePresence>
       </div>
-    </main>
+    </div>
   );
 }

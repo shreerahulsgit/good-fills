@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 import { usePreloader } from '@/lib/preloader-context';
 
 const luxuryEase = [0.16, 1, 0.3, 1] as const;
@@ -14,12 +15,19 @@ const POETIC_PHRASES = [
 ];
 
 export function Preloader() {
+  const pathname = usePathname();
   const { isLoaded, setIsLoaded, showPreloader, setShowPreloader } = usePreloader();
   const [progress, setProgress] = useState(0);
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [isLifting, setIsLifting] = useState(false);
 
   useEffect(() => {
+    if (pathname?.startsWith('/admin')) {
+      setIsLoaded(true);
+      setShowPreloader(false);
+      return;
+    }
+
     const isPreview = typeof window !== 'undefined' && window.location.search.includes('preview');
     const hasSeen = typeof window !== 'undefined' && sessionStorage.getItem('good_fills_preloader_seen');
 
@@ -74,7 +82,7 @@ export function Preloader() {
     requestAnimationFrame(animateProgress);
   }, [setIsLoaded, setShowPreloader]);
 
-  if (!showPreloader) return null;
+  if (pathname?.startsWith('/admin') || !showPreloader) return null;
 
   return (
     <motion.div

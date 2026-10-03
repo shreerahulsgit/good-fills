@@ -3,16 +3,17 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
-  z-index: 900;
+  z-index: 99999; /* Top priority above all elements */
   width: calc(100vw - 32px);
-  max-width: 360px;
-  animation: slideInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 350px;
+  animation: slideInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: auto;
 }
 
 @keyframes slideInUp {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.96);
+    transform: translateY(24px) scale(0.96);
   }
   to {
     opacity: 1;
@@ -23,10 +24,10 @@
 .toastCard {
   position: relative;
   background: #FFFFFF;
-  border: 1px solid rgba(151, 65, 29, 0.2);
+  border: 1px solid rgba(151, 65, 29, 0.22);
   border-radius: 16px;
   padding: 16px 18px 14px;
-  box-shadow: 0 12px 36px -4px rgba(34, 24, 19, 0.16), 0 4px 12px rgba(34, 24, 19, 0.08);
+  box-shadow: 0 16px 40px -8px rgba(34, 24, 19, 0.22), 0 4px 16px rgba(34, 24, 19, 0.08);
   overflow: hidden;
 }
 
@@ -36,7 +37,7 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: 3.5px;
   background: linear-gradient(90deg, var(--accent-terracotta) 0%, #D48E38 100%);
 }
 
@@ -63,23 +64,25 @@
 }
 
 .closeBtn {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  border: none;
-  background-color: rgba(34, 24, 19, 0.06);
-  color: var(--text-secondary);
+  border: 1px solid rgba(151, 65, 29, 0.15);
+  background-color: #FAF6F0;
+  color: var(--text-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.15s ease;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .closeBtn:hover {
   background-color: var(--accent-terracotta);
   color: #FFFFFF;
+  border-color: var(--accent-terracotta);
   transform: rotate(90deg);
 }
 

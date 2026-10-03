@@ -41,20 +41,6 @@ export function SiteHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
-  const [isIntlModalOpen, setIsIntlModalOpen] = useState(false);
-
-  // Auto-open international delivery modal once per session
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const hasDismissed = sessionStorage.getItem('gf_intl_popup_dismissed');
-      if (!hasDismissed) {
-        const timer = setTimeout(() => {
-          setIsIntlModalOpen(true);
-        }, 3200);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, []);
 
   const shopDropdownTimerRef = useRef<NodeJS.Timeout | null>(null);
   const accountDropdownRef = useRef<HTMLDivElement>(null);
@@ -147,7 +133,11 @@ export function SiteHeader() {
               ✈️ <strong>International Delivery Available</strong> — Custom DTDC courier rates for overseas orders.{' '}
               <button
                 type="button"
-                onClick={() => setIsIntlModalOpen(true)}
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('gf_open_intl_toast'));
+                  }
+                }}
                 className={styles.announcementLink}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
               >
@@ -577,7 +567,9 @@ export function SiteHeader() {
                   type="button"
                   onClick={() => {
                     setIsMobileMenuOpen(false);
-                    setIsIntlModalOpen(true);
+                    if (typeof window !== 'undefined') {
+                      window.dispatchEvent(new CustomEvent('gf_open_intl_toast'));
+                    }
                   }}
                   className={styles.drawerConciergeCard}
                   style={{ marginTop: '8px', border: '1px solid rgba(151, 65, 29, 0.2)', backgroundColor: '#FAF6F0' }}
@@ -633,7 +625,7 @@ export function SiteHeader() {
 
       {/* Embedded Modals & Cart Drawer */}
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-      <InternationalDeliveryModal isOpen={isIntlModalOpen} onClose={() => setIsIntlModalOpen(false)} />
+      <InternationalDeliveryModal />
       <CartDrawer />
     </>
   );

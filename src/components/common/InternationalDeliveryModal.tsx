@@ -1,32 +1,65 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { X, Globe, MessageCircle, PhoneCall, ArrowRight } from 'lucide-react';
 import styles from './InternationalDeliveryModal.module.css';
 
 interface InternationalDeliveryModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export function InternationalDeliveryModal({ isOpen, onClose }: InternationalDeliveryModalProps) {
+export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOnClose }: InternationalDeliveryModalProps) {
   const atelierPhone = '9742068899';
   const whatsappUrl = `https://wa.me/91${atelierPhone}?text=${encodeURIComponent(
     'Hello Good Fills! 🌿 I would like to place an order for delivery outside India. Please share details on courier rates and items.'
   )}`;
 
-  if (!isOpen) return null;
+  // Default to true so it is immediately visible on the bottom-right corner!
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    // Hide only if the user explicitly clicked the cross button in this session
+    if (typeof window !== 'undefined') {
+      const isDismissed = sessionStorage.getItem('gf_intl_corner_toast_dismissed') === 'true';
+      if (isDismissed) {
+        setIsVisible(false);
+      }
+    }
+  }, []);
+
+  // Sync with prop if explicitly provided
+  useEffect(() => {
+    if (propIsOpen !== undefined) {
+      setIsVisible(propIsOpen);
+    }
+  }, [propIsOpen]);
+
+  // Listen to open events from anywhere (e.g. announcement bar click)
+  useEffect(() => {
+    const handleOpen = () => {
+      setIsVisible(true);
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('gf_intl_corner_toast_dismissed');
+      }
+    };
+    window.addEventListener('gf_open_intl_toast', handleOpen);
+    return () => window.removeEventListener('gf_open_intl_toast', handleOpen);
+  }, []);
 
   const handleDismiss = () => {
+    setIsVisible(false);
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('gf_intl_popup_dismissed', 'true');
+      sessionStorage.setItem('gf_intl_corner_toast_dismissed', 'true');
     }
-    onClose();
+    if (propOnClose) propOnClose();
   };
 
+  if (!isVisible) return null;
+
   return (
-    <div
+    <aside
       className={styles.floatingContainer}
       role="region"
       aria-label="International delivery notification"
@@ -98,6 +131,6 @@ export function InternationalDeliveryModal({ isOpen, onClose }: InternationalDel
           </button>
         </div>
       </div>
-    </div>
+    </aside>
   );
 }

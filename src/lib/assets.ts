@@ -10,89 +10,89 @@ export const BRAND_ASSETS = {
 };
 
 export const CATEGORY_ASSETS = {
-  'baby-kids': 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=900&q=80', // Gentle warm natural baby scene
-  'nutrition-wellness': 'https://images.unsplash.com/photo-1514733670139-4d87a1941d55?auto=format&fit=crop&w=900&q=80', // Traditional herbs & spices
-  'skin-bath': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80', // Herbal ubtan, sandalwood, rose botanicals
-  'pantry-beverages': 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=900&q=80', // Filter coffee and pure amber honey
+  'baby-kids': '/images/story/category-baby-kids.jpg',
+  'nutrition-wellness': '/images/story/category-nutrition-wellness.jpg',
+  'skin-bath': '/images/story/category-skin-bath.jpg',
+  'pantry-beverages': '/images/story/category-pantry-beverages.jpg',
 };
 
 export const PRODUCT_ASSETS: Record<string, { primary: string; packaging: string; detail: string; lifestyle: string }> = {
   'baby-cereal-mix': {
-    primary: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80',
-    packaging: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&q=80',
+    primary: '/images/products/baby-cereal-mix.jpg',
+    packaging: '/images/products/baby-cereal-mix.jpg',
     detail: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=800&q=80',
-    lifestyle: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=800&q=80',
+    lifestyle: '/images/products/baby-cereal-mix.jpg',
   },
   'ragi-porridge-mix': {
-    primary: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=800&q=80',
-    packaging: 'https://images.unsplash.com/photo-1589365278144-c9e705f843ba?auto=format&fit=crop&w=800&q=80',
+    primary: '/images/products/ragi-porridge-mix.jpg',
+    packaging: '/images/products/ragi-porridge-mix.jpg',
     detail: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80',
-    lifestyle: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80',
+    lifestyle: '/images/products/ragi-porridge-mix.jpg',
   },
   'kids-bath-powder': {
-    primary: 'https://images.unsplash.com/photo-1608248597359-0097f482d8c3?auto=format&fit=crop&w=800&q=80',
-    packaging: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80',
+    primary: '/images/products/kids-bath-powder.jpg',
+    packaging: '/images/products/kids-bath-powder.jpg',
     detail: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
-    lifestyle: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=800&q=80',
+    lifestyle: '/images/products/kids-bath-powder.jpg',
   },
   'kids-nutrition-powder': {
-    primary: 'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=800&q=80',
-    packaging: 'https://images.unsplash.com/photo-1589365278144-c9e705f843ba?auto=format&fit=crop&w=800&q=80',
+    primary: '/images/products/kids-nutrition-powder.jpg',
+    packaging: '/images/products/kids-nutrition-powder.jpg',
     detail: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80',
-    lifestyle: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=800&q=80',
+    lifestyle: '/images/products/kids-nutrition-powder.jpg',
   },
   'baby-ragi-sari': {
-    primary: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80',
-    packaging: 'https://images.unsplash.com/photo-1589365278144-c9e705f843ba?auto=format&fit=crop&w=800&q=80',
+    primary: '/images/products/baby-ragi-sari.jpg',
+    packaging: '/images/products/baby-ragi-sari.jpg',
     detail: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=800&q=80',
-    lifestyle: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=800&q=80',
+    lifestyle: '/images/products/baby-ragi-sari.jpg',
   },
   'immunitea': {
-    primary: 'https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&w=800&q=80',
-    packaging: 'https://images.unsplash.com/photo-1589365278144-c9e705f843ba?auto=format&fit=crop&w=800&q=80',
+    primary: '/images/products/immunitea.jpg',
+    packaging: '/images/products/immunitea.jpg',
     detail: 'https://images.unsplash.com/photo-1514733670139-4d87a1941d55?auto=format&fit=crop&w=800&q=80',
-    lifestyle: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80',
+    lifestyle: '/images/products/immunitea.jpg',
   },
   'wonder-millet-mix': {
-    primary: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80',
-    packaging: 'https://images.unsplash.com/photo-1589365278144-c9e705f843ba?auto=format&fit=crop&w=800&q=80',
+    primary: '/images/products/wonder-millet-mix.jpg',
+    packaging: '/images/products/wonder-millet-mix.jpg',
     detail: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=800&q=80',
-    lifestyle: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80',
+    lifestyle: '/images/products/wonder-millet-mix.jpg',
   },
   'homemade-protein-powder': {
-    primary: 'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=800&q=80',
-    packaging: 'https://images.unsplash.com/photo-1589365278144-c9e705f843ba?auto=format&fit=crop&w=800&q=80',
+    primary: '/images/products/homemade-protein-powder.jpg',
+    packaging: '/images/products/homemade-protein-powder.jpg',
     detail: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80',
-    lifestyle: 'https://images.unsplash.com/photo-1514733670139-4d87a1941d55?auto=format&fit=crop&w=800&q=80',
+    lifestyle: '/images/products/homemade-protein-powder.jpg',
   },
   'instant-barley-soup-mix': {
-    primary: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80',
-    packaging: 'https://images.unsplash.com/photo-1589365278144-c9e705f843ba?auto=format&fit=crop&w=800&q=80',
+    primary: '/images/products/instant-barley-soup-mix.jpg',
+    packaging: '/images/products/instant-barley-soup-mix.jpg',
     detail: 'https://images.unsplash.com/photo-1514733670139-4d87a1941d55?auto=format&fit=crop&w=800&q=80',
-    lifestyle: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=800&q=80',
+    lifestyle: '/images/products/instant-barley-soup-mix.jpg',
   },
   'ubtan-face-pack': {
-    primary: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80',
-    packaging: 'https://images.unsplash.com/photo-1608248597359-0097f482d8c3?auto=format&fit=crop&w=800&q=80',
+    primary: '/images/products/ubtan-face-pack.jpg',
+    packaging: '/images/products/ubtan-face-pack.jpg',
     detail: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
-    lifestyle: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=800&q=80',
+    lifestyle: '/images/products/ubtan-face-pack.jpg',
   },
   'sandal-bath-powder': {
-    primary: 'https://images.unsplash.com/photo-1608248597359-0097f482d8c3?auto=format&fit=crop&w=800&q=80',
-    packaging: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80',
+    primary: '/images/products/sandal-bath-powder.jpg',
+    packaging: '/images/products/sandal-bath-powder.jpg',
     detail: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
-    lifestyle: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=800&q=80',
+    lifestyle: '/images/products/sandal-bath-powder.jpg',
   },
   'pure-mountain-honey': {
-    primary: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&q=80',
-    packaging: 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?auto=format&fit=crop&w=800&q=80',
+    primary: '/images/products/pure-mountain-honey.jpg',
+    packaging: '/images/products/pure-mountain-honey.jpg',
     detail: 'https://images.unsplash.com/photo-1471943311424-646960669fbc?auto=format&fit=crop&w=800&q=80',
-    lifestyle: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&q=80',
+    lifestyle: '/images/products/pure-mountain-honey.jpg',
   },
   'filter-coffee-powder': {
-    primary: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
-    packaging: 'https://images.unsplash.com/photo-1589365278144-c9e705f843ba?auto=format&fit=crop&w=800&q=80',
+    primary: '/images/products/filter-coffee-powder.jpg',
+    packaging: '/images/products/filter-coffee-powder.jpg',
     detail: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=800&q=80',
-    lifestyle: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80',
+    lifestyle: '/images/products/filter-coffee-powder.jpg',
   }
 };

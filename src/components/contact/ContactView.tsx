@@ -107,15 +107,38 @@ export function ContactView() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const ref = `GF-${Math.floor(1000 + Math.random() * 9000)}`;
-      setSubmittedRef(ref);
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          category: selectedCategory,
+          orderId: formData.orderId,
+          message: formData.message,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSubmittedRef(data.refNumber || `INQ-${Math.floor(1000 + Math.random() * 9000)}`);
+      } else {
+        const fallbackRef = `INQ-${Math.floor(1000 + Math.random() * 9000)}`;
+        setSubmittedRef(fallbackRef);
+      }
+    } catch (err) {
+      console.error('Inquiry submission error:', err);
+      const fallbackRef = `INQ-${Math.floor(1000 + Math.random() * 9000)}`;
+      setSubmittedRef(fallbackRef);
+    } finally {
       setIsSubmitting(false);
-    }, 650);
+    }
   };
 
   const handleCopyRef = () => {

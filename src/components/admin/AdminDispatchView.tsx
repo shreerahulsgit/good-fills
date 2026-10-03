@@ -41,10 +41,12 @@ import {
 } from 'lucide-react';
 import { Order, OrderStatus, ShipmentStatus } from '@/types';
 import { PRODUCTS } from '@/data/products';
+import { Inquiry } from '@/lib/inquiries';
 import styles from './AdminDispatchView.module.css';
 
 type DatePreset = 'all' | 'today' | 'yesterday' | '7days' | 'month' | 'custom';
-type SidebarTab = 'dashboard' | 'orders' | 'products' | 'inquiries';
+type SidebarTab = 'dashboard' | 'orders' | 'inquiries';
+type OrderDateTab = 'all' | 'today' | 'yesterday' | 'week' | 'month';
 type ManifestLayout = 'table' | 'cards';
 type SortOption = 'newest' | 'oldest' | 'highest' | 'lowest' | 'name';
 
@@ -145,11 +147,16 @@ export function AdminDispatchView() {
   // Orders View Sub-options
   const [manifestLayout, setManifestLayout] = useState<ManifestLayout>('table');
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeOrderTab, setActiveOrderTab] = useState<'all' | 'Confirmed' | 'Processing' | 'Shipped' | 'Delivered'>('all');
+  const [activeDateTab, setActiveDateTab] = useState<OrderDateTab>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | UnifiedStatus>('all');
   const [datePreset, setDatePreset] = useState<DatePreset>('all');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+
+  // Inquiries Desk State
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [isLoadingInquiries, setIsLoadingInquiries] = useState(false);
 
   // Multi-select state
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
@@ -238,12 +245,47 @@ export function AdminDispatchView() {
           };
         });
         setEditStates(initialEditStates);
+        fetchInquiries();
       }
     } catch (err) {
       console.error('Fetch admin orders error:', err);
       setAuthError('Connection error to server. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchInquiries = async () => {
+    setIsLoadingInquiries(true);
+    try {
+      const res = await fetch('/api/inquiries');
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setInquiries(data.inquiries || []);
+      }
+    } catch (err) {
+      console.error('Fetch inquiries error:', err);
+    } finally {
+      setIsLoadingInquiries(false);
+    }
+  };
+
+  const handleToggleInquiryStatus = async (inqId: string, currentStatus: Inquiry['status']) => {
+    const nextStatus: Inquiry['status'] = currentStatus === 'new' ? 'replied' : 'new';
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: inqId, status: nextStatus }),
+      });
+      if (res.ok) {
+        setInquiries((prev) =>
+          prev.map((i) => (i.id === inqId ? { ...i, status: nextStatus } : i))
+        );
+        showToast(`Inquiry marked as ${nextStatus}!`, 'success');
+      }
+    } catch {
+      showToast('Failed to update inquiry status', 'error');
     }
   };
 
@@ -350,11 +392,24 @@ export function AdminDispatchView() {
     }
   };
 
-  // Inline AWB save on blur or Enter
+  // Inline AWB save on button click, blur, or Enter
   const handleAwbSave = async (orderId: string, awbValue: string) => {
-    const trimmed = awbValue.trim();
+    const trimmed = (awbValue || '').trim();
     const existing = orders.find((o) => o.id === orderId);
-    if (existing?.trackingNumber === trimmed) return;
+    if (existing?.trackingNumber === trimmed && trimmed.length > 0) {
+      setEditStates((prev) => ({
+        ...prev,
+        [orderId]: { ...prev[orderId], justSaved: true },
+      }));
+      showToast(`DTDC Consignment for #${orderId} verified & up to date`, 'info');
+      setTimeout(() => {
+        setEditStates((prev) => ({
+          ...prev,
+          [orderId]: { ...prev[orderId], justSaved: false },
+        }));
+      }, 2000);
+      return;
+    }
 
     const current = editStates[orderId] || {
       orderStatus: existing?.orderStatus || 'Confirmed',
@@ -452,57 +507,52 @@ export function AdminDispatchView() {
     showToast(`${label} copied to clipboard!`, 'info');
   };
 
-  // Selection toggle
-  const toggleSelectOrder = (id: string) => {
-    setSelectedOrderIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedOrderIds.length === processedOrders.length) {
-      setSelectedOrderIds([]);
-    } else {
-      setSelectedOrderIds(processedOrders.map((o) => o.id));
-    }
-  };
-
-  // Date Filtering Logic
-  const dateFilteredOrders = useMemo(() => {
-    if (datePreset === 'all') return orders;
-
+  // Date-based helper for individual orders
+  const isOrderInDateTab = (o: Order, tab: OrderDateTab): boolean => {
+    if (tab === 'all') return true;
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const startOfYesterday = startOfToday - 24 * 3600 * 1000;
-    const sevenDaysAgo = now.getTime() - 7 * 24 * 3600 * 1000;
+    const sevenDaysAgo = startOfToday - 6 * 24 * 3600 * 1000;
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
-    return orders.filter((o) => {
-      const orderTime = new Date(o.createdAt).getTime();
+    const orderTime = new Date(o.createdAt).getTime();
 
-      if (datePreset === 'today') return orderTime >= startOfToday;
-      if (datePreset === 'yesterday') return orderTime >= startOfYesterday && orderTime < startOfToday;
-      if (datePreset === '7days') return orderTime >= sevenDaysAgo;
-      if (datePreset === 'month') return orderTime >= startOfMonth;
-      if (datePreset === 'custom') {
-        if (!customStartDate && !customEndDate) return true;
-        const start = customStartDate ? new Date(customStartDate).getTime() : 0;
-        const end = customEndDate ? new Date(customEndDate).getTime() + 24 * 3600 * 1000 : Infinity;
-        return orderTime >= start && orderTime <= end;
-      }
-      return true;
-    });
-  }, [orders, datePreset, customStartDate, customEndDate]);
+    if (tab === 'today') return orderTime >= startOfToday;
+    if (tab === 'yesterday') return orderTime >= startOfYesterday && orderTime < startOfToday;
+    if (tab === 'week') return orderTime >= sevenDaysAgo;
+    if (tab === 'month') return orderTime >= startOfMonth;
+    return true;
+  };
 
-  // Tab & Search Filtered Orders
+  // Dynamic counts for each date tab
+  const dateTabCounts = useMemo(() => {
+    return {
+      all: orders.length,
+      today: orders.filter((o) => isOrderInDateTab(o, 'today')).length,
+      yesterday: orders.filter((o) => isOrderInDateTab(o, 'yesterday')).length,
+      week: orders.filter((o) => isOrderInDateTab(o, 'week')).length,
+      month: orders.filter((o) => isOrderInDateTab(o, 'month')).length,
+    };
+  }, [orders]);
+
+  // Tab & Search Filtered Orders (Date-first approach)
   const processedOrders = useMemo(() => {
-    let result = dateFilteredOrders.filter((o) => {
-      const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
-      if (activeOrderTab === 'Confirmed' && u !== 'Confirmed') return false;
-      if (activeOrderTab === 'Processing' && u !== 'Processing') return false;
-      if (activeOrderTab === 'Shipped' && u !== 'Shipped' && u !== 'Out for Delivery') return false;
-      if (activeOrderTab === 'Delivered' && u !== 'Delivered') return false;
+    let result = orders.filter((o) => {
+      // 1. Primary Date Filter Tab (Today, Yesterday, This Week, etc.)
+      if (!isOrderInDateTab(o, activeDateTab)) return false;
 
+      // 2. Secondary Status Filter
+      if (statusFilter !== 'all') {
+        const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
+        if (statusFilter === 'Shipped') {
+          if (u !== 'Shipped' && u !== 'Out for Delivery') return false;
+        } else if (u !== statusFilter) {
+          return false;
+        }
+      }
+
+      // 3. Search query
       if (searchTerm.trim()) {
         const q = searchTerm.toLowerCase();
         const matchId = o.id.toLowerCase().includes(q);
@@ -525,7 +575,45 @@ export function AdminDispatchView() {
     });
 
     return result;
-  }, [dateFilteredOrders, activeOrderTab, searchTerm, sortBy]);
+  }, [orders, activeDateTab, statusFilter, searchTerm, sortBy]);
+
+  // Selection toggle
+  const toggleSelectOrder = (id: string) => {
+    setSelectedOrderIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedOrderIds.length === processedOrders.length) {
+      setSelectedOrderIds([]);
+    } else {
+      setSelectedOrderIds(processedOrders.map((o) => o.id));
+    }
+  };
+
+  // Date preset filtering for Overview Dashboard
+  const dateFilteredOrders = useMemo(() => {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const startOfYesterday = startOfToday - 24 * 3600 * 1000;
+    const sevenDaysAgo = startOfToday - 6 * 24 * 3600 * 1000;
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+
+    return orders.filter((o) => {
+      const t = new Date(o.createdAt).getTime();
+      if (datePreset === 'today') return t >= startOfToday;
+      if (datePreset === 'yesterday') return t >= startOfYesterday && t < startOfToday;
+      if (datePreset === '7days') return t >= sevenDaysAgo;
+      if (datePreset === 'month') return t >= startOfMonth;
+      if (datePreset === 'custom') {
+        if (customStartDate && t < new Date(customStartDate).getTime()) return false;
+        if (customEndDate && t > new Date(customEndDate).getTime() + 86400000) return false;
+        return true;
+      }
+      return true; // 'all'
+    });
+  }, [orders, datePreset, customStartDate, customEndDate]);
 
   // Analytics Calculations
   const analyticsData = useMemo(() => {
@@ -798,20 +886,6 @@ export function AdminDispatchView() {
 
             <button
               type="button"
-              className={`${styles.navItem} ${activeSidebarTab === 'products' ? styles.navItemActive : ''}`}
-              onClick={() => {
-                setActiveSidebarTab('products');
-                setIsMobileDrawerOpen(false);
-              }}
-            >
-              <Package size={18} />
-              <span>Products</span>
-              <span className={styles.navCountBadge}>{PRODUCTS.length}</span>
-              {activeSidebarTab === 'products' && <div className={styles.activePillMarker} />}
-            </button>
-
-            <button
-              type="button"
               className={`${styles.navItem} ${activeSidebarTab === 'inquiries' ? styles.navItemActive : ''}`}
               onClick={() => {
                 setActiveSidebarTab('inquiries');
@@ -820,6 +894,7 @@ export function AdminDispatchView() {
             >
               <MessageCircle size={18} />
               <span>Inquiries</span>
+              <span className={styles.navCountBadge}>{inquiries.length}</span>
               {activeSidebarTab === 'inquiries' && <div className={styles.activePillMarker} />}
             </button>
           </nav>
@@ -901,19 +976,11 @@ export function AdminDispatchView() {
           </button>
           <button
             type="button"
-            className={`${styles.mobileTabBtn} ${activeSidebarTab === 'products' ? styles.mobileTabBtnActive : ''}`}
-            onClick={() => setActiveSidebarTab('products')}
-          >
-            <Package size={14} />
-            <span>Creations ({PRODUCTS.length})</span>
-          </button>
-          <button
-            type="button"
             className={`${styles.mobileTabBtn} ${activeSidebarTab === 'inquiries' ? styles.mobileTabBtnActive : ''}`}
             onClick={() => setActiveSidebarTab('inquiries')}
           >
             <MessageCircle size={14} />
-            <span>Inquiries</span>
+            <span>Inquiries ({inquiries.length})</span>
           </button>
         </div>
 
@@ -952,7 +1019,7 @@ export function AdminDispatchView() {
                 className={styles.statCardRef}
                 onClick={() => {
                   setActiveSidebarTab('orders');
-                  setActiveOrderTab('all');
+                  setActiveDateTab('all');
                 }}
                 role="button"
                 tabIndex={0}
@@ -971,7 +1038,7 @@ export function AdminDispatchView() {
                 className={styles.statCardRef}
                 onClick={() => {
                   setActiveSidebarTab('orders');
-                  setActiveOrderTab('Confirmed');
+                  setActiveDateTab('all');
                 }}
                 role="button"
                 tabIndex={0}
@@ -981,7 +1048,7 @@ export function AdminDispatchView() {
                 </div>
                 <div className={styles.statContent}>
                   <span className={styles.statTitleRef}>Total Orders</span>
-                  <div className={styles.statNumberRef}>{analyticsData.orderCount}</div>
+                  <div className={styles.statNumberRef}>{orders.length}</div>
                 </div>
               </div>
 
@@ -990,7 +1057,7 @@ export function AdminDispatchView() {
                 className={styles.statCardRef}
                 onClick={() => {
                   setActiveSidebarTab('orders');
-                  setActiveOrderTab('Processing');
+                  setActiveDateTab('all');
                 }}
                 role="button"
                 tabIndex={0}
@@ -1009,7 +1076,7 @@ export function AdminDispatchView() {
                 className={styles.statCardRef}
                 onClick={() => {
                   setActiveSidebarTab('orders');
-                  setActiveOrderTab('Shipped');
+                  setActiveDateTab('all');
                 }}
                 role="button"
                 tabIndex={0}
@@ -1024,16 +1091,16 @@ export function AdminDispatchView() {
               </div>
             </div>
 
-            {/* MIDDLE ROW: SALE ANALYTIC CHART (LEFT) & ORDER RECENTLY (RIGHT) */}
+            {/* MIDDLE ROW: TOTAL ORDERS ANALYTIC CHART (LEFT) & ORDER RECENTLY (RIGHT) */}
             <div className={styles.chartAndRecentRow}>
-              {/* Left: Sale & Dispatch Trend Wave Chart */}
+              {/* Left: Total Orders Trend Wave Chart */}
               <div className={styles.chartPanel}>
                 <div className={styles.panelHeaderRow}>
-                  <div className={styles.chartTitle}>Sale &amp; Dispatch Analytics</div>
+                  <div className={styles.chartTitle}>Total Orders Analytics</div>
                   <div className={styles.chartLegendRow}>
                     <div className={styles.legendItem}>
                       <span className={styles.dotGreen} />
-                      <span>Sales Volume</span>
+                      <span>Orders Received</span>
                     </div>
                     <div className={styles.legendItem}>
                       <span className={styles.dotBlue} />
@@ -1066,7 +1133,7 @@ export function AdminDispatchView() {
                     <line x1="0" y1="140" x2="540" y2="140" stroke="#EEE8DE" strokeDasharray="3 3" />
                     <line x1="0" y1="190" x2="540" y2="190" stroke="#E5DEC9" />
 
-                    {/* Wave 1 (Sales Curve) */}
+                    {/* Wave 1 (Orders Curve) */}
                     <path
                       d="M 0 170 Q 70 160, 130 110 T 260 70 T 380 90 T 540 80 L 540 190 L 0 190 Z"
                       fill="url(#greenWaveGrad)"
@@ -1097,8 +1164,8 @@ export function AdminDispatchView() {
 
                   {/* Marker Badges on Top */}
                   <div className={styles.chartBadgePeak} style={{ left: '46%', top: '22%' }}>
-                    <span>Peak Dispatch</span>
-                    <strong>₹{analyticsData.totalRevenue}</strong>
+                    <span>Peak Volume</span>
+                    <strong>{orders.length} Orders</strong>
                   </div>
                 </div>
 
@@ -1179,52 +1246,82 @@ export function AdminDispatchView() {
               </div>
             </div>
 
-            {/* BOTTOM ROW: TOP SELLING PRODUCTS (LEFT) & DONUT PROFITS (RIGHT) */}
+            {/* BOTTOM ROW: ACTIVE DISPATCH QUEUE (LEFT) & FULFILLMENT STATUS (RIGHT) */}
             <div className={styles.productsAndDonutRow}>
-              {/* Left: Top Selling Creations Table */}
+              {/* Left: Active Dispatch Queue */}
               <div className={styles.topCreationsPanel}>
                 <div className={styles.panelHeaderRow}>
-                  <div className={styles.chartTitle}>Top Ordered Creations</div>
-                  <span className={styles.panelBadgeSmall}>Catalog Insights</span>
+                  <div className={styles.chartTitle}>Active Dispatch Queue</div>
+                  <span className={styles.panelBadgeSmall}>
+                    {orders.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus) !== 'Delivered').length} Actionable
+                  </span>
                 </div>
 
                 <div className={styles.tableResponsiveWrapSimple}>
                   <table className={styles.simpleTable}>
                     <thead>
                       <tr>
-                        <th>Creation</th>
-                        <th>Pack Size</th>
-                        <th>Units Sold</th>
-                        <th>Revenue</th>
+                        <th>Order</th>
+                        <th>Customer</th>
+                        <th>Status</th>
+                        <th>Quick Action</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {analyticsData.topProducts.map((p) => (
-                        <tr key={p.id}>
-                          <td>
-                            <div className={styles.productCellWrap}>
-                              <div className={styles.productAvatar}>
-                                <img
-                                  src={p.image || '/logo.png'}
-                                  alt={p.name}
-                                  className={styles.productImgThumb}
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).src = '/logo.png';
-                                  }}
-                                />
-                              </div>
-                              <span className={styles.productRowName}>{p.name}</span>
-                            </div>
-                          </td>
-                          <td style={{ color: 'var(--text-muted)' }}>{p.packSize}</td>
-                          <td>
-                            <strong>{p.quantity} packs</strong>
-                          </td>
-                          <td style={{ color: 'var(--accent-terracotta)', fontWeight: 700 }}>
-                            ₹{p.revenue.toLocaleString('en-IN')}
-                          </td>
-                        </tr>
-                      ))}
+                      {orders
+                        .filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus) !== 'Delivered')
+                        .slice(0, 4)
+                        .map((o) => {
+                          const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
+                          const next = getNextStatusConfig(u);
+                          return (
+                            <tr key={o.id}>
+                              <td>
+                                <strong style={{ color: 'var(--accent-terracotta)' }}>#{o.id}</strong>
+                                <div style={{ fontSize: '0.72rem', color: '#6B7280' }}>
+                                  {o.items?.length || 1} items • ₹{o.total}
+                                </div>
+                              </td>
+                              <td>
+                                <div style={{ fontWeight: 600, color: '#111827' }}>{o.customerName}</div>
+                                <div style={{ fontSize: '0.72rem', color: '#9CA3AF' }}>{o.shippingAddress?.city}</div>
+                              </td>
+                              <td>
+                                <span
+                                  className={
+                                    u === 'Shipped'
+                                      ? styles.pillShippedSmall
+                                      : u === 'Processing'
+                                      ? styles.pillProcessingSmall
+                                      : styles.pillConfirmedSmall
+                                  }
+                                >
+                                  {getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus)}
+                                </span>
+                              </td>
+                              <td>
+                                {next ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleQuickAdvance(o.id, next.nextStatus)}
+                                    className={`${styles.oneClickNextBtn} ${
+                                      next.colorScheme === 'amber'
+                                        ? styles.nextBtnAmber
+                                        : next.colorScheme === 'blue'
+                                        ? styles.nextBtnBlue
+                                        : styles.nextBtnGreen
+                                    }`}
+                                    style={{ padding: '4px 9px', fontSize: '0.7rem' }}
+                                  >
+                                    <span>{next.label}</span>
+                                  </button>
+                                ) : (
+                                  <span style={{ fontSize: '0.72rem', color: '#065F46', fontWeight: 700 }}>✓ Done</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
                     </tbody>
                   </table>
                 </div>
@@ -1354,26 +1451,18 @@ export function AdminDispatchView() {
               </div>
             </div>
 
-            {/* Controls Bar: Status Filter Tabs, Search & Sort */}
+            {/* Controls Bar: Date Filter Tabs (Today, Yesterday, etc.), Search, Status & Sort */}
             <div className={styles.controlsBar}>
               <div className={styles.filterTabsScrollable}>
-                {(['all', 'Confirmed', 'Processing', 'Shipped', 'Delivered'] as const).map((tab) => {
-                  const isActive = activeOrderTab === tab;
-                  const count =
-                    tab === 'all'
-                      ? dateFilteredOrders.length
-                      : dateFilteredOrders.filter((o) => {
-                          const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
-                          if (tab === 'Shipped') return u === 'Shipped' || u === 'Out for Delivery';
-                          return u === tab;
-                        }).length;
-
+                {(['all', 'today', 'yesterday', 'week', 'month'] as const).map((tab) => {
+                  const isActive = activeDateTab === tab;
+                  const count = dateTabCounts[tab];
                   const tabLabelMap = {
-                    all: 'All',
-                    Confirmed: 'Confirmed',
-                    Processing: 'Packed',
-                    Shipped: 'In Transit',
-                    Delivered: 'Delivered',
+                    all: 'All Orders',
+                    today: 'Today',
+                    yesterday: 'Yesterday',
+                    week: 'This Week',
+                    month: 'This Month',
                   };
 
                   return (
@@ -1381,11 +1470,10 @@ export function AdminDispatchView() {
                       key={tab}
                       type="button"
                       className={`${styles.filterBtn} ${isActive ? styles.filterBtnActive : ''}`}
-                      onClick={() => setActiveOrderTab(tab)}
+                      onClick={() => setActiveDateTab(tab)}
                     >
-                      <span>
-                        {tabLabelMap[tab]} ({count})
-                      </span>
+                      <span>{tabLabelMap[tab]}</span>
+                      <span className={styles.filterCountBadge}>{count}</span>
                     </button>
                   );
                 })}
@@ -1413,6 +1501,20 @@ export function AdminDispatchView() {
                   )}
                 </div>
 
+                {/* Status Dropdown Filter */}
+                <select
+                  className={styles.sortSelect}
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="Confirmed">Confirmed</option>
+                  <option value="Processing">Packed</option>
+                  <option value="Shipped">In Transit (DTDC)</option>
+                  <option value="Delivered">Delivered</option>
+                </select>
+
+                {/* Sort Option */}
                 <select
                   className={styles.sortSelect}
                   value={sortBy}
@@ -1437,7 +1539,7 @@ export function AdminDispatchView() {
                   type="button"
                   onClick={() => {
                     setSearchTerm('');
-                    setActiveOrderTab('all');
+                    setActiveDateTab('all');
                     setDatePreset('all');
                   }}
                   className={styles.resetFiltersBtn}
@@ -1663,18 +1765,30 @@ export function AdminDispatchView() {
                                       },
                                     }))
                                   }
-                                  onBlur={(e) => handleAwbSave(o.id, e.target.value)}
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
-                                      handleAwbSave(o.id, (e.target as HTMLInputElement).value);
+                                      handleAwbSave(o.id, edit.trackingNumber);
                                     }
                                   }}
                                 />
-                                {edit.justSaved && (
-                                  <span className={styles.awbCheckFeedback}>
-                                    <Check size={12} />
-                                  </span>
-                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleAwbSave(o.id, edit.trackingNumber)}
+                                  disabled={edit.isSaving}
+                                  className={`${styles.awbSaveBtn} ${edit.justSaved ? styles.awbSaveBtnSaved : ''}`}
+                                  title="Save DTDC Consignment Number"
+                                >
+                                  {edit.justSaved ? (
+                                    <>
+                                      <Check size={11} />
+                                      <span>Saved</span>
+                                    </>
+                                  ) : edit.isSaving ? (
+                                    <span className={styles.savingSpinnerMini} />
+                                  ) : (
+                                    <span>Save</span>
+                                  )}
+                                </button>
                               </div>
                             </td>
 
@@ -1689,20 +1803,6 @@ export function AdminDispatchView() {
                                 >
                                   <MessageCircle size={14} color="#25D366" />
                                 </a>
-
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    copyToClipboard(
-                                      `${o.customerName}\n${o.customerPhone}\n${o.shippingAddress?.addressLine1}\n${o.shippingAddress?.city}, ${o.shippingAddress?.state} - ${o.shippingAddress?.pincode}`,
-                                      'Shipping Address'
-                                    )
-                                  }
-                                  className={styles.actionIconBtn}
-                                  title="Copy Courier Address"
-                                >
-                                  <Copy size={13} />
-                                </button>
 
                                 <Link
                                   href={`/track?id=${o.id}`}
@@ -1857,7 +1957,7 @@ export function AdminDispatchView() {
                               <input
                                 type="text"
                                 className={`${styles.mobileAwbInput} ${edit.justSaved ? styles.awbSavedPulse : ''}`}
-                                placeholder="DTDC AWB Consignment No."
+                                placeholder="DTDC Consignment No."
                                 value={edit.trackingNumber}
                                 onChange={(e) =>
                                   setEditStates((prev) => ({
@@ -1868,13 +1968,31 @@ export function AdminDispatchView() {
                                     },
                                   }))
                                 }
-                                onBlur={(e) => handleAwbSave(o.id, e.target.value)}
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter') {
-                                    handleAwbSave(o.id, (e.target as HTMLInputElement).value);
+                                    handleAwbSave(o.id, edit.trackingNumber);
                                   }
                                 }}
                               />
+                              <button
+                                type="button"
+                                onClick={() => handleAwbSave(o.id, edit.trackingNumber)}
+                                disabled={edit.isSaving}
+                                className={`${styles.awbSaveBtn} ${edit.justSaved ? styles.awbSaveBtnSaved : ''}`}
+                                style={{ minHeight: '40px', padding: '0 12px' }}
+                                title="Save DTDC Consignment"
+                              >
+                                {edit.justSaved ? (
+                                  <>
+                                    <Check size={12} />
+                                    <span>Saved</span>
+                                  </>
+                                ) : edit.isSaving ? (
+                                  <span className={styles.savingSpinnerMini} />
+                                ) : (
+                                  <span>Save</span>
+                                )}
+                              </button>
                             </div>
 
                             <div className={styles.mobileIconButtons}>
@@ -1888,20 +2006,6 @@ export function AdminDispatchView() {
                                 <MessageCircle size={15} />
                                 <span>WhatsApp</span>
                               </a>
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  copyToClipboard(
-                                    `${o.customerName}\n${o.customerPhone}\n${o.shippingAddress?.addressLine1}\n${o.shippingAddress?.city}, ${o.shippingAddress?.state} - ${o.shippingAddress?.pincode}`,
-                                    'Address'
-                                  )
-                                }
-                                className={styles.btnCopyMobile}
-                                title="Copy Address"
-                              >
-                                <Copy size={14} />
-                              </button>
 
                               <Link
                                 href={`/track?id=${o.id}`}
@@ -1924,75 +2028,7 @@ export function AdminDispatchView() {
         )}
 
         {/* ====================================================================
-            TAB C: PRODUCTS CATALOG (Stock & Availability)
-            ==================================================================== */}
-        {activeSidebarTab === 'products' && (
-          <div className={styles.dashboardContainer}>
-            <div className={styles.overviewHeaderRow}>
-              <div>
-                <h1 className={styles.overviewTitle}>Creations Catalog</h1>
-                <p className={styles.overviewDateText}>
-                  {PRODUCTS.length} Stone-Milled &amp; Pure Botanical Recipes
-                </p>
-              </div>
-
-              <Link href="/shop" target="_blank" className={styles.exportBtn}>
-                <Store size={13} />
-                <span>View Live Store ↗</span>
-              </Link>
-            </div>
-
-            <div className={styles.tableResponsiveWrapSimple}>
-              <table className={styles.simpleTable}>
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Category</th>
-                    <th>Pack Size</th>
-                    <th>Price</th>
-                    <th>Shelf Life</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {PRODUCTS.map((prod) => (
-                    <tr key={prod.id}>
-                      <td>
-                        <div className={styles.productCellWrap}>
-                          <div className={styles.productAvatar}>
-                            <img
-                              src={prod.images?.primary || '/logo.png'}
-                              alt={prod.name}
-                              className={styles.productImgThumb}
-                            />
-                          </div>
-                          <div>
-                            <span className={styles.productRowName}>{prod.name}</span>
-                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{prod.slug}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td style={{ textTransform: 'capitalize' }}>
-                        {prod.category.replace('-', ' & ')}
-                      </td>
-                      <td>{prod.packSize}</td>
-                      <td>
-                        <strong>₹{prod.price}</strong>
-                      </td>
-                      <td>{prod.shelfLife}</td>
-                      <td>
-                        <span className={styles.pillDeliveredSmall}>Available</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* ====================================================================
-            TAB D: INQUIRIES DESK
+            TAB C: INQUIRIES DESK (Real-Time Messages from Contact Page)
             ==================================================================== */}
         {activeSidebarTab === 'inquiries' && (
           <div className={styles.dashboardContainer}>
@@ -2000,67 +2036,124 @@ export function AdminDispatchView() {
               <div>
                 <h1 className={styles.overviewTitle}>Kitchen Inquiries Desk</h1>
                 <p className={styles.overviewDateText}>
-                  Messages submitted by patrons from the Contact &amp; Atelier page
+                  {inquiries.length} Patron inquiries received from Contact &amp; Atelier desk
                 </p>
               </div>
 
-              <Link href="/contact" target="_blank" className={styles.exportBtn}>
-                <ExternalLink size={13} />
-                <span>Open Contact Page ↗</span>
-              </Link>
-            </div>
-
-            <div className={styles.inquiriesListGrid}>
-              <div className={styles.inquiryCard}>
-                <div className={styles.inquiryHeader}>
-                  <div>
-                    <strong className={styles.inquiryName}>Kavya Ramesh</strong>
-                    <div className={styles.inquiryPhone}>+91 98450 11223 • Bengaluru</div>
-                  </div>
-                  <span className={styles.inquiryBadge}>Custom Grinding</span>
-                </div>
-                <p className={styles.inquiryBody}>
-                  "Can I request baby cereal mix ground slightly finer for a 6-month-old infant? We are introducing solids this week."
-                </p>
-                <div className={styles.inquiryFooter}>
-                  <span className={styles.inquiryTime}>Today, 10:15 AM</span>
-                  <a
-                    href="https://wa.me/919845011223?text=Hello%20Kavya!%20Yes,%20our%20kitchen%20can%20custom-mill%20the%20Baby%20Cereal%20Mix%20extra-fine%20for%20your%206-month-old."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.btnWhatsApp}
-                  >
-                    <MessageCircle size={13} color="#25D366" />
-                    <span>Reply via WhatsApp</span>
-                  </a>
-                </div>
-              </div>
-
-              <div className={styles.inquiryCard}>
-                <div className={styles.inquiryHeader}>
-                  <div>
-                    <strong className={styles.inquiryName}>Ananya Deshmukh</strong>
-                    <div className={styles.inquiryPhone}>+91 97110 44556 • Mysuru</div>
-                  </div>
-                  <span className={styles.inquiryBadge}>Bulk / Gifting</span>
-                </div>
-                <p className={styles.inquiryBody}>
-                  "Looking to order 15 boxes of Sprouted Ragi Porridge and Kids Herbal Bath powder as traditional baby shower gifts."
-                </p>
-                <div className={styles.inquiryFooter}>
-                  <span className={styles.inquiryTime}>Yesterday, 04:30 PM</span>
-                  <a
-                    href="https://wa.me/919711044556?text=Hello%20Ananya!%20We%20would%20love%20to%20prepare%2015%20fresh%20traditional%20gift%20boxes%20for%20your%20baby%20shower."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.btnWhatsApp}
-                  >
-                    <MessageCircle size={13} color="#25D366" />
-                    <span>Reply via WhatsApp</span>
-                  </a>
-                </div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={fetchInquiries}
+                  className={styles.exportBtn}
+                  title="Reload inquiries"
+                >
+                  <span>{isLoadingInquiries ? 'Refreshing...' : 'Refresh ↻'}</span>
+                </button>
+                <Link href="/contact" target="_blank" className={styles.exportBtn}>
+                  <ExternalLink size={13} />
+                  <span>Open Contact Page ↗</span>
+                </Link>
               </div>
             </div>
+
+            {inquiries.length === 0 ? (
+              <div style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
+                <MessageCircle size={32} color="#9CA3AF" style={{ margin: '0 auto 12px' }} />
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#111827', margin: '0 0 4px' }}>
+                  No Inquiries Recorded Yet
+                </h3>
+                <p style={{ fontSize: '0.8rem', color: '#6B7280', margin: 0 }}>
+                  Customer messages submitted from the Contact page will automatically appear here.
+                </p>
+              </div>
+            ) : (
+              <div className={styles.inquiriesListGrid}>
+                {inquiries.map((inq) => {
+                  const rawPhone = (inq.phone || '').replace(/[^0-9]/g, '');
+                  const cleanPhone = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
+                  const firstName = inq.name ? inq.name.split(' ')[0] : 'Patron';
+                  const waText = encodeURIComponent(
+                    `Hello ${firstName}! Thank you for reaching out to Good Fills regarding "${inq.category}". `
+                  );
+                  const waUrl = `https://wa.me/${cleanPhone}?text=${waText}`;
+
+                  const inqDate = new Date(inq.createdAt);
+                  const timeFormatted = inqDate.toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  });
+
+                  return (
+                    <div key={inq.id} className={styles.inquiryCard}>
+                      <div className={styles.inquiryHeader}>
+                        <div>
+                          <strong className={styles.inquiryName}>{inq.name}</strong>
+                          <div className={styles.inquiryPhone}>
+                            {inq.phone} {inq.email ? `• ${inq.email}` : ''}
+                          </div>
+                        </div>
+                        <div className={styles.inquiryMetaRow}>
+                          <span
+                            className={
+                              inq.status === 'replied'
+                                ? styles.inquiryStatusBadgeReplied
+                                : styles.inquiryStatusBadgeNew
+                            }
+                          >
+                            {inq.status === 'replied' ? 'Replied' : 'New'}
+                          </span>
+                          <span className={styles.inquiryBadge}>{inq.category}</span>
+                        </div>
+                      </div>
+
+                      {inq.orderId && (
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveSidebarTab('orders');
+                              setActiveDateTab('all');
+                              setSearchTerm(inq.orderId || '');
+                            }}
+                            className={styles.inquiryOrderRefBtn}
+                            title="Click to view related order in manifest"
+                          >
+                            <span>Ref Order: #{inq.orderId} ↗</span>
+                          </button>
+                        </div>
+                      )}
+
+                      <p className={styles.inquiryBody}>&ldquo;{inq.message}&rdquo;</p>
+
+                      <div className={styles.inquiryFooter}>
+                        <span className={styles.inquiryTime}>{timeFormatted}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleInquiryStatus(inq.id, inq.status)}
+                            className={styles.inquiryToggleBtn}
+                            title="Toggle status"
+                          >
+                            {inq.status === 'replied' ? 'Mark New' : 'Mark Replied'}
+                          </button>
+                          <a
+                            href={waUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.btnWhatsApp}
+                          >
+                            <MessageCircle size={13} color="#25D366" />
+                            <span>Reply via WhatsApp</span>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>

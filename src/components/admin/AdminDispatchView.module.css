@@ -886,23 +886,41 @@
 
 .filterBtn {
   background: transparent;
-  border: 1px solid transparent;
-  padding: 6px 12px;
+  border: 1px solid #E5E7EB;
+  padding: 6px 13px;
   font-size: 0.78rem;
   font-weight: 600;
   color: #4B5563;
   cursor: pointer;
   border-radius: 0;
   transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
 }
 
 .filterBtn:hover {
   background-color: #F3F4F6;
+  border-color: #D1D5DB;
 }
 
 .filterBtnActive {
-  background-color: var(--accent-terracotta) !important;
+  background-color: #111827 !important;
+  border-color: #111827 !important;
   color: #FFFFFF !important;
+}
+
+.filterCountBadge {
+  background-color: rgba(0, 0, 0, 0.08);
+  padding: 1px 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 0;
+}
+
+.filterBtnActive .filterCountBadge {
+  background-color: rgba(255, 255, 255, 0.22);
+  color: #FFFFFF;
 }
 
 .searchSortGroup {
@@ -1274,11 +1292,13 @@
   position: relative;
   display: flex;
   align-items: center;
+  gap: 5px;
 }
 
 .tableAwbInput {
-  width: 100%;
-  min-width: 110px;
+  flex: 1;
+  min-width: 95px;
+  max-width: 140px;
   border: 1px solid #D1D5DB;
   background-color: #F9FAFB;
   padding: 5px 8px;
@@ -1291,6 +1311,33 @@
 .tableAwbInput:focus {
   border-color: var(--accent-terracotta);
   background-color: #FFFFFF;
+}
+
+.awbSaveBtn {
+  background-color: #111827;
+  color: #FFFFFF;
+  border: 1px solid #111827;
+  padding: 5px 9px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.awbSaveBtn:hover {
+  background-color: var(--accent-terracotta);
+  border-color: var(--accent-terracotta);
+}
+
+.awbSaveBtnSaved {
+  background-color: #059669 !important;
+  border-color: #059669 !important;
+  color: #FFFFFF !important;
 }
 
 .awbSavedPulse {
@@ -1505,10 +1552,13 @@
 .mobileAwbWrap {
   flex: 1;
   min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .mobileAwbInput {
-  width: 100%;
+  flex: 1;
   border: 1px solid #D1D5DB;
   background-color: #F9FAFB;
   padding: 8px 10px;
@@ -1637,6 +1687,68 @@
 .btnWhatsApp:hover {
   background-color: #25D366;
   color: #FFFFFF;
+}
+
+.inquiryMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inquiryOrderRefBtn {
+  background-color: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: #1D4ED8;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  cursor: pointer;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.inquiryOrderRefBtn:hover {
+  background-color: #DBEAFE;
+}
+
+.inquiryStatusBadgeNew {
+  background-color: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FCD34D;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  text-transform: uppercase;
+}
+
+.inquiryStatusBadgeReplied {
+  background-color: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  text-transform: uppercase;
+}
+
+.inquiryToggleBtn {
+  background: transparent;
+  border: 1px solid #D1D5DB;
+  color: #4B5563;
+  padding: 5px 9px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.15s ease;
+}
+
+.inquiryToggleBtn:hover {
+  background-color: #F3F4F6;
+  color: #111827;
 }
 
 /* ==========================================================================

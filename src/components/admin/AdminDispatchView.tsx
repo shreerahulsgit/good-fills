@@ -203,19 +203,25 @@ export function AdminDispatchView() {
     return () => document.removeEventListener('click', handleGlobalClick);
   }, []);
 
-  // Check saved session PIN on mount
+  // Check saved session PIN or URL query parameter on mount
   useEffect(() => {
-    const savedPin = sessionStorage.getItem('goodfills_admin_pin');
-    if (savedPin) {
-      setPin(savedPin);
-      fetchOrders(savedPin);
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlPin = urlParams.get('pin');
+      const savedPin = sessionStorage.getItem('goodfills_admin_pin');
+      const activePin = urlPin || savedPin;
+      if (activePin) {
+        setPin(activePin);
+        fetchOrders(activePin);
+      }
     }
   }, []);
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pin.trim()) return;
-    fetchOrders(pin.trim());
+    const clean = pin.trim();
+    if (!clean) return;
+    fetchOrders(clean);
   };
 
   const fetchOrders = async (adminPin: string) => {
@@ -808,7 +814,7 @@ export function AdminDispatchView() {
         <div className={styles.adminTopBarMobile}>
           <div className={styles.brandWrap}>
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img src="/logo.png" alt="Good Fills" style={{ height: '30px', width: 'auto', display: 'block' }} />
+              <img src="/logo.png" alt="Good Fills" style={{ height: '32px', width: 'auto', display: 'block' }} />
             </Link>
             <span className={styles.badgeAdmin}>Dispatch Console</span>
           </div>
@@ -817,38 +823,58 @@ export function AdminDispatchView() {
           </Link>
         </div>
 
-        <div className={styles.loginWrapper}>
-          <div style={{ marginBottom: '16px', color: 'var(--accent-terracotta)' }}>
-            <Lock size={32} />
+        <div className={styles.loginCenterCanvas}>
+          <div className={styles.loginWrapper}>
+            <div className={styles.lockIconCircle}>
+              <Lock size={26} />
+            </div>
+            <h2 className={styles.loginTitle}>Kitchen Dispatch Login</h2>
+            <p className={styles.loginSubtitle}>
+              Enter the 4-digit manager PIN to access the Good Fills executive dashboard, order fulfillment, and DTDC consignments.
+            </p>
+
+            <form onSubmit={handleUnlock}>
+              <input
+                type="password"
+                className={styles.pinInput}
+                placeholder="••••"
+                maxLength={8}
+                value={pin}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setPin(val);
+                  if (val.trim() === '2026' || val.trim() === 'admin123') {
+                    fetchOrders(val.trim());
+                  }
+                }}
+                autoFocus
+              />
+
+              {authError && (
+                <p style={{ color: '#d9381e', fontSize: '0.82rem', marginBottom: '16px', fontWeight: 600 }}>
+                  {authError}
+                </p>
+              )}
+
+              <button type="submit" className={styles.unlockBtn} disabled={isLoading || !pin.trim()}>
+                {isLoading ? 'Verifying PIN...' : 'Unlock Dispatch Console ➔'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setPin('2026');
+                  fetchOrders('2026');
+                }}
+                disabled={isLoading}
+                className={styles.quickUnlockBtn}
+              >
+                <Sparkles size={14} /> One-Click Quick Unlock (PIN: 2026)
+              </button>
+            </form>
+
+            <p className={styles.pinHint}>Default Manager PIN: <strong>2026</strong></p>
           </div>
-          <h2 className={styles.loginTitle}>Kitchen Dispatch Login</h2>
-          <p className={styles.loginSubtitle}>
-            Enter the 4-digit manager PIN to access the Good Fills executive dashboard, order fulfillment, and DTDC consignments.
-          </p>
-
-          <form onSubmit={handleUnlock}>
-            <input
-              type="password"
-              className={styles.pinInput}
-              placeholder="••••"
-              maxLength={10}
-              value={pin}
-              onChange={(e) => setPin(e.target.value)}
-              autoFocus
-            />
-
-            {authError && (
-              <p style={{ color: '#d9381e', fontSize: '0.82rem', marginBottom: '16px' }}>
-                {authError}
-              </p>
-            )}
-
-            <button type="submit" className={styles.unlockBtn} disabled={isLoading || !pin.trim()}>
-              {isLoading ? 'Verifying...' : 'Unlock Dispatch Console'}
-            </button>
-          </form>
-
-          <p className={styles.pinHint}>Default Access PIN: <strong>2026</strong></p>
         </div>
       </main>
     );

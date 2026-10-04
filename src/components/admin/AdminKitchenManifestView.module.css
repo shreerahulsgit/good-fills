@@ -1,6 +1,6 @@
 /* ========================================================
-   KITCHEN BATCH PREP MANIFEST & MILLING PLANNER — CSS MODULE
-   0px Architectural Square-Cut Design & Printable Kitchen Layout
+   KITCHEN BATCH PRODUCTION MANIFEST — CSS MODULE
+   Architectural 0px Square-Cut Design, High-Utility Admin
    ======================================================== */
 
 .container {
@@ -18,7 +18,7 @@
   }
 }
 
-/* Header Banner */
+/* 1. Header Banner */
 .headerBanner {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -40,7 +40,7 @@
 .headerLeft {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .eyebrowRow {
@@ -61,16 +61,30 @@
 .liveBadge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   background-color: rgba(34, 197, 94, 0.1);
   color: #166534;
   border: 1px solid rgba(34, 197, 94, 0.3);
   border-radius: 0px !important;
-  padding: 1px 7px;
+  padding: 2px 8px;
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.completedStatsBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: var(--bg-surface-raised);
+  color: #15803d;
+  border: 1px solid rgba(22, 163, 74, 0.3);
+  border-radius: 0px !important;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .liveDot {
@@ -102,7 +116,7 @@
   color: var(--text-secondary);
   line-height: 1.45;
   margin: 0;
-  max-width: 680px;
+  max-width: 720px;
 }
 
 .headerActions {
@@ -163,7 +177,7 @@
   cursor: not-allowed;
 }
 
-/* Metrics Deck */
+/* 2. Real-Time Operational Metrics Deck */
 .metricsGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -199,7 +213,7 @@
 
 .metricLabel {
   font-family: var(--font-sans);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -237,12 +251,12 @@
 
 .progressBarFill {
   height: 100%;
-  background-color: #22c55e;
+  background-color: #16a34a;
   border-radius: 0px !important;
   transition: width 0.4s ease;
 }
 
-/* Toolbar & Filters */
+/* 3. Toolbar & Filtering Strip */
 .toolbar {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -258,8 +272,22 @@
 .filtersGroup {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: var(--space-4);
   align-items: center;
+}
+
+.filterItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
 }
 
 .filterSelect {
@@ -277,6 +305,12 @@
 
 .filterSelect:focus {
   border-color: var(--accent-terracotta);
+}
+
+.toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
 .searchBox {
@@ -299,7 +333,27 @@
   width: 180px;
 }
 
-/* Sections Header */
+.resetTicksBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-medium);
+  border-radius: 0px !important;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.resetTicksBtn:hover {
+  color: var(--accent-terracotta);
+  border-color: var(--accent-terracotta);
+}
+
+/* 4. Section Block Header */
 .sectionBlockHeader {
   display: flex;
   justify-content: space-between;
@@ -318,15 +372,39 @@
 
 .sectionBlockCount {
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-muted);
+  margin-top: 2px;
+  display: block;
 }
 
-/* Batch Products Deck (Cards) */
+/* Empty State */
+.emptyState {
+  background-color: var(--bg-surface);
+  border: 1px dashed var(--border-medium);
+  border-radius: 0px !important;
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+}
+
+.emptyStateTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 6px 0;
+}
+
+.emptyStateText {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* 5. Production Batch Cards Grid */
 .batchGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
 @media (min-width: 800px) {
@@ -335,17 +413,18 @@
   }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1250px) {
   .batchGrid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-.productPrepCard {
+/* The Core Product Batch Card */
+.productBatchCard {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: 0px !important;
-  padding: var(--space-6);
+  padding: var(--space-5);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -354,153 +433,278 @@
   position: relative;
 }
 
-.productPrepCard:hover {
-  border-color: var(--accent-terracotta);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+.productBatchCard:hover {
+  border-color: var(--border-medium);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
-.cardTopRow {
+/* When batch is marked prepared */
+.productBatchCardDone {
+  border-color: rgba(22, 163, 74, 0.4);
+  background-color: rgba(22, 163, 74, 0.02);
+}
+
+.batchCardTopBar {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-3);
-}
-
-.cardProductInfo {
-  display: flex;
-  gap: var(--space-3);
   align-items: center;
 }
 
-.cardProductImg {
+.batchCategoryBadge {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.preparedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(22, 163, 74, 0.12);
+  color: #166534;
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  border-radius: 0px !important;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.pendingBadge {
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(234, 88, 12, 0.1);
+  color: #c2410c;
+  border: 1px solid rgba(234, 88, 12, 0.25);
+  border-radius: 0px !important;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.allPackedBadge {
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #1d4ed8;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 0px !important;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* Main Row: Identity & Big Weight Box */
+.batchMainRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.batchProductIdentity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 0;
+}
+
+.batchProductImg {
   width: 52px;
   height: 52px;
   object-fit: cover;
   border: 1px solid var(--border-subtle);
   border-radius: 0px !important;
+  flex-shrink: 0;
+  background-color: var(--bg-canvas);
 }
 
-.cardProductName {
+.batchProductDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.batchProductName {
   font-family: var(--font-sans);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  letter-spacing: -0.015em;
   color: var(--text-primary);
-  margin: 0 0 2px 0;
+  margin: 0;
   line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.cardProductCategory {
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.batchPackSizeNote {
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
-.weightCallout {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  background-color: rgba(151, 65, 29, 0.06);
-  border: 1px solid rgba(151, 65, 29, 0.2);
-  border-radius: 0px !important;
-  padding: 6px 10px;
-}
-
-.weightAmount {
-  font-family: var(--font-sans);
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--accent-terracotta);
-  line-height: 1;
-}
-
-.weightPacksLabel {
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  margin-top: 3px;
-}
-
-.recipeGuideBox {
-  background-color: var(--bg-canvas);
-  border-left: 3px solid var(--accent-terracotta);
-  padding: 8px 12px;
-  font-size: 0.8rem;
-  line-height: 1.45;
-  color: var(--text-secondary);
-}
-
-.recipeTitle {
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-  display: block;
-}
-
-/* Checkbox Checklist */
-.checklistGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--border-subtle);
-}
-
-.checklistItem {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  cursor: pointer;
-  user-select: none;
-}
-
-.customCheckbox {
-  width: 16px;
-  height: 16px;
+/* High-Contrast Prominent Weight Box */
+.batchWeightBox {
+  background-color: var(--bg-surface-raised);
   border: 1px solid var(--border-medium);
   border-radius: 0px !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-surface);
-  cursor: pointer;
-  transition: all var(--transition-fast);
+  padding: 8px 14px;
+  text-align: right;
+  flex-shrink: 0;
+  min-width: 105px;
 }
 
-.customCheckboxChecked {
-  background-color: #22c55e;
-  border-color: #22c55e;
-  color: #FFFFFF;
+.batchWeightLabel {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
 }
 
-/* Order Reference Pills */
-.orderRefsDeck {
+.batchWeightValue {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--accent-terracotta);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.batchPacketsCount {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* Orders Breakdown Pills */
+.batchOrdersSection {
+  background-color: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0px !important;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.batchOrdersLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.batchOrderPillsContainer {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: var(--space-1);
+  gap: 6px;
 }
 
-.orderRefPill {
-  background: var(--bg-canvas);
+.batchOrderPill {
+  display: inline-block;
+  background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: 0px !important;
   padding: 2px 7px;
   font-size: 0.72rem;
-  font-weight: 600;
   color: var(--text-secondary);
-  font-family: monospace;
 }
 
-/* Orders Packing Manifest Table */
+.batchOrderPillDone {
+  background-color: rgba(22, 163, 74, 0.08);
+  border-color: rgba(22, 163, 74, 0.3);
+  color: #166534;
+}
+
+.batchOrderPill strong {
+  color: var(--text-primary);
+}
+
+/* Action Bar: Toggle Button */
+.batchActionBar {
+  margin-top: auto;
+  padding-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prepToggleBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--bg-surface-raised);
+  border: 1px solid var(--border-medium);
+  border-radius: 0px !important;
+  padding: 9px 14px;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.prepToggleBtn:hover {
+  border-color: var(--accent-terracotta);
+  color: var(--accent-terracotta);
+}
+
+.prepToggleBtnDone {
+  background-color: rgba(22, 163, 74, 0.1);
+  border-color: #16a34a;
+  color: #166534;
+}
+
+.prepToggleBtnDone:hover {
+  background-color: rgba(22, 163, 74, 0.18);
+  border-color: #15803d;
+  color: #14532d;
+}
+
+.batchPackOrdersBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: rgba(151, 65, 29, 0.08);
+  border: 1px solid var(--accent-terracotta);
+  border-radius: 0px !important;
+  padding: 7px 12px;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent-terracotta);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.batchPackOrdersBtn:hover:not(:disabled) {
+  background-color: var(--accent-terracotta);
+  color: #FFFFFF;
+}
+
+.batchPackOrdersBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 6. Customer Packing Table */
 .manifestTableWrapper {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -511,172 +715,256 @@
 .manifestTable {
   width: 100%;
   border-collapse: collapse;
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
   text-align: left;
+  font-size: 0.85rem;
 }
 
 .manifestTable th {
-  background-color: var(--bg-canvas);
-  padding: 12px 16px;
+  background-color: var(--bg-surface-raised);
+  color: var(--text-muted);
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border-medium);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .manifestTable td {
-  padding: 12px 16px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border-subtle);
-  color: var(--text-primary);
   vertical-align: middle;
 }
 
-.manifestTable tr:hover {
+.manifestTable tbody tr:hover {
   background-color: rgba(0, 0, 0, 0.015);
 }
 
 .orderIdBadge {
   font-family: monospace;
   font-weight: 700;
-  font-size: 0.85rem;
-  color: var(--accent-terracotta);
+  color: var(--text-primary);
+  background-color: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  padding: 2px 6px;
+  font-size: 0.8rem;
+}
+
+.orderTimeText {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.customerNameCell {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.customerCityCell {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .itemsBreakdownList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  gap: 4px;
 }
 
 .itemsBreakdownItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.82rem;
-  color: var(--text-primary);
-  font-weight: 600;
 }
 
-.itemsBreakdownPack {
+.itemQty {
+  font-weight: 700;
+  color: var(--accent-terracotta);
+  background-color: rgba(151, 65, 29, 0.08);
+  padding: 1px 5px;
+  border-radius: 0px !important;
+}
+
+.itemName {
+  color: var(--text-primary);
+}
+
+.itemPackSize {
   color: var(--text-muted);
-  font-weight: 400;
+  font-size: 0.75rem;
 }
 
 .statusPillConfirmed {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background-color: #FEF3C7;
-  color: #92400E;
-  border: 1px solid #FCD34D;
+  display: inline-block;
+  background-color: rgba(234, 88, 12, 0.1);
+  color: #c2410c;
+  border: 1px solid rgba(234, 88, 12, 0.25);
   border-radius: 0px !important;
   padding: 3px 8px;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .statusPillProcessing {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background-color: #DBEAFE;
-  color: #1E40AF;
-  border: 1px solid #93C5FD;
+  display: inline-block;
+  background-color: rgba(22, 163, 74, 0.1);
+  color: #166534;
+  border: 1px solid rgba(22, 163, 74, 0.25);
   border-radius: 0px !important;
   padding: 3px 8px;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.statusPillShipped {
+  display: inline-block;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #1d4ed8;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 0px !important;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.statusPillDelivered {
+  display: inline-block;
+  background-color: rgba(22, 163, 74, 0.15);
+  color: #14532d;
+  border: 1px solid rgba(22, 163, 74, 0.35);
+  border-radius: 0px !important;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .actionBtnPrepared {
-  background-color: var(--bg-surface-raised);
-  border: 1px solid var(--border-medium);
+  background-color: var(--accent-terracotta);
+  color: #FFFFFF;
+  border: 1px solid var(--accent-terracotta);
   border-radius: 0px !important;
-  padding: 6px 12px;
+  padding: 6px 14px;
+  font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--text-primary);
+  letter-spacing: 0.03em;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .actionBtnPrepared:hover {
-  background-color: var(--accent-terracotta);
-  border-color: var(--accent-terracotta);
+  background-color: #7E3314;
+  border-color: #7E3314;
+}
+
+.dispatchOrderBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #1e3a8a;
   color: #FFFFFF;
-}
-
-.emptyState {
-  background-color: var(--bg-surface);
-  border: 1px dashed var(--border-medium);
+  border: 1px solid #1e3a8a;
   border-radius: 0px !important;
-  padding: var(--space-12) var(--space-6);
-  text-align: center;
+  padding: 6px 14px;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
-/* ========================================================
-   PRINT STYLESHEET FOR PHYSICAL A4 KITCHEN COUNTER CLIPBOARD
-   ======================================================== */
+.dispatchOrderBtn:hover {
+  background-color: #1e40af;
+  border-color: #1e40af;
+}
+
+.readyTag {
+  font-size: 0.78rem;
+  color: #166534;
+  font-weight: 700;
+}
+
+/* 7. Printable Stylesheet (Strict A4 Paper Format) */
+.printOnlySection {
+  display: none;
+}
+
 @media print {
-  .headerActions,
+  .container {
+    padding: 0 !important;
+  }
+
+  .headerBanner,
+  .metricsGrid,
   .toolbar,
-  .printBtn,
-  .advanceAllBtn,
-  .actionBtnPrepared {
+  .batchGrid,
+  .manifestTableWrapper,
+  .sectionBlockHeader {
     display: none !important;
   }
 
-  .container {
-    padding: 0 !important;
-    margin: 0 !important;
-    gap: 12pt !important;
-    background: #FFFFFF !important;
-    color: #000000 !important;
-    font-size: 11pt !important;
+  .printOnlySection {
+    display: block !important;
+    width: 100%;
+    padding: 10mm;
+    background: #FFFFFF;
+    color: #000000;
+    font-family: sans-serif;
   }
 
-  .headerBanner {
-    border: none !important;
-    border-bottom: 2pt solid #000000 !important;
-    padding: 0 0 10pt 0 !important;
+  .printHeader {
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
   }
 
-  .title {
-    font-size: 18pt !important;
-    color: #000000 !important;
+  .printHeader h1 {
+    font-size: 18pt;
+    margin: 0 0 4px 0;
+    font-weight: bold;
+    color: #000;
   }
 
-  .productPrepCard {
-    border: 1pt solid #000000 !important;
-    page-break-inside: avoid !important;
-    box-shadow: none !important;
+  .printHeader p {
+    font-size: 10pt;
+    color: #555;
+    margin: 0;
   }
 
-  .recipeGuideBox {
-    border-left: 2pt solid #000000 !important;
-    background: #FAFAFA !important;
+  .printTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+    color: #000;
   }
 
-  .manifestTableWrapper {
-    border: 1pt solid #000000 !important;
+  .printTable th,
+  .printTable td {
+    border: 1px solid #333;
+    padding: 6px 10px;
+    text-align: left;
   }
 
-  .manifestTable th {
-    background-color: #F0F0F0 !important;
-    color: #000000 !important;
-  }
-
-  .manifestTable td {
-    border-bottom: 1pt solid #CCCCCC !important;
-    color: #000000 !important;
-  }
-
-  .customCheckbox {
-    border: 1.5pt solid #000000 !important;
+  .printTable th {
+    background-color: #eee !important;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 9pt;
   }
 }
+

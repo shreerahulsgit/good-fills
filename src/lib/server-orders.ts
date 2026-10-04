@@ -68,7 +68,12 @@ export function initStore() {
     if (fs.existsSync(PRIMARY_ORDERS_FILE)) {
       const data = JSON.parse(fs.readFileSync(PRIMARY_ORDERS_FILE, 'utf8'));
       if (Array.isArray(data)) {
-        data.forEach((ord: Order) => ordersCache.set(ord.id, ord));
+        data.forEach((ord: Order) => {
+          if (ord.shipmentStatus === 'Delivered') {
+            ord.orderStatus = 'Delivered';
+          }
+          ordersCache.set(ord.id, ord);
+        });
       }
     }
   } catch (err) {
@@ -80,7 +85,12 @@ export function initStore() {
     if (fs.existsSync(TMP_ORDERS_FILE)) {
       const data = JSON.parse(fs.readFileSync(TMP_ORDERS_FILE, 'utf8'));
       if (Array.isArray(data)) {
-        data.forEach((ord: Order) => ordersCache.set(ord.id, ord));
+        data.forEach((ord: Order) => {
+          if (ord.shipmentStatus === 'Delivered') {
+            ord.orderStatus = 'Delivered';
+          }
+          ordersCache.set(ord.id, ord);
+        });
       }
     }
   } catch (err) {
@@ -604,7 +614,12 @@ export function recordWebhookEventProcessed(eventId: string): void {
  */
 export function getAllServerOrders(): Order[] {
   initStore();
-  const arr = Array.from(ordersCache.values());
+  const arr = Array.from(ordersCache.values()).map((ord) => {
+    if (ord.shipmentStatus === 'Delivered') {
+      ord.orderStatus = 'Delivered';
+    }
+    return ord;
+  });
   return arr.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 

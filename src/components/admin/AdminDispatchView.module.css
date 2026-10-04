@@ -201,12 +201,13 @@
 
 .adminDashboardRoot {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   background-color: #F4F5F7;
   color: #221813;
   font-family: var(--font-sans);
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* ==========================================================================
@@ -220,17 +221,20 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  position: sticky;
-  top: 0;
+  max-height: 100vh;
+  position: relative;
+  overflow-y: auto;
   z-index: 100;
+  box-sizing: border-box;
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sidebarInner {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100%;
   padding: 24px 18px;
+  box-sizing: border-box;
 }
 
 .sidebarBrand {
@@ -379,8 +383,12 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  max-height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
   max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* MOBILE TOP BAR */
@@ -2295,6 +2303,19 @@
    10. MOBILE-FIRST RESPONSIVENESS OVERRIDES
    ========================================================================== */
 @media (max-width: 1024px) {
+  .adminDashboardRoot {
+    height: auto;
+    max-height: none;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .mainContentStage {
+    height: auto;
+    max-height: none;
+    overflow-y: visible;
+  }
+
   /* Sidebar becomes off-canvas drawer */
   .sidebar {
     position: fixed;

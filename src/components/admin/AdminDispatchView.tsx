@@ -59,7 +59,7 @@ type OrderDateTab = 'all' | 'today' | 'yesterday' | 'week' | 'month';
 type ManifestLayout = 'table' | 'cards';
 type SortOption = 'newest' | 'oldest' | 'highest' | 'lowest' | 'name';
 
-type UnifiedStatus = 'Confirmed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled' | 'Payment Pending';
+export type UnifiedStatus = 'Confirmed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled' | 'Payment Pending';
 
 interface Toast {
   id: string;
@@ -67,7 +67,7 @@ interface Toast {
   type: 'success' | 'info' | 'error';
 }
 
-const getUnifiedStatus = (
+export const getUnifiedStatus = (
   orderStatus?: OrderStatus, 
   shipmentStatus?: ShipmentStatus, 
   paymentStatus?: PaymentStatus
@@ -81,7 +81,7 @@ const getUnifiedStatus = (
   return 'Confirmed';
 };
 
-const getUnifiedStatusLabel = (
+export const getUnifiedStatusLabel = (
   orderStatus?: OrderStatus, 
   shipmentStatus?: ShipmentStatus, 
   paymentStatus?: PaymentStatus

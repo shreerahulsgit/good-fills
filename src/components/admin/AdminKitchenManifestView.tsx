@@ -2,27 +2,24 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import {
-  Flame,
   Printer,
   CheckCircle2,
   Scale,
   Clock,
-  Sparkles,
   Check,
   RotateCcw,
   Package,
-  Filter,
-  Calendar,
-  ArrowRight,
   Search,
-  FileText,
-  Leaf,
   ChefHat,
-  Coffee,
-  Heart,
-  Droplets,
+  Filter,
+  CheckSquare,
+  Square,
+  Truck,
+  Sparkles,
+  Archive,
 } from 'lucide-react';
 import { Order, Product, ProductCategory } from '@/types';
+import { getUnifiedStatus, UnifiedStatus } from './AdminDispatchView';
 import styles from './AdminKitchenManifestView.module.css';
 
 interface AdminKitchenManifestViewProps {
@@ -33,94 +30,6 @@ interface AdminKitchenManifestViewProps {
   adminPin?: string;
 }
 
-// Simple, Everyday Kitchen Preparation Instructions
-const KITCHEN_RECIPES: Record<string, {
-  roastProfile: string;
-  millingTexture: string;
-  sproutingTime: string;
-  packagingGuidance: string;
-}> = {
-  'prod-01': {
-    sproutingTime: 'Sprouted Green Moong & Ragi',
-    roastProfile: 'Slow roast on iron pan until warm and nutty',
-    millingTexture: 'Grind very fine and silky smooth (gentle for baby tummy)',
-    packagingGuidance: 'Let it cool down completely, then seal in 250g pouches',
-  },
-  'prod-02': {
-    sproutingTime: 'Sprouted Mandya Ragi (Finger Millet)',
-    roastProfile: 'Slow roast on low flame until grains pop and smell fresh',
-    millingTexture: 'Stone grind into soft smooth powder with zero lumps',
-    packagingGuidance: 'Seal tightly in airtight pouch with today’s date stamp',
-  },
-  'prod-03': {
-    sproutingTime: 'Sprouted Millets with Almonds & Cashews',
-    roastProfile: 'Roast nuts and seeds gently on low flame to keep good oils',
-    millingTexture: 'Grind into soft powder and mix well with saffron & cardamom',
-    packagingGuidance: 'Seal pouch immediately to keep aroma fresh',
-  },
-  'prod-04': {
-    sproutingTime: 'Sprouted Whole Green Moong',
-    roastProfile: 'Light golden roast so it is very easy on digestion',
-    millingTexture: 'Grind into smooth flour and sieve out rough skins',
-    packagingGuidance: 'Seal tightly in 250g moisture-proof pouch',
-  },
-  'prod-05': {
-    sproutingTime: 'Sprouted Ragi & Traditional Red Rice',
-    roastProfile: 'Slow roast over low flame until fragrant',
-    millingTexture: 'Grind and sieve twice for soft, smooth porridge flour',
-    packagingGuidance: 'Pack in pouch and attach batch label',
-  },
-  'prod-06': {
-    sproutingTime: '5 Millets (Foxtail, Kodo, Little, Barnyard, Proso)',
-    roastProfile: 'Clean grains and slow roast evenly on low flame',
-    millingTexture: 'Grind into fine porridge powder',
-    packagingGuidance: 'Pack tightly in 250g airtight pouches',
-  },
-  'prod-07': {
-    sproutingTime: 'Wild Kasturi Turmeric & Sun-Dried Rose Petals',
-    roastProfile: 'Do not heat — keep natural herbs raw and dry',
-    millingTexture: 'Grind fine and sieve 3 times for silky smooth powder',
-    packagingGuidance: 'Pack in foil pouch to protect natural herbal scent',
-  },
-  'prod-08': {
-    sproutingTime: 'Neem Leaves, Green Moong & Cooling Herbs',
-    roastProfile: 'Do not heat — keep botanicals fresh and dry',
-    millingTexture: 'Grind to a gentle bath scrub texture (not too fine)',
-    packagingGuidance: 'Pack in 200g pouch and seal securely',
-  },
-  'prod-09': {
-    sproutingTime: 'Sprouted Soya, Chickpeas & Seeds',
-    roastProfile: 'Roast on pan to make light and easy to digest',
-    millingTexture: 'Grind into fine smooth health drink powder',
-    packagingGuidance: 'Seal in 400g moisture-proof pouch',
-  },
-  'prod-10': {
-    sproutingTime: '13 Herbs (Ashwagandha, Tulsi, Licorice, Mulethi)',
-    roastProfile: 'Clean and naturally dry herbs (no direct flame)',
-    millingTexture: 'Crush into small pieces for tea decoction (do not make fine powder)',
-    packagingGuidance: 'Pack in 150g resealable freshness pouch',
-  },
-  'prod-11': {
-    sproutingTime: 'Chikmagalur Arabica & Robusta Coffee Beans',
-    roastProfile: 'Dark roast coffee beans blended with 20% roasted chicory',
-    millingTexture: 'Grind coarse for traditional South Indian filter coffee',
-    packagingGuidance: 'Pack in 500g coffee pouch and seal tight',
-  },
-  'prod-12': {
-    sproutingTime: 'Pure Forest Wild Honey',
-    roastProfile: 'Unheated, 100% raw wild honey',
-    millingTexture: 'Filter through clean cotton cloth (never apply heat)',
-    packagingGuidance: 'Pour into clean 500g glass jar and seal lid tightly',
-  },
-};
-
-const DEFAULT_RECIPE = {
-  sproutingTime: 'Clean whole grains & ingredients',
-  roastProfile: 'Roast gently on low heat',
-  millingTexture: 'Grind smooth on stone mill',
-  packagingGuidance: 'Seal fresh in pouch with date stamp',
-};
-
 interface AggregatedBatchProduct {
   productId: string;
   productName: string;
@@ -130,12 +39,13 @@ interface AggregatedBatchProduct {
   totalQuantity: number;
   unitWeightGrams: number;
   totalGrams: number;
-  recipe: typeof DEFAULT_RECIPE;
+  unpackedCount: number;
   orderRefs: Array<{
     orderId: string;
     customerName: string;
     quantity: number;
     city: string;
+    status: string;
   }>;
 }
 
@@ -145,12 +55,14 @@ export function AdminKitchenManifestView({
   onQuickAdvance,
   showToast,
 }: AdminKitchenManifestViewProps) {
-  // Filters
-  const [statusFilter, setStatusFilter] = useState<'pending' | 'all-active' | 'all'>('pending');
+  // Filters: strictly wired to operational states
+  const [statusFilter, setStatusFilter] = useState<'pending' | 'all-active' | 'completed'>('pending');
+  const [completionFilter, setCompletionFilter] = useState<'all' | 'unprepared' | 'prepared'>('all');
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | '48h'>('all');
   const [categoryFilter, setCategoryFilter] = useState<'all' | ProductCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAdvancingAll, setIsAdvancingAll] = useState(false);
+  const [advancingBatchId, setAdvancingBatchId] = useState<string | null>(null);
 
   // Today's Date String for localStorage keys
   const todayKey = useMemo(() => {
@@ -158,63 +70,88 @@ export function AdminKitchenManifestView({
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }, []);
 
-  // Checklist state saved in localStorage
-  const [checklist, setChecklist] = useState<Record<string, {
-    weighed?: boolean;
-    roasted?: boolean;
-    milled?: boolean;
-    packed?: boolean;
-  }>>({});
+  // Simple, Direct Prepared State: { [productId]: boolean }
+  const [preparedBatches, setPreparedBatches] = useState<Record<string, boolean>>({});
 
-  // Load saved checklist on mount
+  // Load saved prep state on mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(`gf_kitchen_checklist_${todayKey}`);
+      const saved = localStorage.getItem(`gf_kitchen_prepared_${todayKey}`);
       if (saved) {
-        setChecklist(JSON.parse(saved));
+        setPreparedBatches(JSON.parse(saved));
       }
     } catch {
-      // Ignore
+      // Ignore storage errors
     }
   }, [todayKey]);
 
-  // Toggle step in checklist
-  const toggleChecklistStep = (productId: string, step: 'weighed' | 'roasted' | 'milled' | 'packed') => {
-    setChecklist((prev) => {
-      const current = prev[productId] || {};
+  // Toggle batch prepared status
+  const toggleBatchPrepared = (productId: string) => {
+    setPreparedBatches((prev) => {
+      const isCurrentlyPrepared = !prev[productId];
       const updated = {
         ...prev,
-        [productId]: {
-          ...current,
-          [step]: !current[step],
-        },
+        [productId]: isCurrentlyPrepared,
       };
+
       try {
-        localStorage.setItem(`gf_kitchen_checklist_${todayKey}`, JSON.stringify(updated));
+        localStorage.setItem(`gf_kitchen_prepared_${todayKey}`, JSON.stringify(updated));
       } catch {
-        // Ignore
+        // Ignore storage errors
       }
+
+      showToast(
+        isCurrentlyPrepared ? 'Marked batch as prepared ✓' : 'Marked batch as pending',
+        isCurrentlyPrepared ? 'success' : 'info'
+      );
+
       return updated;
     });
   };
 
-  // Filter orders for kitchen batch preparation
+  // Reset all ticks for today
+  const handleResetAllTicks = () => {
+    if (!window.confirm('Reset all batch checkboxes for today?')) return;
+    setPreparedBatches({});
+    try {
+      localStorage.removeItem(`gf_kitchen_prepared_${todayKey}`);
+      showToast('Daily kitchen checkboxes reset', 'info');
+    } catch {
+      // Ignore
+    }
+  };
+
+  // Total Orders Already Delivered or Dispatched (Kitchen work is 100% completed)
+  const totalCompletedOrders = useMemo(() => {
+    return orders.filter((o) => {
+      const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
+      return u === 'Delivered' || u === 'Shipped' || u === 'Out for Delivery';
+    }).length;
+  }, [orders]);
+
+  // Filter orders for kitchen batch preparation:
+  // Strictly excludes Delivered/Shipped/Cancelled orders from active views!
   const relevantOrders = useMemo(() => {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const fortyEightHoursAgo = now.getTime() - 48 * 3600 * 1000;
 
     return orders.filter((order) => {
-      // Status filter
+      const u = getUnifiedStatus(order.orderStatus, order.shipmentStatus, order.paymentStatus);
+
+      // 1. Status wiring
       if (statusFilter === 'pending') {
-        // Only orders that are confirmed and need preparation
-        if (order.orderStatus !== 'Confirmed') return false;
+        // Only Confirmed orders waiting for kitchen prep (Delivered / Shipped / Cancelled NEVER included!)
+        if (u !== 'Confirmed') return false;
       } else if (statusFilter === 'all-active') {
-        // Confirmed or Processing (being packed)
-        if (order.orderStatus !== 'Confirmed' && order.orderStatus !== 'Processing') return false;
+        // Active in kitchen: Confirmed (needs cooking) or Processing (packed, waiting for pickup)
+        if (u !== 'Confirmed' && u !== 'Processing') return false;
+      } else if (statusFilter === 'completed') {
+        // Archive of orders where kitchen work is already delivered/shipped
+        if (u !== 'Delivered' && u !== 'Shipped' && u !== 'Out for Delivery') return false;
       }
 
-      // Date filter
+      // 2. Date filter
       const orderTime = new Date(order.createdAt).getTime();
       if (dateFilter === 'today' && orderTime < startOfToday) return false;
       if (dateFilter === '48h' && orderTime < fortyEightHoursAgo) return false;
@@ -223,12 +160,15 @@ export function AdminKitchenManifestView({
     });
   }, [orders, statusFilter, dateFilter]);
 
-  // Aggregate products from filtered orders
+  // Aggregate products from filtered orders (Exact Product & Total KG)
   const aggregatedProducts: AggregatedBatchProduct[] = useMemo(() => {
     const map = new Map<string, AggregatedBatchProduct>();
 
     relevantOrders.forEach((order) => {
       if (!order.items || !Array.isArray(order.items)) return;
+
+      const orderUStatus = getUnifiedStatus(order.orderStatus, order.shipmentStatus, order.paymentStatus);
+      const isOrderUnpacked = orderUStatus === 'Confirmed';
 
       order.items.forEach((item) => {
         const prod = item.product || allProducts.find((p) => (item as any).productId === p.id);
@@ -237,10 +177,8 @@ export function AdminKitchenManifestView({
         const packSize = prod?.packSize || (item as any).packSize || '250g';
         const category = prod?.category || 'baby-kids';
         const imageUrl = prod?.images?.primary || '/logo.png';
-        const unitGrams = prod?.productWeightGrams || 250;
+        const unitGrams = (prod?.productWeightGrams && prod.productWeightGrams > 0) ? prod.productWeightGrams : 250;
         const qty = item.quantity || 1;
-
-        const recipe = KITCHEN_RECIPES[prodId] || KITCHEN_RECIPES[prod?.id || ''] || DEFAULT_RECIPE;
 
         if (!map.has(prodId)) {
           map.set(prodId, {
@@ -252,13 +190,14 @@ export function AdminKitchenManifestView({
             totalQuantity: qty,
             unitWeightGrams: unitGrams,
             totalGrams: qty * unitGrams,
-            recipe,
+            unpackedCount: isOrderUnpacked ? qty : 0,
             orderRefs: [
               {
                 orderId: order.id,
                 customerName: order.customerName || 'Patron',
                 quantity: qty,
                 city: order.shippingAddress?.city || 'Bengaluru',
+                status: orderUStatus,
               },
             ],
           });
@@ -266,11 +205,15 @@ export function AdminKitchenManifestView({
           const existing = map.get(prodId)!;
           existing.totalQuantity += qty;
           existing.totalGrams += qty * unitGrams;
+          if (isOrderUnpacked) {
+            existing.unpackedCount += qty;
+          }
           existing.orderRefs.push({
             orderId: order.id,
             customerName: order.customerName || 'Patron',
             quantity: qty,
             city: order.shippingAddress?.city || 'Bengaluru',
+            status: orderUStatus,
           });
         }
       });
@@ -293,53 +236,94 @@ export function AdminKitchenManifestView({
       );
     }
 
-    // Sort by largest batch weight first
+    // Completion filter (prepared vs unprepared)
+    if (completionFilter === 'prepared') {
+      list = list.filter((p) => !!preparedBatches[p.productId]);
+    } else if (completionFilter === 'unprepared') {
+      list = list.filter((p) => !preparedBatches[p.productId]);
+    }
+
+    // Sort by largest batch weight first (heaviest grinding work on top)
     list.sort((a, b) => b.totalGrams - a.totalGrams);
 
     return list;
-  }, [relevantOrders, allProducts, categoryFilter, searchQuery]);
+  }, [relevantOrders, allProducts, categoryFilter, searchQuery, completionFilter, preparedBatches]);
 
   // Overall Batch Metrics
   const totalOrdersInBatch = relevantOrders.length;
   const totalPacksInBatch = aggregatedProducts.reduce((sum, p) => sum + p.totalQuantity, 0);
   const totalNetGramsInBatch = aggregatedProducts.reduce((sum, p) => sum + p.totalGrams, 0);
 
-  // Compute Completed Checklist Steps
-  const totalChecklistItems = aggregatedProducts.length * 4;
-  let completedChecklistItems = 0;
-  aggregatedProducts.forEach((p) => {
-    const c = checklist[p.productId];
-    if (c?.weighed) completedChecklistItems++;
-    if (c?.roasted) completedChecklistItems++;
-    if (c?.milled) completedChecklistItems++;
-    if (c?.packed) completedChecklistItems++;
-  });
-  const checklistPercent = totalChecklistItems > 0 ? Math.round((completedChecklistItems / totalChecklistItems) * 100) : 0;
+  // Preparation Progress
+  const totalUniqueBatches = aggregatedProducts.length;
+  const completedBatchesCount = aggregatedProducts.filter((p) => !!preparedBatches[p.productId]).length;
+  const completionPercentage =
+    totalUniqueBatches > 0 ? Math.round((completedBatchesCount / totalUniqueBatches) * 100) : 0;
 
-  // Advance All Confirmed Orders to Processing (Prepared & Packed)
+  // Advance All Confirmed Orders for a specific Product Batch
+  const handleAdvanceProductBatch = async (batch: AggregatedBatchProduct) => {
+    const confirmedOrderIds = Array.from(
+      new Set(
+        batch.orderRefs
+          .filter((ref) => ref.status === 'Confirmed')
+          .map((ref) => ref.orderId)
+      )
+    );
+
+    if (confirmedOrderIds.length === 0) {
+      showToast(`All orders for ${batch.productName} are already marked as packed!`, 'info');
+      return;
+    }
+
+    setAdvancingBatchId(batch.productId);
+    showToast(`Marking ${confirmedOrderIds.length} orders for ${batch.productName} as packed...`, 'info');
+
+    try {
+      for (const orderId of confirmedOrderIds) {
+        await onQuickAdvance(orderId, 'Processing');
+      }
+
+      // Automatically mark this product batch as prepared
+      setPreparedBatches((prev) => {
+        const updated = { ...prev, [batch.productId]: true };
+        try {
+          localStorage.setItem(`gf_kitchen_prepared_${todayKey}`, JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      showToast(`Done! ${confirmedOrderIds.length} orders updated to Packed & Ready ✓`, 'success');
+    } catch {
+      showToast('Could not update some orders. Please try again.', 'error');
+    } finally {
+      setAdvancingBatchId(null);
+    }
+  };
+
+  // Advance All Confirmed Orders to Processing (Cooked & Packed)
   const handleAdvanceAllBatch = async () => {
-    const confirmedOrders = relevantOrders.filter((o) => o.orderStatus === 'Confirmed');
+    const confirmedOrders = relevantOrders.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) === 'Confirmed');
     if (confirmedOrders.length === 0) {
-      showToast('All orders in this list are already marked as packed!', 'info');
+      showToast('All orders in this batch are already marked as packed!', 'info');
       return;
     }
 
     if (
       !window.confirm(
-        `Mark ${confirmedOrders.length} orders as cooked & packed? This will update the customer tracking page so they know their order is ready.`
+        `Mark all ${confirmedOrders.length} orders as cooked & packed? This will notify customers that their batch is ready for pickup.`
       )
     ) {
       return;
     }
 
     setIsAdvancingAll(true);
-    showToast(`Updating ${confirmedOrders.length} orders in kitchen...`, 'info');
+    showToast(`Marking ${confirmedOrders.length} orders as packed...`, 'info');
 
     try {
       for (const order of confirmedOrders) {
         await onQuickAdvance(order.id, 'Processing');
       }
-      showToast(`Done! All ${confirmedOrders.length} orders marked as cooked & packed.`, 'success');
+      showToast(`Success! ${confirmedOrders.length} orders marked as packed & ready.`, 'success');
     } catch {
       showToast('Could not update some orders. Please try again.', 'error');
     } finally {
@@ -360,15 +344,20 @@ export function AdminKitchenManifestView({
       <header className={styles.headerBanner}>
         <div className={styles.headerLeft}>
           <div className={styles.eyebrowRow}>
-            <span className={styles.eyebrow}>Good Fills Kitchen</span>
+            <span className={styles.eyebrow}>Good Fills Kitchen Console</span>
             <span className={styles.liveBadge}>
               <span className={styles.liveDot} />
-              <span>Live Kitchen Shift</span>
+              <span>Live Batch Production</span>
             </span>
+            {totalCompletedOrders > 0 && (
+              <span className={styles.completedStatsBadge} title="Orders already prepared, shipped, or delivered">
+                ✓ {totalCompletedOrders} Dispatched &amp; Delivered
+              </span>
+            )}
           </div>
-          <h1 className={styles.title}>Kitchen Prep &amp; Daily Milling Guide</h1>
+          <h1 className={styles.title}>Daily Kitchen Prep Manifest</h1>
           <p className={styles.subtitle}>
-            Everything you need to cook, roast, grind, and pack today for customer orders. All orders are combined so you can see the exact weights to weigh and packets to fill.
+            Aggregated batch production sheet. Displays total kilograms to roast and mill across pending orders. Delivered and dispatched orders are automatically marked finished and cleared from active prep.
           </p>
         </div>
 
@@ -377,34 +366,42 @@ export function AdminKitchenManifestView({
             type="button"
             onClick={() => window.print()}
             className={styles.printBtn}
-            title="Print clean A4 kitchen clipboard sheet"
+            title="Print clean A4 prep sheet for the kitchen clipboard"
           >
             <Printer size={15} />
-            <span>Print Prep Sheet</span>
+            <span>Print Batch Sheet</span>
           </button>
 
-          <button
-            type="button"
-            onClick={handleAdvanceAllBatch}
-            disabled={isAdvancingAll || relevantOrders.length === 0}
-            className={styles.advanceAllBtn}
-            title="Mark all confirmed orders in this list as packed and ready"
-          >
-            <CheckCircle2 size={15} />
-            <span>{isAdvancingAll ? 'Updating Orders...' : 'Mark All as Packed ✓'}</span>
-          </button>
+          {statusFilter !== 'completed' && (
+            <button
+              type="button"
+              onClick={handleAdvanceAllBatch}
+              disabled={isAdvancingAll || relevantOrders.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) === 'Confirmed').length === 0}
+              className={styles.advanceAllBtn}
+              title="Mark all confirmed orders in this list as packed and ready for dispatch"
+            >
+              <CheckCircle2 size={15} />
+              <span>{isAdvancingAll ? 'Updating Orders...' : 'Mark All as Packed ✓'}</span>
+            </button>
+          )}
         </div>
       </header>
 
-      {/* 2. Real-Time Metrics Deck */}
-      <section className={styles.metricsGrid} aria-label="Kitchen Batch Metrics">
+      {/* 2. Key Operational Metrics Deck */}
+      <section className={styles.metricsGrid} aria-label="Kitchen Production Metrics">
         <div className={styles.metricCard}>
           <div className={styles.metricHeader}>
-            <span className={styles.metricLabel}>Orders to Cook &amp; Pack</span>
-            <Clock size={16} className={styles.metricIcon} />
+            <span className={styles.metricLabel}>Total Weight to Prepare</span>
+            <Scale size={16} className={styles.metricIcon} />
           </div>
-          <div className={styles.metricValue}>{totalOrdersInBatch}</div>
-          <div className={styles.metricSubtext}>Orders waiting for kitchen prep</div>
+          <div className={styles.metricValue}>
+            {totalNetGramsInBatch >= 1000
+              ? `${(totalNetGramsInBatch / 1000).toFixed(2)} kg`
+              : `${totalNetGramsInBatch} g`}
+          </div>
+          <div className={styles.metricSubtext}>
+            {statusFilter === 'completed' ? 'Total volume already prepared' : 'Volume needed across active orders'}
+          </div>
         </div>
 
         <div className={styles.metricCard}>
@@ -413,33 +410,33 @@ export function AdminKitchenManifestView({
             <Package size={16} className={styles.metricIcon} />
           </div>
           <div className={styles.metricValue}>{totalPacksInBatch}</div>
-          <div className={styles.metricSubtext}>Total pouches to fill and seal</div>
+          <div className={styles.metricSubtext}>Pouches to seal and label</div>
         </div>
 
         <div className={styles.metricCard}>
           <div className={styles.metricHeader}>
-            <span className={styles.metricLabel}>Total Grain Weight</span>
-            <Scale size={16} className={styles.metricIcon} />
+            <span className={styles.metricLabel}>
+              {statusFilter === 'completed' ? 'Delivered Orders' : 'Orders Awaiting Prep'}
+            </span>
+            <Clock size={16} className={styles.metricIcon} />
           </div>
-          <div className={styles.metricValue}>
-            {totalNetGramsInBatch >= 1000
-              ? `${(totalNetGramsInBatch / 1000).toFixed(2)} kg`
-              : `${totalNetGramsInBatch} g`}
+          <div className={styles.metricValue}>{totalOrdersInBatch}</div>
+          <div className={styles.metricSubtext}>
+            {statusFilter === 'completed' ? 'Kitchen prep finished' : 'Pending cooking & packing'}
           </div>
-          <div className={styles.metricSubtext}>Total ingredients to weigh &amp; grind</div>
         </div>
 
         <div className={styles.metricCard}>
           <div className={styles.metricHeader}>
-            <span className={styles.metricLabel}>Kitchen Progress</span>
+            <span className={styles.metricLabel}>Batch Prep Progress</span>
             <ChefHat size={16} className={styles.metricIcon} />
           </div>
-          <div className={styles.metricValue}>{checklistPercent}%</div>
+          <div className={styles.metricValue}>{completionPercentage}%</div>
           <div className={styles.progressBarTrack}>
-            <div className={styles.progressBarFill} style={{ width: `${checklistPercent}%` }} />
+            <div className={styles.progressBarFill} style={{ width: `${completionPercentage}%` }} />
           </div>
-          <div className={styles.metricSubtext} style={{ marginTop: '4px' }}>
-            {completedChecklistItems} of {totalChecklistItems} prep steps done
+          <div className={styles.metricSubtext} style={{ marginTop: '6px' }}>
+            {completedBatchesCount} of {totalUniqueBatches} product batches ready
           </div>
         </div>
       </section>
@@ -447,172 +444,227 @@ export function AdminKitchenManifestView({
       {/* 3. Toolbar & Filtering Strip */}
       <div className={styles.toolbar}>
         <div className={styles.filtersGroup}>
-          <select
-            className={styles.filterSelect}
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
-            aria-label="Filter by order status"
-          >
-            <option value="pending">Waiting to be Prepared</option>
-            <option value="all-active">In Progress &amp; Packed</option>
-            <option value="all">All Recent Orders</option>
-          </select>
+          <div className={styles.filterItem}>
+            <label className={styles.filterLabel}>Order Flow:</label>
+            <select
+              className={styles.filterSelect}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              aria-label="Filter by order lifecycle status"
+            >
+              <option value="pending">Needs Kitchen Prep (Confirmed)</option>
+              <option value="all-active">All Active in Kitchen (Confirmed + Packed)</option>
+              <option value="completed">Completed &amp; Delivered (Prep Finished Archive)</option>
+            </select>
+          </div>
 
-          <select
-            className={styles.filterSelect}
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value as any)}
-            aria-label="Filter by date range"
-          >
-            <option value="all">All Pending Orders</option>
-            <option value="today">Today&apos;s Orders</option>
-            <option value="48h">Past 2 Days</option>
-          </select>
+          <div className={styles.filterItem}>
+            <label className={styles.filterLabel}>Kitchen Ticks:</label>
+            <select
+              className={styles.filterSelect}
+              value={completionFilter}
+              onChange={(e) => setCompletionFilter(e.target.value as any)}
+              aria-label="Filter by kitchen completion status"
+            >
+              <option value="all">All Batches</option>
+              <option value="unprepared">Pending Prep Only</option>
+              <option value="prepared">Prepared Batches (Done)</option>
+            </select>
+          </div>
 
-          <select
-            className={styles.filterSelect}
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value as any)}
-            aria-label="Filter by category"
-          >
-            <option value="all">All Categories</option>
-            <option value="baby-kids">Baby &amp; Kids</option>
-            <option value="nutrition-wellness">Health &amp; Wellness</option>
-            <option value="pantry-beverages">Pantry &amp; Beverages</option>
-            <option value="skin-bath">Skin &amp; Bath</option>
-          </select>
+          <div className={styles.filterItem}>
+            <label className={styles.filterLabel}>Category:</label>
+            <select
+              className={styles.filterSelect}
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value as any)}
+              aria-label="Filter by product category"
+            >
+              <option value="all">All Categories</option>
+              <option value="baby-kids">Baby &amp; Kids</option>
+              <option value="nutrition-wellness">Health &amp; Wellness</option>
+              <option value="pantry-beverages">Pantry &amp; Beverages</option>
+              <option value="skin-bath">Skin &amp; Bath</option>
+            </select>
+          </div>
         </div>
 
-        <div className={styles.searchBox}>
-          <Search size={14} color="var(--text-muted)" />
-          <input
-            type="text"
-            placeholder="Search by item or ingredient..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={styles.searchInput}
-          />
+        <div className={styles.toolbarRight}>
+          <div className={styles.searchBox}>
+            <Search size={14} color="var(--text-muted)" />
+            <input
+              type="text"
+              placeholder="Search product..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={styles.searchInput}
+            />
+          </div>
+
+          {completedBatchesCount > 0 && (
+            <button
+              type="button"
+              onClick={handleResetAllTicks}
+              className={styles.resetTicksBtn}
+              title="Reset all checkboxes for today"
+            >
+              <RotateCcw size={12} />
+              <span>Reset Ticks</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* 4. Milling & Roasting Aggregation Cards (The Core Kitchen Prep Deck) */}
-      <section aria-label="Milling & Roasting Batches">
+      {/* 4. Production Batches Section (What Product, How Much KG) */}
+      <section aria-label="Consolidated Production Batches">
         <div className={styles.sectionBlockHeader}>
           <div>
             <h2 className={styles.sectionBlockTitle}>
-              Items to Roast &amp; Grind Today ({aggregatedProducts.length} items)
+              {statusFilter === 'completed'
+                ? `Completed Production Batches (${aggregatedProducts.length} Products)`
+                : `Batch Production Deck (${aggregatedProducts.length} Products)`}
             </h2>
-            <span className={styles.sectionBlockCount}>{todayFormatted} • Made Fresh for Today&apos;s Orders</span>
+            <span className={styles.sectionBlockCount}>
+              {todayFormatted} • Aggregated weights for roasting, milling, and packing
+            </span>
           </div>
         </div>
 
         {aggregatedProducts.length === 0 ? (
           <div className={styles.emptyState}>
-            <CheckCircle2 size={40} color="#22c55e" style={{ margin: '0 auto 12px' }} />
-            <h3 style={{ margin: '0 0 6px 0', fontSize: '1.2rem', fontWeight: 700 }}>
-              All Kitchen Prep is Done!
+            <CheckCircle2 size={44} color="#16a34a" style={{ margin: '0 auto 12px' }} />
+            <h3 className={styles.emptyStateTitle}>
+              {statusFilter === 'completed'
+                ? 'No delivered orders in this range'
+                : 'All Active Kitchen Prep is Done!'}
             </h3>
-            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-              There are no orders waiting to be cooked or ground right now.
+            <p className={styles.emptyStateText}>
+              {statusFilter === 'completed'
+                ? 'No past orders matched the filter criteria.'
+                : 'All customer orders have been prepared and packed. New incoming orders will appear here automatically.'}
             </p>
           </div>
         ) : (
           <div className={styles.batchGrid}>
             {aggregatedProducts.map((batch) => {
-              const itemCheck = checklist[batch.productId] || {};
-              const isAllChecked = itemCheck.weighed && itemCheck.roasted && itemCheck.milled && itemCheck.packed;
+              const isPrepared = !!preparedBatches[batch.productId];
+              const totalKgFormatted =
+                batch.totalGrams >= 1000
+                  ? `${(batch.totalGrams / 1000).toFixed(2)} kg`
+                  : `${batch.totalGrams} g`;
+
+              const isBatchAdvancing = advancingBatchId === batch.productId;
 
               return (
                 <article
                   key={batch.productId}
-                  className={styles.productPrepCard}
-                  style={isAllChecked ? { borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.02)' } : undefined}
+                  className={`${styles.productBatchCard} ${isPrepared ? styles.productBatchCardDone : ''}`}
                 >
-                  <div>
-                    {/* Top Row: Product Info & Quantity Weight Callout */}
-                    <div className={styles.cardTopRow}>
-                      <div className={styles.cardProductInfo}>
-                        <img
-                          src={batch.imageUrl}
-                          alt={batch.productName}
-                          className={styles.cardProductImg}
-                        />
-                        <div>
-                          <span className={styles.cardProductCategory}>{batch.category.replace('-', ' & ')}</span>
-                          <h3 className={styles.cardProductName}>{batch.productName}</h3>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            Pack size: {batch.packSize}
-                          </span>
-                        </div>
-                      </div>
+                  {/* Top Bar: Category & Status */}
+                  <div className={styles.batchCardTopBar}>
+                    <span className={styles.batchCategoryBadge}>
+                      {batch.category.replace('-', ' & ')}
+                    </span>
+                    {isPrepared ? (
+                      <span className={styles.preparedBadge}>
+                        <Check size={12} strokeWidth={3} /> Prepared ✓
+                      </span>
+                    ) : batch.unpackedCount === 0 ? (
+                      <span className={styles.allPackedBadge}>All Orders Packed ✓</span>
+                    ) : (
+                      <span className={styles.pendingBadge}>Needs Prep</span>
+                    )}
+                  </div>
 
-                      <div className={styles.weightCallout}>
-                        <span className={styles.weightAmount}>
-                          {batch.totalGrams >= 1000
-                            ? `${(batch.totalGrams / 1000).toFixed(2)} kg`
-                            : `${batch.totalGrams} g`}
-                        </span>
-                        <span className={styles.weightPacksLabel}>
-                          {batch.totalQuantity} {batch.totalQuantity === 1 ? 'packet' : 'packets'} to pack
-                        </span>
+                  {/* Main Product Info & Large Weight Callout */}
+                  <div className={styles.batchMainRow}>
+                    <div className={styles.batchProductIdentity}>
+                      <img
+                        src={batch.imageUrl}
+                        alt={batch.productName}
+                        className={styles.batchProductImg}
+                      />
+                      <div className={styles.batchProductDetails}>
+                        <h3 className={styles.batchProductName}>{batch.productName}</h3>
+                        <div className={styles.batchPackSizeNote}>
+                          Standard pack: <strong>{batch.packSize}</strong>
+                        </div>
                       </div>
                     </div>
 
-                    {/* How to prepare & make */}
-                    <div className={styles.recipeGuideBox} style={{ marginTop: 'var(--space-3)' }}>
-                      <span className={styles.recipeTitle}>How to Prepare &amp; Make:</span>
-                      <div>• <strong>Ingredients:</strong> {batch.recipe.sproutingTime}</div>
-                      <div>• <strong>Roasting:</strong> {batch.recipe.roastProfile}</div>
-                      <div>• <strong>Grinding:</strong> {batch.recipe.millingTexture}</div>
-                      <div>• <strong>Packing:</strong> {batch.recipe.packagingGuidance}</div>
+                    {/* Prominent High-Visibility Weight Box */}
+                    <div className={styles.batchWeightBox}>
+                      <span className={styles.batchWeightLabel}>Total to Prepare</span>
+                      <span className={styles.batchWeightValue}>{totalKgFormatted}</span>
+                      <span className={styles.batchPacketsCount}>
+                        {batch.totalQuantity} {batch.totalQuantity === 1 ? 'packet' : 'packets'}
+                      </span>
                     </div>
                   </div>
 
-                  <div>
-                    {/* Kitchen Production Checklist */}
-                    <div className={styles.checklistGroup}>
-                      <label className={styles.checklistItem} onClick={() => toggleChecklistStep(batch.productId, 'weighed')}>
-                        <span className={`${styles.customCheckbox} ${itemCheck.weighed ? styles.customCheckboxChecked : ''}`}>
-                          {itemCheck.weighed && <Check size={11} strokeWidth={3} />}
-                        </span>
-                        <span>1. Weigh ingredients ({batch.totalGrams}g)</span>
-                      </label>
-
-                      <label className={styles.checklistItem} onClick={() => toggleChecklistStep(batch.productId, 'roasted')}>
-                        <span className={`${styles.customCheckbox} ${itemCheck.roasted ? styles.customCheckboxChecked : ''}`}>
-                          {itemCheck.roasted && <Check size={11} strokeWidth={3} />}
-                        </span>
-                        <span>2. Roast on pan</span>
-                      </label>
-
-                      <label className={styles.checklistItem} onClick={() => toggleChecklistStep(batch.productId, 'milled')}>
-                        <span className={`${styles.customCheckbox} ${itemCheck.milled ? styles.customCheckboxChecked : ''}`}>
-                          {itemCheck.milled && <Check size={11} strokeWidth={3} />}
-                        </span>
-                        <span>3. Grind on stone mill &amp; sieve</span>
-                      </label>
-
-                      <label className={styles.checklistItem} onClick={() => toggleChecklistStep(batch.productId, 'packed')}>
-                        <span className={`${styles.customCheckbox} ${itemCheck.packed ? styles.customCheckboxChecked : ''}`}>
-                          {itemCheck.packed && <Check size={11} strokeWidth={3} />}
-                        </span>
-                        <span>4. Pack in pouches &amp; label ({batch.totalQuantity} packets)</span>
-                      </label>
-                    </div>
-
-                    {/* Associated Customer Orders */}
-                    <div style={{ marginTop: 'var(--space-3)' }}>
-                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>
-                        Needed for orders:
+                  {/* Orders Cross-Reference */}
+                  <div className={styles.batchOrdersSection}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span className={styles.batchOrdersLabel}>
+                        Needed for {batch.orderRefs.length} {batch.orderRefs.length === 1 ? 'order' : 'orders'}:
                       </span>
-                      <div className={styles.orderRefsDeck}>
-                        {batch.orderRefs.map((ref, idx) => (
-                          <span key={idx} className={styles.orderRefPill} title={`${ref.customerName} (${ref.city})`}>
-                            Order #{ref.orderId.slice(-6)} ({ref.quantity} pack)
-                          </span>
-                        ))}
-                      </div>
+                      {batch.unpackedCount > 0 && (
+                        <span style={{ fontSize: '0.68rem', color: '#c2410c', fontWeight: 700 }}>
+                          {batch.unpackedCount} to pack
+                        </span>
+                      )}
                     </div>
+                    <div className={styles.batchOrderPillsContainer}>
+                      {batch.orderRefs.map((ref, idx) => {
+                        const isDone = ref.status === 'Processing' || ref.status === 'Shipped' || ref.status === 'Delivered';
+                        return (
+                          <span
+                            key={idx}
+                            className={`${styles.batchOrderPill} ${isDone ? styles.batchOrderPillDone : ''}`}
+                            title={`${ref.customerName} (${ref.city}) — ${ref.status}`}
+                          >
+                            <strong>#{ref.orderId.slice(-6)}</strong> ({ref.quantity}×){' '}
+                            {isDone ? '✓' : ''}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Action / Checkbox Bar */}
+                  <div className={styles.batchActionBar}>
+                    <button
+                      type="button"
+                      onClick={() => toggleBatchPrepared(batch.productId)}
+                      className={`${styles.prepToggleBtn} ${isPrepared ? styles.prepToggleBtnDone : ''}`}
+                    >
+                      {isPrepared ? (
+                        <>
+                          <CheckSquare size={16} />
+                          <span>Batch Prepared &amp; Ready ✓</span>
+                        </>
+                      ) : (
+                        <>
+                          <Square size={16} />
+                          <span>Mark as Prepared</span>
+                        </>
+                      )}
+                    </button>
+
+                    {batch.unpackedCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => handleAdvanceProductBatch(batch)}
+                        disabled={isBatchAdvancing}
+                        className={styles.batchPackOrdersBtn}
+                        title={`Mark all confirmed orders for ${batch.productName} as packed`}
+                      >
+                        <Package size={14} />
+                        <span>
+                          {isBatchAdvancing ? 'Updating...' : `Pack ${batch.unpackedCount} Orders ✓`}
+                        </span>
+                      </button>
+                    )}
                   </div>
                 </article>
               );
@@ -621,14 +673,16 @@ export function AdminKitchenManifestView({
         )}
       </section>
 
-      {/* 5. Kitchen Order Packing Cross-Reference Table */}
-      <section aria-label="Kitchen Orders Packing Manifest" style={{ marginTop: 'var(--space-6)' }}>
+      {/* 5. Customer Orders Packing Breakdown Table */}
+      <section aria-label="Customer Orders Packing Manifest" style={{ marginTop: 'var(--space-6)' }}>
         <div className={styles.sectionBlockHeader}>
           <div>
             <h2 className={styles.sectionBlockTitle}>
-              Customer Orders &amp; Packing List ({relevantOrders.length} Orders)
+              Customer Orders Packing Manifest ({relevantOrders.length} Orders)
             </h2>
-            <span className={styles.sectionBlockCount}>Check each customer&apos;s order and mark them as packed once ready</span>
+            <span className={styles.sectionBlockCount}>
+              Pack each customer&apos;s parcel with their freshly prepared items and mark them ready for dispatch
+            </span>
           </div>
         </div>
 
@@ -640,34 +694,37 @@ export function AdminKitchenManifestView({
                 <th>Customer &amp; City</th>
                 <th>Items to Pack</th>
                 <th>Total Weight</th>
-                <th>Status</th>
+                <th>Kitchen Status</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {relevantOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
-                    No orders match current filter.
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
+                    No customer orders matching the current filter.
                   </td>
                 </tr>
               ) : (
                 relevantOrders.map((order) => {
-                  const isConfirmed = order.orderStatus === 'Confirmed';
-                  const isProcessing = order.orderStatus === 'Processing';
+                  const uStatus = getUnifiedStatus(order.orderStatus, order.shipmentStatus, order.paymentStatus);
+                  const isConfirmed = uStatus === 'Confirmed';
+                  const isProcessing = uStatus === 'Processing';
+                  const isDelivered = uStatus === 'Delivered';
+                  const isShipped = uStatus === 'Shipped' || uStatus === 'Out for Delivery';
 
                   return (
                     <tr key={order.id}>
                       <td>
                         <span className={styles.orderIdBadge}>#{order.id}</span>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        <div className={styles.orderTimeText}>
                           {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </td>
 
                       <td>
-                        <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{order.customerName}</div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                        <div className={styles.customerNameCell}>{order.customerName}</div>
+                        <div className={styles.customerCityCell}>
                           {order.shippingAddress?.city || 'Bengaluru'}, {order.shippingAddress?.state || 'KA'}
                         </div>
                       </td>
@@ -680,8 +737,9 @@ export function AdminKitchenManifestView({
                             const pack = prod?.packSize || (item as any).packSize || '250g';
                             return (
                               <li key={iIdx} className={styles.itemsBreakdownItem}>
-                                <span>{item.quantity}× {name}</span>{' '}
-                                <span className={styles.itemsBreakdownPack}>({pack})</span>
+                                <span className={styles.itemQty}>{item.quantity}×</span>
+                                <span className={styles.itemName}>{name}</span>
+                                <span className={styles.itemPackSize}>({pack})</span>
                               </li>
                             );
                           })}
@@ -689,13 +747,17 @@ export function AdminKitchenManifestView({
                       </td>
 
                       <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                        {order.weightGrams ? `${order.weightGrams}g` : '500g'}
+                        {order.weightGrams
+                          ? order.weightGrams >= 1000
+                            ? `${(order.weightGrams / 1000).toFixed(2)} kg`
+                            : `${order.weightGrams}g`
+                          : '500g'}
                       </td>
 
                       <td>
                         {isConfirmed && (
                           <span className={styles.statusPillConfirmed}>
-                            Needs Cooking
+                            Needs Prep &amp; Pack
                           </span>
                         )}
                         {isProcessing && (
@@ -703,9 +765,14 @@ export function AdminKitchenManifestView({
                             Packed &amp; Ready
                           </span>
                         )}
-                        {!isConfirmed && !isProcessing && (
-                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                            {order.orderStatus}
+                        {isShipped && (
+                          <span className={styles.statusPillShipped}>
+                            In Transit (DTDC)
+                          </span>
+                        )}
+                        {isDelivered && (
+                          <span className={styles.statusPillDelivered}>
+                            ✓ Delivered
                           </span>
                         )}
                       </td>
@@ -722,8 +789,19 @@ export function AdminKitchenManifestView({
                           </button>
                         )}
                         {isProcessing && (
-                          <span style={{ fontSize: '0.78rem', color: '#166534', fontWeight: 700 }}>
-                            Ready for Courier Pickup
+                          <button
+                            type="button"
+                            onClick={() => onQuickAdvance(order.id, 'Shipped')}
+                            className={styles.dispatchOrderBtn}
+                            title="Hand over parcel to DTDC courier"
+                          >
+                            <Truck size={13} />
+                            <span>Dispatch DTDC 🚚</span>
+                          </button>
+                        )}
+                        {(isShipped || isDelivered) && (
+                          <span className={styles.readyTag}>
+                            Kitchen Prep Completed ✓
                           </span>
                         )}
                       </td>
@@ -735,6 +813,45 @@ export function AdminKitchenManifestView({
           </table>
         </div>
       </section>
+
+      {/* 6. Clean Printable Kitchen Prep Sheet (Visible only when printed) */}
+      <div className={styles.printOnlySection}>
+        <div className={styles.printHeader}>
+          <h1>GOOD FILLS — DAILY KITCHEN PREPARATION SHEET</h1>
+          <p>Date: {todayFormatted} | Generated from Live Admin Console</p>
+        </div>
+
+        <table className={styles.printTable}>
+          <thead>
+            <tr>
+              <th style={{ width: '40px' }}>Done</th>
+              <th>Product Name</th>
+              <th>Pack Size</th>
+              <th>Total Weight</th>
+              <th>Pouches</th>
+              <th>Order Numbers</th>
+            </tr>
+          </thead>
+          <tbody>
+            {aggregatedProducts.map((p, idx) => (
+              <tr key={idx}>
+                <td style={{ textAlign: 'center', fontSize: '1.2rem' }}>[ ]</td>
+                <td><strong>{p.productName}</strong></td>
+                <td>{p.packSize}</td>
+                <td>
+                  <strong>
+                    {p.totalGrams >= 1000 ? `${(p.totalGrams / 1000).toFixed(2)} kg` : `${p.totalGrams} g`}
+                  </strong>
+                </td>
+                <td>{p.totalQuantity} pkts</td>
+                <td style={{ fontSize: '0.8rem' }}>
+                  {p.orderRefs.map((r) => `#${r.orderId.slice(-6)}`).join(', ')}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

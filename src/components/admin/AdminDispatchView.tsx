@@ -43,15 +43,17 @@ import {
   Plus,
   Edit3,
   Trash2,
-  Star
+  Star,
+  Flame,
 } from 'lucide-react';
 import { Order, OrderStatus, ShipmentStatus, PaymentStatus, Product, ProductCategory, ProductAvailability } from '@/types';
 import { PRODUCTS } from '@/data/products';
 import { Inquiry } from '@/lib/inquiries';
+import { AdminKitchenManifestView } from './AdminKitchenManifestView';
 import styles from './AdminDispatchView.module.css';
 
 type DatePreset = 'all' | 'today' | 'yesterday' | '7days' | 'month' | 'custom';
-type SidebarTab = 'dashboard' | 'orders' | 'products' | 'inquiries';
+type SidebarTab = 'dashboard' | 'orders' | 'kitchen' | 'products' | 'inquiries';
 type OrderDateTab = 'all' | 'today' | 'yesterday' | 'week' | 'month';
 type ManifestLayout = 'table' | 'cards';
 type SortOption = 'newest' | 'oldest' | 'highest' | 'lowest' | 'name';
@@ -211,6 +213,14 @@ export function AdminDispatchView() {
 
   // Multi-select state
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
+
+  // Kitchen batch count calculation (orders needing made-to-order prep)
+  const pendingKitchenBatchCount = useMemo(() => {
+    return orders.filter((o) => {
+      const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
+      return u === 'Confirmed' || u === 'Processing';
+    }).length;
+  }, [orders]);
 
   // Popover state for individual status selectors
   const [openStatusMenuId, setOpenStatusMenuId] = useState<string | null>(null);
@@ -1309,6 +1319,24 @@ export function AdminDispatchView() {
 
             <button
               type="button"
+              className={`${styles.navItem} ${activeSidebarTab === 'kitchen' ? styles.navItemActive : ''}`}
+              onClick={() => {
+                setActiveSidebarTab('kitchen');
+                setIsMobileDrawerOpen(false);
+              }}
+            >
+              <Flame size={18} />
+              <span>Kitchen Batch</span>
+              {pendingKitchenBatchCount > 0 && (
+                <span className={styles.navCountBadge} style={{ backgroundColor: 'var(--accent-terracotta)', color: '#FFFFFF' }}>
+                  {pendingKitchenBatchCount}
+                </span>
+              )}
+              {activeSidebarTab === 'kitchen' && <div className={styles.activePillMarker} />}
+            </button>
+
+            <button
+              type="button"
               className={`${styles.navItem} ${activeSidebarTab === 'products' ? styles.navItemActive : ''}`}
               onClick={() => {
                 setActiveSidebarTab('products');
@@ -1410,6 +1438,14 @@ export function AdminDispatchView() {
           >
             <ListOrdered size={14} />
             <span>Orders ({orders.length})</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.mobileTabBtn} ${activeSidebarTab === 'kitchen' ? styles.mobileTabBtnActive : ''}`}
+            onClick={() => setActiveSidebarTab('kitchen')}
+          >
+            <Flame size={14} />
+            <span>Kitchen ({pendingKitchenBatchCount})</span>
           </button>
           <button
             type="button"
@@ -2597,6 +2633,19 @@ export function AdminDispatchView() {
               </>
             )}
           </div>
+        )}
+
+        {/* ====================================================================
+            TAB KITCHEN: BATCH PREP MANIFEST & MILLING PLANNER
+            ==================================================================== */}
+        {activeSidebarTab === 'kitchen' && (
+          <AdminKitchenManifestView
+            orders={orders}
+            allProducts={products.length > 0 ? products : PRODUCTS}
+            onQuickAdvance={handleQuickAdvance}
+            showToast={showToast}
+            adminPin={pin}
+          />
         )}
 
         {/* ====================================================================

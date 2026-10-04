@@ -1,0 +1,682 @@
+/* ========================================================
+   KITCHEN BATCH PREP MANIFEST & MILLING PLANNER — CSS MODULE
+   0px Architectural Square-Cut Design & Printable Kitchen Layout
+   ======================================================== */
+
+.container {
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--space-4);
+    gap: var(--space-5);
+  }
+}
+
+/* Header Banner */
+.headerBanner {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0px !important;
+  padding: var(--space-6) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (min-width: 900px) {
+  .headerBanner {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eyebrowRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-terracotta);
+  font-weight: 700;
+}
+
+.liveBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background-color: rgba(34, 197, 94, 0.1);
+  color: #166534;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 0px !important;
+  padding: 1px 7px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.liveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #22c55e;
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.title {
+  font-family: var(--font-sans);
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0;
+  max-width: 680px;
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.printBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-surface-raised);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  border-radius: 0px !important;
+  padding: 9px 18px;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.printBtn:hover {
+  background-color: var(--text-primary);
+  color: #FFFFFF;
+  border-color: var(--text-primary);
+}
+
+.advanceAllBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--accent-terracotta);
+  color: #FFFFFF;
+  border: 1px solid var(--accent-terracotta);
+  border-radius: 0px !important;
+  padding: 9px 18px;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.advanceAllBtn:hover:not(:disabled) {
+  background-color: #7E3314;
+  border-color: #7E3314;
+}
+
+.advanceAllBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Metrics Deck */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+
+@media (min-width: 900px) {
+  .metricsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.metricCard {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0px !important;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  transition: border-color var(--transition-fast);
+}
+
+.metricCard:hover {
+  border-color: var(--border-medium);
+}
+
+.metricHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metricLabel {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.metricIcon {
+  color: var(--accent-terracotta);
+}
+
+.metricValue {
+  font-family: var(--font-sans);
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  line-height: 1.1;
+  margin-top: 4px;
+}
+
+.metricSubtext {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.progressBarTrack {
+  width: 100%;
+  height: 6px;
+  background-color: var(--border-subtle);
+  border-radius: 0px !important;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background-color: #22c55e;
+  border-radius: 0px !important;
+  transition: width 0.4s ease;
+}
+
+/* Toolbar & Filters */
+.toolbar {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0px !important;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.filtersGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.filterSelect {
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-medium);
+  border-radius: 0px !important;
+  padding: 6px 12px;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+}
+
+.filterSelect:focus {
+  border-color: var(--accent-terracotta);
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-medium);
+  border-radius: 0px !important;
+  padding: 6px 12px;
+}
+
+.searchInput {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  width: 180px;
+}
+
+/* Sections Header */
+.sectionBlockHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: var(--space-4);
+}
+
+.sectionBlockTitle {
+  font-family: var(--font-sans);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.sectionBlockCount {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Batch Products Deck (Cards) */
+.batchGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+}
+
+@media (min-width: 800px) {
+  .batchGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .batchGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.productPrepCard {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0px !important;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-4);
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.productPrepCard:hover {
+  border-color: var(--accent-terracotta);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.cardTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.cardProductInfo {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.cardProductImg {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0px !important;
+}
+
+.cardProductName {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+  line-height: 1.25;
+}
+
+.cardProductCategory {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.weightCallout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background-color: rgba(151, 65, 29, 0.06);
+  border: 1px solid rgba(151, 65, 29, 0.2);
+  border-radius: 0px !important;
+  padding: 6px 10px;
+}
+
+.weightAmount {
+  font-family: var(--font-sans);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--accent-terracotta);
+  line-height: 1;
+}
+
+.weightPacksLabel {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+.recipeGuideBox {
+  background-color: var(--bg-canvas);
+  border-left: 3px solid var(--accent-terracotta);
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.recipeTitle {
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  display: block;
+}
+
+/* Checkbox Checklist */
+.checklistGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.checklistItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.customCheckbox {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border-medium);
+  border-radius: 0px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.customCheckboxChecked {
+  background-color: #22c55e;
+  border-color: #22c55e;
+  color: #FFFFFF;
+}
+
+/* Order Reference Pills */
+.orderRefsDeck {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: var(--space-1);
+}
+
+.orderRefPill {
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0px !important;
+  padding: 2px 7px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-family: monospace;
+}
+
+/* Orders Packing Manifest Table */
+.manifestTableWrapper {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0px !important;
+  overflow-x: auto;
+}
+
+.manifestTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.manifestTable th {
+  background-color: var(--bg-canvas);
+  padding: 12px 16px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-medium);
+}
+
+.manifestTable td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.manifestTable tr:hover {
+  background-color: rgba(0, 0, 0, 0.015);
+}
+
+.orderIdBadge {
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--accent-terracotta);
+}
+
+.itemsBreakdownList {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.itemsBreakdownItem {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.itemsBreakdownPack {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.statusPillConfirmed {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FCD34D;
+  border-radius: 0px !important;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.statusPillProcessing {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #DBEAFE;
+  color: #1E40AF;
+  border: 1px solid #93C5FD;
+  border-radius: 0px !important;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.actionBtnPrepared {
+  background-color: var(--bg-surface-raised);
+  border: 1px solid var(--border-medium);
+  border-radius: 0px !important;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.actionBtnPrepared:hover {
+  background-color: var(--accent-terracotta);
+  border-color: var(--accent-terracotta);
+  color: #FFFFFF;
+}
+
+.emptyState {
+  background-color: var(--bg-surface);
+  border: 1px dashed var(--border-medium);
+  border-radius: 0px !important;
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+}
+
+/* ========================================================
+   PRINT STYLESHEET FOR PHYSICAL A4 KITCHEN COUNTER CLIPBOARD
+   ======================================================== */
+@media print {
+  .headerActions,
+  .toolbar,
+  .printBtn,
+  .advanceAllBtn,
+  .actionBtnPrepared {
+    display: none !important;
+  }
+
+  .container {
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 12pt !important;
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+
+  .headerBanner {
+    border: none !important;
+    border-bottom: 2pt solid #000000 !important;
+    padding: 0 0 10pt 0 !important;
+  }
+
+  .title {
+    font-size: 18pt !important;
+    color: #000000 !important;
+  }
+
+  .productPrepCard {
+    border: 1pt solid #000000 !important;
+    page-break-inside: avoid !important;
+    box-shadow: none !important;
+  }
+
+  .recipeGuideBox {
+    border-left: 2pt solid #000000 !important;
+    background: #FAFAFA !important;
+  }
+
+  .manifestTableWrapper {
+    border: 1pt solid #000000 !important;
+  }
+
+  .manifestTable th {
+    background-color: #F0F0F0 !important;
+    color: #000000 !important;
+  }
+
+  .manifestTable td {
+    border-bottom: 1pt solid #CCCCCC !important;
+    color: #000000 !important;
+  }
+
+  .customCheckbox {
+    border: 1.5pt solid #000000 !important;
+  }
+}

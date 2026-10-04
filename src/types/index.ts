@@ -15,6 +15,12 @@ export interface CategoryInfo {
   image: string;
 }
 
+export type ProductAvailability = 
+  | 'available' 
+  | 'temporarily-unavailable' 
+  | 'sold-out' 
+  | 'coming-soon';
+
 export interface Product {
   id: string;
   slug: string;
@@ -33,7 +39,7 @@ export interface Product {
   preparationInstructions?: string;
   storageInstructions?: string;
   shelfLife: string; // Default: "6 months"
-  availability: 'available' | 'temporarily-unavailable';
+  availability: ProductAvailability;
   featured: boolean;
   images: {
     primary: string;

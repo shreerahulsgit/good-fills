@@ -3,6 +3,7 @@ import path from 'path';
 import os from 'os';
 import { Order, CartItem, ShippingAddress, OrderStatus, PaymentStatus, ShipmentStatus } from '@/types';
 import { PRODUCTS } from '@/data/products';
+import { getServerProductById } from '@/lib/server-products';
 import { calculateDomesticShipping } from '@/lib/shipping';
 import { getRazorpayClient, isRazorpayConfigured } from '@/lib/razorpay';
 
@@ -180,7 +181,7 @@ export function calculateAuthoritativeCart(
       throw new Error(`Invalid item quantity: ${item.quantity}`);
     }
 
-    const product = PRODUCTS.find((p) => p.id === item.productId);
+    const product = getServerProductById(item.productId) || PRODUCTS.find((p) => p.id === item.productId);
     if (!product) {
       throw new Error(`Product ID "${item.productId}" is not available in the Good Fills atelier catalog.`);
     }

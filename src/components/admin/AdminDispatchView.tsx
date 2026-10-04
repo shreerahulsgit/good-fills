@@ -38,15 +38,20 @@ import {
   DollarSign,
   TrendingDown,
   PieChart as PieChartIcon,
-  Printer
+  Printer,
+  Clock,
+  Plus,
+  Edit3,
+  Trash2,
+  Star
 } from 'lucide-react';
-import { Order, OrderStatus, ShipmentStatus, PaymentStatus } from '@/types';
+import { Order, OrderStatus, ShipmentStatus, PaymentStatus, Product, ProductCategory, ProductAvailability } from '@/types';
 import { PRODUCTS } from '@/data/products';
 import { Inquiry } from '@/lib/inquiries';
 import styles from './AdminDispatchView.module.css';
 
 type DatePreset = 'all' | 'today' | 'yesterday' | '7days' | 'month' | 'custom';
-type SidebarTab = 'dashboard' | 'orders' | 'inquiries';
+type SidebarTab = 'dashboard' | 'orders' | 'products' | 'inquiries';
 type OrderDateTab = 'all' | 'today' | 'yesterday' | 'week' | 'month';
 type ManifestLayout = 'table' | 'cards';
 type SortOption = 'newest' | 'oldest' | 'highest' | 'lowest' | 'name';
@@ -173,6 +178,36 @@ export function AdminDispatchView() {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [isLoadingInquiries, setIsLoadingInquiries] = useState(false);
 
+  // Products Management State
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [productSearch, setProductSearch] = useState('');
+  const [productCategoryFilter, setProductCategoryFilter] = useState<'all' | ProductCategory>('all');
+  const [productAvailabilityFilter, setProductAvailabilityFilter] = useState<'all' | ProductAvailability>('all');
+
+  // Product Edit / Create Modal State
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [isDeletingProduct, setIsDeletingProduct] = useState(false);
+
+  // Form Fields for Modal
+  const [formName, setFormName] = useState('');
+  const [formCategory, setFormCategory] = useState<ProductCategory>('baby-kids');
+  const [formPrice, setFormPrice] = useState<number>(250);
+  const [formPackSize, setFormPackSize] = useState('250g');
+  const [formWeightGrams, setFormWeightGrams] = useState<number>(250);
+  const [formAvailability, setFormAvailability] = useState<ProductAvailability>('available');
+  const [formFeatured, setFormFeatured] = useState(false);
+  const [formShortDescription, setFormShortDescription] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+  const [formIngredients, setFormIngredients] = useState('');
+  const [formShelfLife, setFormShelfLife] = useState('6 months');
+  const [formStorage, setFormStorage] = useState('Store in an airtight container in a cool, dry place.');
+  const [formPrimaryImage, setFormPrimaryImage] = useState('');
+  const [formPackagingImage, setFormPackagingImage] = useState('');
+
   // Multi-select state
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
 
@@ -267,6 +302,7 @@ export function AdminDispatchView() {
         });
         setEditStates(initialEditStates);
         fetchInquiries();
+        fetchProducts(adminPin);
       }
     } catch (err) {
       console.error('Fetch admin orders error:', err);
@@ -309,6 +345,311 @@ export function AdminDispatchView() {
       showToast('Failed to update inquiry status', 'error');
     }
   };
+
+  // Products Management Methods
+  const fetchProducts = async (adminPin?: string) => {
+    setIsLoadingProducts(true);
+    const activePin = adminPin || pin || (typeof window !== 'undefined' ? sessionStorage.getItem('goodfills_admin_pin') || '' : '');
+    try {
+      const res = await fetch('/api/admin/products', {
+        headers: { 'x-admin-pin': activePin },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setProducts(data.products || []);
+      }
+    } catch (err) {
+      console.error('Fetch products error:', err);
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
+
+  const handleToggleAvailability = async (productId: string, newAvailability: ProductAvailability) => {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === productId ? { ...p, availability: newAvailability } : p))
+    );
+
+    try {
+      const activePin = pin || sessionStorage.getItem('goodfills_admin_pin') || '';
+      const res = await fetch('/api/admin/products/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-pin': activePin,
+        },
+        body: JSON.stringify({
+          id: productId,
+          updates: { availability: newAvailability },
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(`Stock updated: ${newAvailability}`, 'success');
+      } else {
+        throw new Error(data.error || 'Failed to update stock');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Error updating stock', 'error');
+      fetchProducts();
+    }
+  };
+
+  const handleToggleFeatured = async (productId: string, currentFeatured: boolean) => {
+    const nextFeatured = !currentFeatured;
+    setProducts((prev) =>
+      prev.map((p) => (p.id === productId ? { ...p, featured: nextFeatured } : p))
+    );
+
+    try {
+      const activePin = pin || sessionStorage.getItem('goodfills_admin_pin') || '';
+      const res = await fetch('/api/admin/products/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-pin': activePin,
+        },
+        body: JSON.stringify({
+          id: productId,
+          updates: { featured: nextFeatured },
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(nextFeatured ? 'Pinned as Featured on homepage' : 'Unpinned from homepage', 'success');
+      } else {
+        throw new Error(data.error || 'Failed to update featured state');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Error updating featured state', 'error');
+      fetchProducts();
+    }
+  };
+
+  const handleOpenCreateProduct = () => {
+    setEditingProductId(null);
+    setFormName('');
+    setFormCategory('baby-kids');
+    setFormPrice(250);
+    setFormPackSize('250g');
+    setFormWeightGrams(250);
+    setFormAvailability('available');
+    setFormFeatured(false);
+    setFormShortDescription('');
+    setFormDescription('');
+    setFormIngredients('');
+    setFormShelfLife('6 months');
+    setFormStorage('Store in an airtight container in a cool, dry place. Keep away from moisture.');
+    setFormPrimaryImage('');
+    setFormPackagingImage('');
+    setIsProductModalOpen(true);
+  };
+
+  const handleOpenEditProduct = (prod: Product) => {
+    setEditingProductId(prod.id);
+    setFormName(prod.name);
+    setFormCategory(prod.category);
+    setFormPrice(prod.price);
+    setFormPackSize(prod.packSize || '250g');
+    setFormWeightGrams(prod.productWeightGrams || 250);
+    setFormAvailability(prod.availability || 'available');
+    setFormFeatured(Boolean(prod.featured));
+    setFormShortDescription(prod.shortDescription || '');
+    setFormDescription(prod.description || '');
+    setFormIngredients(Array.isArray(prod.ingredients) ? prod.ingredients.join(', ') : '');
+    setFormShelfLife(prod.shelfLife || '6 months');
+    setFormStorage(prod.storageInstructions || 'Store in an airtight container in a cool, dry place.');
+    setFormPrimaryImage(prod.images?.primary || '');
+    setFormPackagingImage(prod.images?.packaging || '');
+    setIsProductModalOpen(true);
+  };
+
+  const handleSaveProductForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formName.trim()) {
+      showToast('Product name is required', 'error');
+      return;
+    }
+    if (formPrice < 0 || isNaN(formPrice)) {
+      showToast('Price must be a valid non-negative number', 'error');
+      return;
+    }
+    if (formWeightGrams <= 0 || isNaN(formWeightGrams)) {
+      showToast('Gross weight in grams is required for DTDC calculations', 'error');
+      return;
+    }
+
+    setIsSavingProduct(true);
+    const activePin = pin || sessionStorage.getItem('goodfills_admin_pin') || '';
+
+    const ingredientsList = formIngredients
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    try {
+      if (editingProductId) {
+        const updates: Partial<Product> = {
+          name: formName.trim(),
+          category: formCategory,
+          price: Number(formPrice),
+          packSize: formPackSize.trim() || '250g',
+          productWeightGrams: Number(formWeightGrams),
+          availability: formAvailability,
+          featured: formFeatured,
+          shortDescription: formShortDescription.trim(),
+          description: formDescription.trim(),
+          ingredients: ingredientsList,
+          ingredientsVerified: ingredientsList.length > 0,
+          shelfLife: formShelfLife.trim() || '6 months',
+          storageInstructions: formStorage.trim(),
+        };
+
+        if (formPrimaryImage.trim() || formPackagingImage.trim()) {
+          updates.images = {
+            primary: formPrimaryImage.trim() || '/logo.png',
+            packaging: formPackagingImage.trim() || undefined,
+          };
+        }
+
+        const res = await fetch('/api/admin/products/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-pin': activePin,
+          },
+          body: JSON.stringify({
+            id: editingProductId,
+            updates,
+          }),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast(`Updated "${formName.trim()}" successfully!`, 'success');
+          setIsProductModalOpen(false);
+          fetchProducts();
+        } else {
+          throw new Error(data.error || 'Failed to update product');
+        }
+      } else {
+        const payload: any = {
+          name: formName.trim(),
+          category: formCategory,
+          price: Number(formPrice),
+          packSize: formPackSize.trim() || '250g',
+          productWeightGrams: Number(formWeightGrams),
+          availability: formAvailability,
+          featured: formFeatured,
+          shortDescription: formShortDescription.trim(),
+          description: formDescription.trim(),
+          ingredients: ingredientsList,
+          ingredientsVerified: ingredientsList.length > 0,
+          shelfLife: formShelfLife.trim() || '6 months',
+          storageInstructions: formStorage.trim(),
+          images: {
+            primary: formPrimaryImage.trim() || '/logo.png',
+            packaging: formPackagingImage.trim() || undefined,
+          },
+        };
+
+        const res = await fetch('/api/admin/products/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-pin': activePin,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast(`Created creation "${formName.trim()}"!`, 'success');
+          setIsProductModalOpen(false);
+          fetchProducts();
+        } else {
+          throw new Error(data.error || 'Failed to create product');
+        }
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Error saving product', 'error');
+    } finally {
+      setIsSavingProduct(false);
+    }
+  };
+
+  const handleDeleteProduct = async () => {
+    if (!productToDelete) return;
+    setIsDeletingProduct(true);
+    const activePin = pin || sessionStorage.getItem('goodfills_admin_pin') || '';
+
+    try {
+      const res = await fetch('/api/admin/products/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-pin': activePin,
+        },
+        body: JSON.stringify({ id: productToDelete.id }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(`Removed "${productToDelete.name}" from catalog`, 'success');
+        setProductToDelete(null);
+        fetchProducts();
+      } else {
+        throw new Error(data.error || 'Failed to delete product');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Error deleting product', 'error');
+    } finally {
+      setIsDeletingProduct(false);
+    }
+  };
+
+  const getDtdcTierLabel = (grams: number) => {
+    if (grams <= 500) return '0–500g (₹100 DTDC)';
+    if (grams <= 1000) return '501g–1kg (₹200 DTDC)';
+    if (grams <= 2000) return '1.01–2kg (₹400 DTDC)';
+    if (grams <= 3000) return '2.01–3kg (₹600 DTDC)';
+    const extraKg = Math.ceil((grams - 3000) / 1000);
+    return `>3kg (₹${600 + extraKg * 200} DTDC)`;
+  };
+
+  const getAvailabilityClass = (avail: ProductAvailability) => {
+    switch (avail) {
+      case 'available':
+        return styles.availAvailable;
+      case 'sold-out':
+        return styles.availSoldOut;
+      case 'temporarily-unavailable':
+        return styles.availTempUnavailable;
+      case 'coming-soon':
+        return styles.availComingSoon;
+      default:
+        return '';
+    }
+  };
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      if (productSearch.trim()) {
+        const q = productSearch.toLowerCase();
+        const matchName = p.name.toLowerCase().includes(q);
+        const matchDesc = (p.description || '').toLowerCase().includes(q) || (p.shortDescription || '').toLowerCase().includes(q);
+        const matchIng = (p.ingredients || []).some((ing) => ing.toLowerCase().includes(q));
+        if (!matchName && !matchDesc && !matchIng) return false;
+      }
+      if (productCategoryFilter !== 'all' && p.category !== productCategoryFilter) {
+        return false;
+      }
+      if (productAvailabilityFilter !== 'all') {
+        const pAvail = p.availability || ((p as any).isAvailable === false ? 'sold-out' : 'available');
+        if (pAvail !== productAvailabilityFilter) return false;
+      }
+      return true;
+    });
+  }, [products, productSearch, productCategoryFilter, productAvailabilityFilter]);
 
   const handleLogout = () => {
     sessionStorage.removeItem('goodfills_admin_pin');
@@ -955,6 +1296,20 @@ export function AdminDispatchView() {
 
             <button
               type="button"
+              className={`${styles.navItem} ${activeSidebarTab === 'products' ? styles.navItemActive : ''}`}
+              onClick={() => {
+                setActiveSidebarTab('products');
+                setIsMobileDrawerOpen(false);
+              }}
+            >
+              <ShoppingBag size={18} />
+              <span>Products</span>
+              <span className={styles.navCountBadge}>{products.length}</span>
+              {activeSidebarTab === 'products' && <div className={styles.activePillMarker} />}
+            </button>
+
+            <button
+              type="button"
               className={`${styles.navItem} ${activeSidebarTab === 'inquiries' ? styles.navItemActive : ''}`}
               onClick={() => {
                 setActiveSidebarTab('inquiries');
@@ -1042,6 +1397,14 @@ export function AdminDispatchView() {
           >
             <ListOrdered size={14} />
             <span>Orders ({orders.length})</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.mobileTabBtn} ${activeSidebarTab === 'products' ? styles.mobileTabBtnActive : ''}`}
+            onClick={() => setActiveSidebarTab('products')}
+          >
+            <ShoppingBag size={14} />
+            <span>Products ({products.length})</span>
           </button>
           <button
             type="button"
@@ -2352,6 +2715,216 @@ export function AdminDispatchView() {
             )}
           </div>
         )}
+
+        {/* ====================================================================
+            TAB C: PRODUCT & CREATION MANAGEMENT CONSOLE
+            ==================================================================== */}
+        {activeSidebarTab === 'products' && (
+          <div className={styles.creationsContainer}>
+            {/* Top Stats Strip */}
+            <div className={styles.creationsStatsRow}>
+              <div className={styles.creationStatCard}>
+                <div className={styles.creationStatIcon}>
+                  <Package size={22} />
+                </div>
+                <div>
+                  <div className={styles.creationStatVal}>{products.length}</div>
+                  <div className={styles.creationStatLabel}>Total Creations</div>
+                </div>
+              </div>
+
+              <div className={styles.creationStatCard}>
+                <div className={styles.creationStatIcon} style={{ color: '#059669', backgroundColor: '#ECFDF5' }}>
+                  <CheckCircle2 size={22} />
+                </div>
+                <div>
+                  <div className={styles.creationStatVal}>
+                    {products.filter((p) => (p.availability || 'available') === 'available').length}
+                  </div>
+                  <div className={styles.creationStatLabel}>Live & Available</div>
+                </div>
+              </div>
+
+              <div className={styles.creationStatCard}>
+                <div className={styles.creationStatIcon} style={{ color: '#DC2626', backgroundColor: '#FEF2F2' }}>
+                  <AlertCircle size={22} />
+                </div>
+                <div>
+                  <div className={styles.creationStatVal}>
+                    {products.filter((p) => p.availability === 'sold-out' || p.availability === 'temporarily-unavailable').length}
+                  </div>
+                  <div className={styles.creationStatLabel}>Unavailable / Sold Out</div>
+                </div>
+              </div>
+
+              <div className={styles.creationStatCard}>
+                <div className={styles.creationStatIcon} style={{ color: '#D97706', backgroundColor: '#FFFBEB' }}>
+                  <Star size={22} />
+                </div>
+                <div>
+                  <div className={styles.creationStatVal}>
+                    {products.filter((p) => p.featured).length}
+                  </div>
+                  <div className={styles.creationStatLabel}>Featured on Home</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Filter & Action Toolbar */}
+            <div className={styles.creationsToolbar}>
+              <div className={styles.creationsFilters}>
+                <div className={styles.creationSearchWrap}>
+                  <Search size={15} className={styles.creationSearchIcon} />
+                  <input
+                    type="text"
+                    placeholder="Search creations or ingredients..."
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    className={styles.creationSearchInput}
+                  />
+                </div>
+
+                <select
+                  value={productCategoryFilter}
+                  onChange={(e) => setProductCategoryFilter(e.target.value as any)}
+                  className={styles.creationSelect}
+                >
+                  <option value="all">All Categories</option>
+                  <option value="baby-kids">Baby & Kids</option>
+                  <option value="nutrition-wellness">Nutrition & Wellness</option>
+                  <option value="skin-bath">Skin & Bath</option>
+                  <option value="pantry-beverages">Pantry & Beverages</option>
+                </select>
+
+                <select
+                  value={productAvailabilityFilter}
+                  onChange={(e) => setProductAvailabilityFilter(e.target.value as any)}
+                  className={styles.creationSelect}
+                >
+                  <option value="all">All Stock Statuses</option>
+                  <option value="available">Available</option>
+                  <option value="temporarily-unavailable">Temporarily Unavailable</option>
+                  <option value="sold-out">Sold Out</option>
+                  <option value="coming-soon">Coming Soon</option>
+                </select>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleOpenCreateProduct}
+                className={styles.addCreationBtn}
+              >
+                <Plus size={15} />
+                <span>Add Creation</span>
+              </button>
+            </div>
+
+            {/* Loading / Empty States */}
+            {isLoadingProducts ? (
+              <div style={{ padding: '60px 20px', textAlign: 'center', color: '#6B7280' }}>
+                <div className={styles.spinner} style={{ margin: '0 auto 12px' }} />
+                <p style={{ margin: 0, fontSize: '0.88rem' }}>Loading Good Fills creations catalog...</p>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div style={{ padding: '60px 20px', textAlign: 'center', color: '#6B7280', background: '#FFFFFF', border: '1px solid #E5E7EB' }}>
+                <Package size={36} color="#9CA3AF" style={{ margin: '0 auto 12px', display: 'block' }} />
+                <p style={{ margin: 0, fontWeight: 600 }}>No creations match your search or filter.</p>
+                <p style={{ margin: '6px 0 0', fontSize: '0.8rem' }}>Try clearing your filters or add a new creation above.</p>
+              </div>
+            ) : (
+              <div className={styles.creationsGrid}>
+                {filteredProducts.map((p) => {
+                  const currentAvail = (p.availability as ProductAvailability) || 'available';
+                  const primaryImg = p.images?.primary || '/logo.png';
+                  const dtdcLabel = getDtdcTierLabel(p.productWeightGrams || 250);
+
+                  return (
+                    <div key={p.id} className={styles.creationCard}>
+                      <div className={styles.creationCardHeader}>
+                        <img
+                          src={primaryImg}
+                          alt={p.name}
+                          className={styles.creationCardThumb}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/logo.png';
+                          }}
+                        />
+                        <div className={styles.creationCardMainInfo}>
+                          <div className={styles.creationCardCategory}>
+                            {p.category.replace('-', ' ')}
+                          </div>
+                          <h3 className={styles.creationCardTitle} title={p.name}>
+                            {p.name}
+                          </h3>
+                          <div className={styles.creationCardMeta}>
+                            <span className={styles.creationCardPrice}>₹{p.price}</span>
+                            <span className={styles.creationCardPack}>/ {p.packSize || '250g'}</span>
+                          </div>
+                        </div>
+
+                        {/* Pinned Featured Toggle */}
+                        <button
+                          type="button"
+                          className={`${styles.featuredStarBtn} ${p.featured ? styles.featuredStarActive : ''}`}
+                          onClick={() => handleToggleFeatured(p.id, Boolean(p.featured))}
+                          title={p.featured ? 'Pinned on Homepage (Click to unpin)' : 'Click to Feature on Homepage'}
+                        >
+                          <Star size={18} fill={p.featured ? '#F59E0B' : 'none'} />
+                        </button>
+                      </div>
+
+                      <div className={styles.creationCardBody}>
+                        <p className={styles.creationDescText}>
+                          {p.shortDescription || p.description || 'No description provided.'}
+                        </p>
+
+                        <div className={styles.creationBadgesRow}>
+                          <span className={styles.creationWeightBadge} title="Product weight used for DTDC Courier Tier">
+                            <Scale size={11} />
+                            <span>{p.productWeightGrams || 250}g • {dtdcLabel}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className={styles.creationCardFooter}>
+                        {/* 1-Click Availability Selector */}
+                        <select
+                          className={`${styles.availabilitySelect} ${getAvailabilityClass(currentAvail)}`}
+                          value={currentAvail}
+                          onChange={(e) => handleToggleAvailability(p.id, e.target.value as ProductAvailability)}
+                        >
+                          <option value="available">● Available</option>
+                          <option value="temporarily-unavailable">◐ Temp. Unavailable</option>
+                          <option value="sold-out">✕ Sold Out</option>
+                          <option value="coming-soon">◌ Coming Soon</option>
+                        </select>
+
+                        <div className={styles.cardActionButtons}>
+                          <button
+                            type="button"
+                            className={styles.cardIconBtn}
+                            onClick={() => handleOpenEditProduct(p)}
+                            title="Edit Creation Details"
+                          >
+                            <Edit3 size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            className={`${styles.cardIconBtn} ${styles.cardIconBtnDanger}`}
+                            onClick={() => setProductToDelete(p)}
+                            title="Delete Creation"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ====================================================================
@@ -2413,6 +2986,304 @@ export function AdminDispatchView() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ====================================================================
+          MODALS: PRODUCT EDIT/CREATE & DELETE CONFIRMATION
+          ==================================================================== */}
+      {isProductModalOpen && (
+        <div className={styles.modalBackdrop}>
+          <div className={styles.productModalBox}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>
+                {editingProductId ? 'Edit Artisanal Creation' : 'Add New Artisanal Creation'}
+              </h2>
+              <button
+                type="button"
+                className={styles.modalCloseBtn}
+                onClick={() => setIsProductModalOpen(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProductForm} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+              <div className={styles.modalScrollBody}>
+                {/* Name & Category */}
+                <div className={styles.formGrid2}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Creation Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={formName}
+                      onChange={(e) => setFormName(e.target.value)}
+                      placeholder="e.g. Sprouted Ragi Malt"
+                      className={styles.formInput}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Category *</label>
+                    <select
+                      value={formCategory}
+                      onChange={(e) => setFormCategory(e.target.value as ProductCategory)}
+                      className={styles.formSelect}
+                    >
+                      <option value="baby-kids">Baby & Kids</option>
+                      <option value="nutrition-wellness">Nutrition & Wellness</option>
+                      <option value="skin-bath">Skin & Bath</option>
+                      <option value="pantry-beverages">Pantry & Beverages</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Price, Pack Size & Weight */}
+                <div className={styles.formGrid3}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Price (₹) *</label>
+                    <input
+                      type="number"
+                      required
+                      min={0}
+                      step="any"
+                      value={formPrice}
+                      onChange={(e) => setFormPrice(Number(e.target.value))}
+                      className={styles.formInput}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Pack Size Label</label>
+                    <input
+                      type="text"
+                      value={formPackSize}
+                      onChange={(e) => setFormPackSize(e.target.value)}
+                      placeholder="e.g. 250g, 500g"
+                      className={styles.formInput}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Gross Weight (Grams) *</label>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      value={formWeightGrams}
+                      onChange={(e) => setFormWeightGrams(Number(e.target.value))}
+                      className={styles.formInput}
+                    />
+                    <span className={styles.formHelper}>Critical: used for DTDC Courier Tariff</span>
+                  </div>
+                </div>
+
+                {/* Stock Availability & Featured */}
+                <div className={styles.formGrid2}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Live Stock Status</label>
+                    <select
+                      value={formAvailability}
+                      onChange={(e) => setFormAvailability(e.target.value as ProductAvailability)}
+                      className={styles.formSelect}
+                    >
+                      <option value="available">Available (In Stock)</option>
+                      <option value="temporarily-unavailable">Temporarily Unavailable</option>
+                      <option value="sold-out">Sold Out</option>
+                      <option value="coming-soon">Coming Soon</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.formGroup} style={{ justifyContent: 'center' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '16px' }}>
+                      <input
+                        type="checkbox"
+                        checked={formFeatured}
+                        onChange={(e) => setFormFeatured(e.target.checked)}
+                        style={{ width: '16px', height: '16px', accentColor: 'var(--accent-terracotta)' }}
+                      />
+                      <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#111827' }}>
+                        Pin as Featured on Store Homepage
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Short & Detailed Description */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Short Tagline / Summary</label>
+                  <input
+                    type="text"
+                    value={formShortDescription}
+                    onChange={(e) => setFormShortDescription(e.target.value)}
+                    placeholder="Brief 1-sentence description..."
+                    className={styles.formInput}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Full Description</label>
+                  <textarea
+                    rows={3}
+                    value={formDescription}
+                    onChange={(e) => setFormDescription(e.target.value)}
+                    placeholder="Artisanal preparation, process, and taste notes..."
+                    className={styles.formTextarea}
+                  />
+                </div>
+
+                {/* Ingredients & Shelf Life */}
+                <div className={styles.formGrid2}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Ingredients (Comma Separated)</label>
+                    <input
+                      type="text"
+                      value={formIngredients}
+                      onChange={(e) => setFormIngredients(e.target.value)}
+                      placeholder="e.g. Sprouted Ragi, Cardamom, Almonds"
+                      className={styles.formInput}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Shelf Life</label>
+                    <input
+                      type="text"
+                      value={formShelfLife}
+                      onChange={(e) => setFormShelfLife(e.target.value)}
+                      placeholder="e.g. 6 months from milling"
+                      className={styles.formInput}
+                    />
+                  </div>
+                </div>
+
+                {/* Storage Instructions */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Storage Instructions</label>
+                  <input
+                    type="text"
+                    value={formStorage}
+                    onChange={(e) => setFormStorage(e.target.value)}
+                    placeholder="e.g. Store in an airtight container in a cool, dry place."
+                    className={styles.formInput}
+                  />
+                </div>
+
+                {/* Images */}
+                <div className={styles.formGrid2}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Primary Photo URL / Path</label>
+                    <input
+                      type="text"
+                      value={formPrimaryImage}
+                      onChange={(e) => setFormPrimaryImage(e.target.value)}
+                      placeholder="e.g. /images/products/baby-cereal.png"
+                      className={styles.formInput}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Packaging / Back Photo URL</label>
+                    <input
+                      type="text"
+                      value={formPackagingImage}
+                      onChange={(e) => setFormPackagingImage(e.target.value)}
+                      placeholder="e.g. /images/products/baby-cereal-pack.png"
+                      className={styles.formInput}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button
+                  type="button"
+                  className={styles.modalCancelBtn}
+                  onClick={() => setIsProductModalOpen(false)}
+                  disabled={isSavingProduct}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={styles.modalSaveBtn}
+                  disabled={isSavingProduct}
+                >
+                  {isSavingProduct ? (
+                    <>
+                      <div className={styles.spinner} style={{ width: '12px', height: '12px', borderWidth: '2px' }} />
+                      <span>Saving Creation...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check size={14} />
+                      <span>{editingProductId ? 'Update Creation' : 'Publish Creation'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {productToDelete && (
+        <div className={styles.modalBackdrop}>
+          <div className={styles.productModalBox} style={{ maxWidth: '440px' }}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle} style={{ color: '#DC2626' }}>
+                Delete Creation?
+              </h2>
+              <button
+                type="button"
+                className={styles.modalCloseBtn}
+                onClick={() => setProductToDelete(null)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ padding: '20px 22px' }}>
+              <p style={{ margin: 0, fontSize: '0.86rem', color: '#374151', lineHeight: 1.5 }}>
+                Are you sure you want to remove <strong>"{productToDelete.name}"</strong> ({productToDelete.id}) from the catalog?
+              </p>
+              <p style={{ margin: '8px 0 0', fontSize: '0.78rem', color: '#6B7280' }}>
+                This creation will no longer appear on the live storefront or be available for checkout.
+              </p>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button
+                type="button"
+                className={styles.modalCancelBtn}
+                onClick={() => setProductToDelete(null)}
+                disabled={isDeletingProduct}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteProduct}
+                disabled={isDeletingProduct}
+                style={{
+                  padding: '8px 20px',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  backgroundColor: '#DC2626',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                {isDeletingProduct ? 'Deleting...' : 'Delete Creation'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ====================================================================
           4. FLOATING TOAST NOTIFICATION STACK

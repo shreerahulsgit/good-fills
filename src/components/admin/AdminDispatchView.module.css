@@ -2453,3 +2453,503 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   PRODUCTS / CREATIONS MANAGEMENT CONSOLE
+   ========================================================================== */
+.creationsContainer {
+  padding: 24px 32px 60px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.creationsStatsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.creationStatCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.creationStatIcon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #FAF5F0;
+  color: var(--accent-terracotta);
+}
+
+.creationStatVal {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.1;
+}
+
+.creationStatLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+.creationsToolbar {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.creationsFilters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.creationSearchWrap {
+  position: relative;
+  min-width: 200px;
+  flex: 1;
+  max-width: 300px;
+}
+
+.creationSearchIcon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9CA3AF;
+  pointer-events: none;
+}
+
+.creationSearchInput {
+  width: 100%;
+  padding: 7px 10px 7px 32px;
+  font-size: 0.8rem;
+  border: 1px solid #D1D5DB;
+  background-color: #F9FAFB;
+  box-sizing: border-box;
+}
+
+.creationSelect {
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  border: 1px solid #D1D5DB;
+  background-color: #FFFFFF;
+  color: #374151;
+  cursor: pointer;
+}
+
+.addCreationBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  background-color: var(--accent-terracotta);
+  color: #FFFFFF;
+  border: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.addCreationBtn:hover {
+  opacity: 0.92;
+}
+
+/* CREATIONS GRID */
+.creationsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 18px;
+}
+
+.creationCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.creationCard:hover {
+  border-color: #D1D5DB;
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.07);
+}
+
+.creationCardHeader {
+  padding: 14px 16px;
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid #F3F4F6;
+  position: relative;
+}
+
+.creationCardThumb {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  background-color: #FAF5F0;
+  border: 1px solid #E5E7EB;
+  flex-shrink: 0;
+}
+
+.creationCardMainInfo {
+  flex: 1;
+  min-width: 0;
+  padding-right: 24px;
+}
+
+.creationCardCategory {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent-terracotta);
+  margin-bottom: 2px;
+}
+
+.creationCardTitle {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.creationCardMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.creationCardPrice {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.creationCardPack {
+  font-size: 0.75rem;
+  color: #6B7280;
+}
+
+.featuredStarBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #D1D5DB;
+  padding: 4px;
+  transition: color 0.15s ease;
+}
+
+.featuredStarActive {
+  color: #F59E0B !important;
+}
+
+.creationCardBody {
+  padding: 12px 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.creationDescText {
+  font-size: 0.76rem;
+  color: #4B5563;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+
+.creationBadgesRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.creationWeightBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #4B5563;
+  background-color: #F3F4F6;
+  padding: 2px 6px;
+}
+
+.creationCardFooter {
+  padding: 10px 16px;
+  border-top: 1px solid #F3F4F6;
+  background-color: #FAF8F5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.availabilitySelect {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.availAvailable {
+  background-color: #ECFDF5;
+  color: #047857;
+  border-color: #A7F3D0;
+}
+
+.availSoldOut {
+  background-color: #FEF2F2;
+  color: #B91C1C;
+  border-color: #FECACA;
+}
+
+.availTempUnavailable {
+  background-color: #FFFBEB;
+  color: #B45309;
+  border-color: #FDE68A;
+}
+
+.availComingSoon {
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+  border-color: #BFDBFE;
+}
+
+.cardActionButtons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cardIconBtn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  color: #4B5563;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cardIconBtn:hover {
+  background-color: #FAF5F0;
+  color: var(--accent-terracotta);
+  border-color: #D1D5DB;
+}
+
+.cardIconBtnDanger:hover {
+  background-color: #FEF2F2;
+  color: #DC2626;
+  border-color: #FECACA;
+}
+
+/* MODAL STYLES */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  backdrop-filter: blur(3px);
+  box-sizing: border-box;
+}
+
+.productModalBox {
+  background-color: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+}
+
+.modalHeader {
+  padding: 16px 22px;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.modalCloseBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6B7280;
+  padding: 4px;
+}
+
+.modalCloseBtn:hover {
+  color: #111827;
+}
+
+.modalScrollBody {
+  padding: 22px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalFooter {
+  padding: 14px 22px;
+  border-top: 1px solid #E5E7EB;
+  background-color: #FAF8F5;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.formGrid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.formGrid3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.formLabel {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.formInput,
+.formSelect,
+.formTextarea {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  border: 1px solid #D1D5DB;
+  background-color: #FFFFFF;
+  color: #111827;
+  box-sizing: border-box;
+}
+
+.formInput:focus,
+.formSelect:focus,
+.formTextarea:focus {
+  outline: none;
+  border-color: var(--accent-terracotta);
+}
+
+.formHelper {
+  font-size: 0.7rem;
+  color: #6B7280;
+}
+
+.modalCancelBtn {
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: none;
+  border: 1px solid #D1D5DB;
+  color: #4B5563;
+  cursor: pointer;
+}
+
+.modalSaveBtn {
+  padding: 8px 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background-color: var(--accent-terracotta);
+  color: #FFFFFF;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modalSaveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .creationsContainer {
+    padding: 16px 12px 60px;
+  }
+  .creationsStatsRow {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .formGrid2,
+  .formGrid3 {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+

@@ -1,0 +1,277 @@
+/* ==========================================================================
+   FEATURED TESTIMONIALS / PATRON VOICES — HOME PAGE COMPONENT
+   Strict 0px architectural square-cut geometry & luxury artisanal palette
+   ========================================================================== */
+
+.section {
+  padding: var(--space-20) 0;
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  position: relative;
+}
+
+.container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto var(--space-12);
+}
+
+.subtitle {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent-terracotta);
+  font-weight: 700;
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 3.8vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  line-height: 1.15;
+  margin: 0 0 var(--space-3);
+}
+
+.description {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0 auto;
+}
+
+/* Trust metric strip */
+.trustBanner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+  padding: var(--space-4) var(--space-6);
+  background-color: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-10);
+  border-radius: 0px !important;
+}
+
+.trustItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.trustDivider {
+  width: 1px;
+  height: 16px;
+  background-color: var(--border-medium);
+}
+
+/* Grid of testimonials */
+.testimonialsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+  margin-bottom: var(--space-10);
+}
+
+@media (min-width: 768px) {
+  .testimonialsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .testimonialsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.card {
+  background-color: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0px !important;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform var(--transition-medium), box-shadow var(--transition-medium), border-color var(--transition-fast);
+  position: relative;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-medium);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.05);
+}
+
+.cardTop {
+  margin-bottom: var(--space-4);
+}
+
+.starsRow {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-bottom: var(--space-3);
+}
+
+.starFilled {
+  color: #d97706;
+  fill: #d97706;
+}
+
+.cardHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.verifiedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #15803d;
+  background-color: #f0fdf4;
+  padding: 3px 8px;
+  border: 1px solid #bbf7d0;
+  border-radius: 0px !important;
+}
+
+.productTag {
+  font-size: 0.74rem;
+  color: var(--accent-terracotta);
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity var(--transition-fast);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+}
+
+.productTag:hover {
+  text-decoration: underline;
+}
+
+.reviewTitle {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+}
+
+.reviewComment {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0;
+  font-style: italic;
+}
+
+/* Founder reply inline box */
+.founderReplyBox {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background-color: #faf6f0;
+  border-left: 2px solid var(--accent-terracotta);
+  border-radius: 0px !important;
+}
+
+.founderReplyLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-terracotta);
+  margin-bottom: 2px;
+}
+
+.founderReplyText {
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* Card Author Bottom */
+.cardAuthor {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.authorDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.authorName {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.authorMeta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.childAgeTag {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  background-color: var(--bg-surface-raised);
+  padding: 3px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0px !important;
+  white-space: nowrap;
+}
+
+/* Footer CTA */
+.footerCta {
+  text-align: center;
+}
+
+.exploreBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 12px 28px;
+  background-color: var(--text-primary);
+  color: #FFFFFF;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 0px !important;
+  transition: all var(--transition-fast);
+}
+
+.exploreBtn:hover {
+  background-color: var(--accent-terracotta);
+  transform: translateY(-1px);
+}

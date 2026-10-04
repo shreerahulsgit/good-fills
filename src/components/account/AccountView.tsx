@@ -23,9 +23,12 @@ import {
   RefreshCw,
   AlertCircle,
   FileText,
-  Copy
+  Copy,
+  Star,
+  X,
+  PenLine
 } from 'lucide-react';
-import { Order, ShippingAddress } from '@/types';
+import { Order, ShippingAddress, Product } from '@/types';
 import { useCustomerAuth } from '@/lib/customer-auth-context';
 import { useCart } from '@/lib/cart-context';
 import { 
@@ -82,6 +85,105 @@ export function AccountView() {
   });
   const [isSavingAddress, setIsSavingAddress] = useState(false);
   const [addressFeedback, setAddressFeedback] = useState<string | null>(null);
+
+  // Rate & Review Product Modal State for Delivered Orders
+  const [reviewedItems, setReviewedItems] = useState<Set<string>>(new Set());
+  const [reviewModalOrder, setReviewModalOrder] = useState<Order | null>(null);
+  const [reviewModalProduct, setReviewModalProduct] = useState<Product | null>(null);
+  const [reviewRating, setReviewRating] = useState<number>(5);
+  const [reviewHoverRating, setReviewHoverRating] = useState<number>(0);
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewChildAge, setReviewChildAge] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
+
+  // Load reviews for customer's delivered orders to show "Reviewed" badge
+  useEffect(() => {
+    if (!orders || orders.length === 0) return;
+    const deliveredOrders = orders.filter(
+      (o) => o.shipmentStatus === 'Delivered' || o.orderStatus === 'Delivered'
+    );
+    if (deliveredOrders.length === 0) return;
+
+    Promise.all(
+      deliveredOrders.map((o) =>
+        fetch(`/api/reviews?orderId=${encodeURIComponent(o.id)}`)
+          .then((res) => res.json())
+          .catch(() => null)
+      )
+    ).then((results) => {
+      const set = new Set<string>();
+      results.forEach((res, idx) => {
+        if (res && res.success && Array.isArray(res.reviews)) {
+          res.reviews.forEach((r: any) => {
+            const pId = (r.productId || '').toLowerCase();
+            set.add(`${deliveredOrders[idx].id}_${pId}`);
+          });
+        }
+      });
+      setReviewedItems(set);
+    });
+  }, [orders]);
+
+  const handleSubmitOrderReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewModalOrder || !reviewModalProduct) return;
+    setReviewError(null);
+
+    if (!reviewTitle.trim()) {
+      setReviewError('Please provide a headline for your review.');
+      return;
+    }
+    if (!reviewComment.trim() || reviewComment.trim().length < 5) {
+      setReviewError('Please enter at least 5 characters of feedback.');
+      return;
+    }
+
+    setIsSubmittingReview(true);
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: reviewModalOrder.id,
+          productId: reviewModalProduct.id,
+          productName: reviewModalProduct.name,
+          rating: reviewRating,
+          title: reviewTitle.trim(),
+          comment: reviewComment.trim(),
+          authorName: currentUser?.name || reviewModalOrder.customerName || 'Verified Customer',
+          location: reviewModalOrder.shippingAddress?.city
+            ? `${reviewModalOrder.shippingAddress.city}, ${reviewModalOrder.shippingAddress.state || 'Karnataka'}`
+            : 'Bengaluru, Karnataka',
+          childAge: reviewChildAge.trim() || undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to submit review.');
+      }
+
+      const cleanPId = reviewModalProduct.id.toLowerCase();
+      setReviewedItems((prev) => new Set(prev).add(`${reviewModalOrder.id}_${cleanPId}`));
+      setReviewSuccess(true);
+      setTimeout(() => {
+        setReviewModalOrder(null);
+        setReviewModalProduct(null);
+        setReviewSuccess(false);
+        setReviewTitle('');
+        setReviewComment('');
+        setReviewChildAge('');
+        setReviewRating(5);
+      }, 2000);
+    } catch (err: any) {
+      setReviewError(err.message || 'Error submitting review.');
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   // Read tab parameter from URL
   useEffect(() => {
@@ -800,29 +902,65 @@ export function AccountView() {
                         <div className={styles.orderCardBody}>
                           {/* Products List */}
                           <div className={styles.productsCol}>
-                            {order.items.map((item, idx) => (
-                              <div key={idx} className={styles.productRow}>
-                                {item.product.images?.primary ? (
-                                  <img
-                                    src={item.product.images.primary}
-                                    alt={item.product.name}
-                                    className={styles.productThumb}
-                                  />
-                                ) : (
-                                  <div className={styles.productThumb} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Package size={18} style={{ color: 'var(--text-muted)' }} />
+                            {order.items.map((item, idx) => {
+                              const isDelivered = order.shipmentStatus === 'Delivered' || order.orderStatus === 'Delivered';
+                              const pId = (item.product?.id || (item as any).productId || '').toLowerCase();
+                              const isItemReviewed = reviewedItems.has(`${order.id}_${pId}`);
+
+                              return (
+                                <div key={idx} className={styles.productRow}>
+                                  {item.product.images?.primary ? (
+                                    <img
+                                      src={item.product.images.primary}
+                                      alt={item.product.name}
+                                      className={styles.productThumb}
+                                    />
+                                  ) : (
+                                    <div className={styles.productThumb} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                      <Package size={18} style={{ color: 'var(--text-muted)' }} />
+                                    </div>
+                                  )}
+                                  <div className={styles.productInfo}>
+                                    <div className={styles.productName}>{item.product.name}</div>
+                                    <div className={styles.productMeta}>
+                                      Qty: {item.quantity} × {item.product.packSize || 'Standard'}
+                                      <span style={{ margin: '0 6px' }}>•</span>
+                                      ₹{(item.product.price * item.quantity).toLocaleString('en-IN')}
+                                    </div>
                                   </div>
-                                )}
-                                <div className={styles.productInfo}>
-                                  <div className={styles.productName}>{item.product.name}</div>
-                                  <div className={styles.productMeta}>
-                                    Qty: {item.quantity} × {item.product.packSize || 'Standard'}
-                                    <span style={{ margin: '0 6px' }}>•</span>
-                                    ₹{(item.product.price * item.quantity).toLocaleString('en-IN')}
-                                  </div>
+
+                                  {isDelivered && (
+                                    <div className={styles.itemReviewAction}>
+                                      {isItemReviewed ? (
+                                        <span className={styles.itemReviewedTag}>
+                                          <Check size={12} strokeWidth={2.5} />
+                                          <span>Reviewed</span>
+                                        </span>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setReviewModalOrder(order);
+                                            setReviewModalProduct(item.product);
+                                            setReviewRating(5);
+                                            setReviewTitle('');
+                                            setReviewComment('');
+                                            setReviewChildAge('');
+                                            setReviewError(null);
+                                            setReviewSuccess(false);
+                                          }}
+                                          className={styles.writeItemReviewBtn}
+                                          title={`Rate & review ${item.product.name}`}
+                                        >
+                                          <Star size={12} fill="#d97706" color="#d97706" />
+                                          <span>Write Review</span>
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
 
                           {/* Order Summary & Actions */}
@@ -1199,6 +1337,170 @@ export function AccountView() {
           )}
         </section>
       </div>
+
+      {/* RATE & REVIEW DELIVERED PRODUCT MODAL */}
+      {reviewModalOrder && reviewModalProduct && (
+        <div className={styles.reviewModalOverlay} onClick={() => !isSubmittingReview && setReviewModalOrder(null)}>
+          <div className={styles.reviewModalCard} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.reviewModalHeader}>
+              <div>
+                <h3 className={styles.reviewModalTitle}>Rate &amp; Review Product</h3>
+                <p className={styles.reviewModalSubtitle}>
+                  Verified Order #{reviewModalOrder.id} • Delivered
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => !isSubmittingReview && setReviewModalOrder(null)}
+                className={styles.closeModalBtn}
+                aria-label="Close review modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Product Summary */}
+            <div className={styles.reviewProductCallout}>
+              <img
+                src={reviewModalProduct.images?.primary || '/logo.png'}
+                alt={reviewModalProduct.name}
+                className={styles.reviewProductImg}
+              />
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text-primary)' }}>
+                  {reviewModalProduct.name}
+                </div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  Pack size: {reviewModalProduct.packSize || 'Standard'}
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.verifiedBuyerNotice}>
+              <ShieldCheck size={14} />
+              <span>Verified Purchase Review — Published with your name &amp; location</span>
+            </div>
+
+            {reviewSuccess ? (
+              <div style={{ textAlign: 'center', padding: '24px 16px' }}>
+                <CheckCircle2 size={36} color="#16a34a" style={{ margin: '0 auto 12px' }} />
+                <h4 style={{ margin: '0 0 6px', fontSize: '1.1rem', fontWeight: 700 }}>Thank You!</h4>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                  Your honest review has been published to the Good Fills product page.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmitOrderReview} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {reviewError && (
+                  <div style={{ backgroundColor: '#fff5f5', border: '1px solid #fecaca', padding: '10px 12px', fontSize: '0.82rem', color: '#991b1b' }}>
+                    {reviewError}
+                  </div>
+                )}
+
+                {/* Star Selector */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                    Your Overall Rating:
+                  </label>
+                  <div className={styles.reviewStarsDeck}>
+                    {[1, 2, 3, 4, 5].map((star) => {
+                      const active = star <= (reviewHoverRating || reviewRating);
+                      return (
+                        <button
+                          key={star}
+                          type="button"
+                          className={styles.starSelectBtn}
+                          onMouseEnter={() => setReviewHoverRating(star)}
+                          onMouseLeave={() => setReviewHoverRating(0)}
+                          onClick={() => setReviewRating(star)}
+                          title={`${star} Star${star > 1 ? 's' : ''}`}
+                        >
+                          <Star
+                            size={26}
+                            fill={active ? '#d97706' : 'none'}
+                            color={active ? '#d97706' : 'var(--border-medium)'}
+                          />
+                        </button>
+                      );
+                    })}
+                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--accent-terracotta)', marginLeft: '6px' }}>
+                      {reviewRating} of 5 Stars
+                    </span>
+                  </div>
+                </div>
+
+                {/* Review Headline */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                    Review Headline:
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Incredibly fresh and gentle on baby's tummy"
+                    value={reviewTitle}
+                    onChange={(e) => setReviewTitle(e.target.value)}
+                    className={styles.formInput}
+                    required
+                    maxLength={100}
+                  />
+                </div>
+
+                {/* Review Comment */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                    Detailed Experience:
+                  </label>
+                  <textarea
+                    placeholder="Share how this freshly milled batch worked for your family, the aroma, texture, and how you prepared it..."
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    className={styles.formInput}
+                    rows={4}
+                    required
+                    minLength={5}
+                    maxLength={800}
+                  />
+                </div>
+
+                {/* Family / Child Age (Optional) */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                    Who was this for? (Optional):
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 7 Months baby, Toddler, Whole Family"
+                    value={reviewChildAge}
+                    onChange={(e) => setReviewChildAge(e.target.value)}
+                    className={styles.formInput}
+                    maxLength={40}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setReviewModalOrder(null)}
+                    disabled={isSubmittingReview}
+                    className={styles.secondaryActionsGroup}
+                    style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-medium)', cursor: 'pointer' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingReview}
+                    className={styles.primaryBtn}
+                    style={{ width: 'auto', padding: '9px 20px' }}
+                  >
+                    {isSubmittingReview ? 'Submitting...' : 'Submit Verified Review'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }

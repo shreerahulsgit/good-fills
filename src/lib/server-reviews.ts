@@ -4,6 +4,7 @@ import os from 'os';
 
 export interface Review {
   id: string;
+  orderId?: string; // Verified order identifier
   productId: string; // product id or slug
   productName: string;
   rating: number; // 1 to 5
@@ -613,9 +614,21 @@ export function getProductReviewSummary(productIdOrSlug: string): ProductReviewS
 }
 
 /**
- * Adds a new verified customer review
+ * Returns all reviews for a specific verified order
+ */
+export function getReviewsByOrderId(orderId: string): Review[] {
+  initReviewsStore();
+  const cleanId = orderId.trim().toLowerCase();
+  return Array.from(reviewsCache.values()).filter(
+    (r) => r.orderId && r.orderId.trim().toLowerCase() === cleanId
+  );
+}
+
+/**
+ * Adds a new verified customer review strictly tied to an order
  */
 export function addCustomerReview(data: {
+  orderId: string;
   productId: string;
   productName: string;
   rating: number;
@@ -630,6 +643,7 @@ export function addCustomerReview(data: {
 
   const newReview: Review = {
     id: `rev-${Date.now().toString(36)}-${Math.floor(100 + Math.random() * 900)}`,
+    orderId: data.orderId.trim(),
     productId: normalizedId,
     productName: data.productName.trim(),
     rating: Math.max(1, Math.min(5, Number(data.rating) || 5)),
@@ -639,7 +653,7 @@ export function addCustomerReview(data: {
     location: (data.location || 'Bengaluru, Karnataka').trim().slice(0, 60),
     childAge: data.childAge ? data.childAge.trim().slice(0, 40) : undefined,
     isVerifiedBuyer: true,
-    helpfulCount: 1,
+    helpfulCount: 0,
     createdAt: new Date().toISOString(),
   };
 

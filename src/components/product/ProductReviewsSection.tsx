@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import {
   Star,
   CheckCircle2,
@@ -10,10 +11,12 @@ import {
   Check,
   ShieldCheck,
   MessageSquare,
+  Package,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Product } from '@/types';
 import { Review, ProductReviewSummary } from '@/lib/server-reviews';
+import { useCustomerAuth } from '@/lib/customer-auth-context';
 import styles from './ProductReviewsSection.module.css';
 
 interface ProductReviewsSectionProps {
@@ -30,11 +33,29 @@ const RATING_DESCRIPTIONS: Record<number, string> = {
 };
 
 export function ProductReviewsSection({ product, initialSummary }: ProductReviewsSectionProps) {
+  const { currentUser, orders } = useCustomerAuth();
   const [summary, setSummary] = useState<ProductReviewSummary | null>(initialSummary || null);
   const [isLoading, setIsLoading] = useState<boolean>(!initialSummary);
   const [activeFilter, setActiveFilter] = useState<'all' | number>('all');
   const [sortBy, setSortBy] = useState<'helpful' | 'newest' | 'rating'>('helpful');
   
+  // Delivered order validation: strictly verify if this customer has a delivered order with this product
+  const deliveredOrder = useMemo(() => {
+    if (!orders || orders.length === 0) return null;
+    const targetId = product.id.toLowerCase();
+    const targetSlug = (product.slug || '').toLowerCase();
+
+    return orders.find((o) => {
+      const isDelivered = o.shipmentStatus === 'Delivered' || o.orderStatus === 'Delivered';
+      if (!isDelivered) return false;
+      return o.items && o.items.some((item) => {
+        const pId = (item.product?.id || (item as any).productId || '').toLowerCase();
+        const pSlug = (item.product?.slug || (item as any).productSlug || '').toLowerCase();
+        return pId === targetId || pSlug === targetSlug || pId === targetSlug || pSlug === targetId;
+      });
+    }) || null;
+  }, [orders, product.id, product.slug]);
+
   // Helpful Votes Tracking in localStorage
   const [votedIds, setVotedIds] = useState<Set<string>>(new Set());
 
@@ -52,6 +73,17 @@ export function ProductReviewsSection({ product, initialSummary }: ProductReview
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  // Sync author name with current user or delivered order
+  useEffect(() => {
+    if (deliveredOrder || currentUser) {
+      setFormData((prev) => ({
+        ...prev,
+        authorName: prev.authorName || currentUser?.name || deliveredOrder?.customerName || '',
+        location: prev.location || (deliveredOrder?.shippingAddress?.city ? `${deliveredOrder.shippingAddress.city}, ${deliveredOrder.shippingAddress.state || 'Karnataka'}` : ''),
+      }));
+    }
+  }, [deliveredOrder, currentUser]);
 
   // Load voted reviews from localStorage
   useEffect(() => {
@@ -128,19 +160,25 @@ export function ProductReviewsSection({ product, initialSummary }: ProductReview
       return;
     }
 
+    if (!deliveredOrder) {
+      setSubmitError('Only customers with a delivered order can write a review. Please check your order history in your account.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          orderId: deliveredOrder.id,
           productId: product.id,
           productName: product.name,
           rating: formData.rating,
           title: formData.title,
           comment: formData.comment,
           authorName: formData.authorName,
-          location: formData.location || 'Bengaluru, Karnataka',
+          location: formData.location || deliveredOrder.shippingAddress?.city || 'Bengaluru, Karnataka',
           childAge: formData.childAge || undefined,
         }),
       });
@@ -285,18 +323,45 @@ export function ProductReviewsSection({ product, initialSummary }: ProductReview
 
         {/* Right: CTA to Write Review */}
         <div className={styles.ctaBlock}>
-          <h3 className={styles.ctaHeadline}>Experienced This Batch?</h3>
-          <p className={styles.ctaSubtext}>
-            Your honest feedback guides parents seeking pure, traditional nutrition for their households.
-          </p>
-          <button
-            type="button"
-            onClick={() => setIsModalOpen(true)}
-            className={styles.writeReviewBtn}
-          >
-            <PenLine size={16} />
-            <span>Write a Review</span>
-          </button>
+          {deliveredOrder ? (
+            <>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.72rem', fontWeight: 700, color: '#166534', backgroundColor: '#dcfce7', padding: '3px 8px', marginBottom: '8px', border: '1px solid #bbf7d0' }}>
+                <Check size={12} strokeWidth={2.5} />
+                <span>Delivered Order #{deliveredOrder.id}</span>
+              </div>
+              <h3 className={styles.ctaHeadline}>How Was Your Fresh Batch?</h3>
+              <p className={styles.ctaSubtext}>
+                You ordered this creation. Share your authentic experience to guide other families seeking traditional nutrition.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className={styles.writeReviewBtn}
+              >
+                <PenLine size={16} />
+                <span>Write a Review</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', backgroundColor: 'var(--bg-canvas)', border: '1px solid var(--border-subtle)', padding: '3px 8px', marginBottom: '8px' }}>
+                <ShieldCheck size={12} />
+                <span>Delivered Orders Only</span>
+              </div>
+              <h3 className={styles.ctaHeadline}>Purchased This Creation?</h3>
+              <p className={styles.ctaSubtext}>
+                To guarantee 100% authentic feedback, reviews can only be submitted after your order is delivered.
+              </p>
+              <Link
+                href="/account?tab=orders"
+                className={styles.writeReviewBtn}
+                style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              >
+                <Package size={15} />
+                <span>Review from Order History</span>
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
@@ -451,7 +516,12 @@ export function ProductReviewsSection({ product, initialSummary }: ProductReview
               {/* Modal Header */}
               <div className={styles.modalHeader}>
                 <div className={styles.modalHeaderLeft}>
-                  <span className={styles.modalSubtitle}>Share Your Experience</span>
+                  {deliveredOrder && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.72rem', fontWeight: 700, color: '#166534', backgroundColor: '#dcfce7', padding: '2px 8px', marginBottom: '6px', border: '1px solid #bbf7d0' }}>
+                      <Check size={11} strokeWidth={2.5} />
+                      <span>Delivered Order #{deliveredOrder.id}</span>
+                    </div>
+                  )}
                   <h3 className={styles.modalTitle}>{product.name}</h3>
                 </div>
                 <button

@@ -23,7 +23,8 @@ import {
   Box,
   Sparkles,
   X,
-  FileText
+  FileText,
+  Star
 } from 'lucide-react';
 import { TrackingTelemetryResult } from '@/lib/tracking';
 import styles from './TrackView.module.css';
@@ -482,6 +483,20 @@ export function TrackView() {
                     <span>Items in This Order</span>
                     <Package size={18} color="var(--accent-terracotta)" />
                   </h3>
+
+                  {(activeOrder.shipmentStatus === 'Delivered' || activeOrder.orderStatus === 'Delivered') && (
+                    <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '10px 14px', marginBottom: '12px', fontSize: '0.82rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                      <div style={{ color: '#166534', fontWeight: 600 }}>
+                        ✓ Order Delivered! You can rate each item in your account.
+                      </div>
+                      <Link
+                        href="/account?tab=orders"
+                        style={{ color: 'var(--accent-terracotta)', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}
+                      >
+                        <Star size={13} fill="currentColor" /> Write Review ↗
+                      </Link>
+                    </div>
+                  )}
 
                   <div className={styles.itemList}>
                     {activeOrder.items.map((item) => (

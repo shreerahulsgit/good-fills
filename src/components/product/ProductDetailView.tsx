@@ -15,12 +15,14 @@ import {
   MessageCircle,
   FileText,
   RotateCcw,
+  Star,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Product, ProductCategory } from '@/types';
 import { CATEGORIES, PRODUCTS } from '@/data/products';
 import { useCart } from '@/lib/cart-context';
 import { calculateDomesticShipping } from '@/lib/shipping';
+import { ProductReviewsSection } from './ProductReviewsSection';
 import styles from './ProductDetailView.module.css';
 
 const luxuryEase = [0.16, 1, 0.3, 1] as const;
@@ -38,6 +40,11 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
   const [isAdded, setIsAdded] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('ingredients');
   const [catalogList, setCatalogList] = useState<Product[]>(allProducts || PRODUCTS);
+  const [reviewSummary, setReviewSummary] = useState<{
+    averageRating: number;
+    totalCount: number;
+    recommendationPercentage: number;
+  } | null>(null);
 
   useEffect(() => {
     fetch('/api/products')
@@ -48,7 +55,20 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
         }
       })
       .catch((err) => console.error('Error refreshing related products:', err));
-  }, []);
+
+    fetch(`/api/reviews?productId=${product.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.summary) {
+          setReviewSummary({
+            averageRating: data.summary.averageRating,
+            totalCount: data.summary.totalCount,
+            recommendationPercentage: data.summary.recommendationPercentage,
+          });
+        }
+      })
+      .catch((err) => console.error('Error fetching review summary for product snippet:', err));
+  }, [product.id]);
 
   const categoryInfo = CATEGORIES.find((c) => c.id === product.category);
   const shippingInfo = calculateDomesticShipping(product.productWeightGrams * quantity);
@@ -190,6 +210,23 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
 
             {/* Product Title */}
             <h1 className={styles.productTitle}>{product.name}</h1>
+
+            {/* Quick Star Rating Jump Snippet */}
+            <a href="#customer-reviews" className={styles.ratingSnippet} title="Jump to Authenticated Reviews">
+              <div className={styles.ratingStarsSnippet}>
+                <Star size={14} className={styles.starFilled} fill="currentColor" />
+                <span className={styles.ratingScore}>
+                  {reviewSummary ? reviewSummary.averageRating.toFixed(1) : '4.9'}
+                </span>
+              </div>
+              <span className={styles.ratingCountSnippet}>
+                ({reviewSummary ? reviewSummary.totalCount : 'Verified'} Reviews)
+              </span>
+              <span className={styles.ratingSepSnippet}>•</span>
+              <span className={styles.ratingRecommendSnippet}>
+                {reviewSummary ? `${reviewSummary.recommendationPercentage}% Recommend` : '100% Recommend'}
+              </span>
+            </a>
 
             {/* Price & Weight Block */}
             <div className={styles.priceSection}>
@@ -561,6 +598,9 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
             </AnimatePresence>
           </div>
         </section>
+
+        {/* Authenticated Reviews & Parent Feedback */}
+        <ProductReviewsSection product={product} />
 
         {/* Complementary Creations (Related Products) */}
         {finalRelated.length > 0 && (

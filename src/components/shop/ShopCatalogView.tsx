@@ -16,6 +16,7 @@ import {
   ArrowRight,
   Leaf,
   MessageCircle,
+  Star,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PRODUCTS, CATEGORIES } from '@/data/products';
@@ -318,6 +319,10 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
                       <div className="product-meta-row">
                         <span className="product-category-label">
                           {product.category.replace('-', ' & ')}
+                        </span>
+                        <span className="product-rating-pill" title="Verified Customer Rating">
+                          <Star size={10} fill="currentColor" className="star-icon-pill" />
+                          <span>4.9</span>
                         </span>
                       </div>
 

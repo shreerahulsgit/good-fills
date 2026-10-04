@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowRight, ShoppingBag, Check, Minus, Plus } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Check, Minus, Plus, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { PRODUCTS } from '@/data/products';
 import { useCart } from '@/lib/cart-context';
@@ -182,9 +182,15 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
 
                   {/* Product Details */}
                   <div className="product-info">
-                    <span className="product-category-label">
-                      {product.category.replace('-', ' ')}
-                    </span>
+                    <div className="product-meta-row">
+                      <span className="product-category-label">
+                        {product.category.replace('-', ' ')}
+                      </span>
+                      <span className="product-rating-pill" title="Verified Customer Rating">
+                        <Star size={10} fill="currentColor" className="star-icon-pill" />
+                        <span>4.9</span>
+                      </span>
+                    </div>
                     <h3 className="product-name">{product.name}</h3>
                     <p className="product-desc">{product.shortDescription}</p>
 

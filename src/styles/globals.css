@@ -999,7 +999,32 @@ button {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent-terracotta);
+  margin-bottom: 0;
+}
+
+.product-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: var(--space-1);
+}
+
+.product-rating-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background-color: var(--bg-surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0px !important;
+  padding: 1px 6px;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.product-rating-pill .star-icon-pill {
+  color: #D97706;
 }
 
 .product-name {

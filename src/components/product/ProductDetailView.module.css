@@ -216,7 +216,64 @@
   line-height: 1.15;
   color: var(--text-primary);
   letter-spacing: -0.015em;
-  margin: var(--space-1) 0 var(--space-3);
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Quick Rating Jump Snippet */
+.ratingSnippet {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  margin-bottom: var(--space-4);
+  padding: 4px 10px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0px !important;
+  width: fit-content;
+  transition: all var(--transition-fast);
+}
+
+.ratingSnippet:hover {
+  border-color: var(--accent-terracotta);
+  background-color: var(--bg-surface-raised);
+}
+
+.ratingStarsSnippet {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.starFilled {
+  color: #D97706;
+}
+
+.ratingScore {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ratingCountSnippet {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ratingSepSnippet {
+  color: var(--border-medium);
+  font-size: 0.75rem;
+}
+
+.ratingRecommendSnippet {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #2B5435;
 }
 
 /* Price & Pack Size Block */

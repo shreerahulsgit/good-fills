@@ -2507,6 +2507,24 @@
   margin-top: 2px;
 }
 
+.clickableStatCard {
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.clickableStatCard:hover {
+  border-color: #F59E0B;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+}
+
+.creationStatCardActive {
+  border-color: #F59E0B !important;
+  background-color: #FFFDF5 !important;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15) !important;
+}
+
 .creationsToolbar {
   background-color: #FFFFFF;
   border: 1px solid #E5E7EB;
@@ -2561,6 +2579,32 @@
   cursor: pointer;
 }
 
+.featuredFilterToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid #D1D5DB;
+  background-color: #FFFFFF;
+  color: #4B5563;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.featuredFilterToggle:hover {
+  border-color: #F59E0B;
+  color: #B45309;
+}
+
+.featuredFilterToggleActive {
+  background-color: #FFFBEB !important;
+  border-color: #F59E0B !important;
+  color: #B45309 !important;
+  font-weight: 700 !important;
+}
+
 .addCreationBtn {
   display: inline-flex;
   align-items: center;
@@ -2600,6 +2644,12 @@
 .creationCard:hover {
   border-color: #D1D5DB;
   box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.07);
+}
+
+.creationCardFeatured {
+  border-color: #FCD34D !important;
+  border-top: 3px solid #F59E0B !important;
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.1) !important;
 }
 
 .creationCardHeader {
@@ -2713,6 +2763,20 @@
   color: #4B5563;
   background-color: #F3F4F6;
   padding: 2px 6px;
+}
+
+.pinnedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #92400E;
+  background-color: #FEF3C7;
+  border: 1px solid #FDE68A;
+  padding: 2px 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .creationCardFooter {

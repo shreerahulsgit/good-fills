@@ -184,6 +184,7 @@ export function AdminDispatchView() {
   const [productSearch, setProductSearch] = useState('');
   const [productCategoryFilter, setProductCategoryFilter] = useState<'all' | ProductCategory>('all');
   const [productAvailabilityFilter, setProductAvailabilityFilter] = useState<'all' | ProductAvailability>('all');
+  const [productFeaturedFilter, setProductFeaturedFilter] = useState<'all' | 'featured'>('all');
 
   // Product Edit / Create Modal State
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -397,9 +398,13 @@ export function AdminDispatchView() {
 
   const handleToggleFeatured = async (productId: string, currentFeatured: boolean) => {
     const nextFeatured = !currentFeatured;
-    setProducts((prev) =>
-      prev.map((p) => (p.id === productId ? { ...p, featured: nextFeatured } : p))
+    const target = products.find((p) => p.id === productId);
+    const prodName = target?.name || 'Creation';
+
+    const updatedProducts = products.map((p) =>
+      p.id === productId ? { ...p, featured: nextFeatured } : p
     );
+    setProducts(updatedProducts);
 
     try {
       const activePin = pin || sessionStorage.getItem('goodfills_admin_pin') || '';
@@ -416,7 +421,12 @@ export function AdminDispatchView() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        showToast(nextFeatured ? 'Pinned as Featured on homepage' : 'Unpinned from homepage', 'success');
+        const count = updatedProducts.filter((p) => p.featured).length;
+        if (nextFeatured) {
+          showToast(`★ "${prodName}" pinned to Homepage! (${count} creations now featured)`, 'success');
+        } else {
+          showToast(`"${prodName}" unpinned from Homepage (${count} remaining)`, 'info');
+        }
       } else {
         throw new Error(data.error || 'Failed to update featured state');
       }
@@ -633,6 +643,9 @@ export function AdminDispatchView() {
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
+      if (productFeaturedFilter === 'featured' && !p.featured) {
+        return false;
+      }
       if (productSearch.trim()) {
         const q = productSearch.toLowerCase();
         const matchName = p.name.toLowerCase().includes(q);
@@ -649,7 +662,7 @@ export function AdminDispatchView() {
       }
       return true;
     });
-  }, [products, productSearch, productCategoryFilter, productAvailabilityFilter]);
+  }, [products, productSearch, productCategoryFilter, productAvailabilityFilter, productFeaturedFilter]);
 
   const handleLogout = () => {
     sessionStorage.removeItem('goodfills_admin_pin');
@@ -2757,15 +2770,23 @@ export function AdminDispatchView() {
                 </div>
               </div>
 
-              <div className={styles.creationStatCard}>
+              <div
+                className={`${styles.creationStatCard} ${styles.clickableStatCard} ${
+                  productFeaturedFilter === 'featured' ? styles.creationStatCardActive : ''
+                }`}
+                onClick={() => setProductFeaturedFilter((prev) => (prev === 'featured' ? 'all' : 'featured'))}
+                title="Click to view only creations pinned to Homepage"
+              >
                 <div className={styles.creationStatIcon} style={{ color: '#D97706', backgroundColor: '#FFFBEB' }}>
-                  <Star size={22} />
+                  <Star size={22} fill={productFeaturedFilter === 'featured' ? '#F59E0B' : 'none'} />
                 </div>
                 <div>
                   <div className={styles.creationStatVal}>
                     {products.filter((p) => p.featured).length}
                   </div>
-                  <div className={styles.creationStatLabel}>Featured on Home</div>
+                  <div className={styles.creationStatLabel}>
+                    Featured on Home {productFeaturedFilter === 'featured' ? '● Active' : ''}
+                  </div>
                 </div>
               </div>
             </div>
@@ -2807,6 +2828,18 @@ export function AdminDispatchView() {
                   <option value="sold-out">Sold Out</option>
                   <option value="coming-soon">Coming Soon</option>
                 </select>
+
+                <button
+                  type="button"
+                  onClick={() => setProductFeaturedFilter((prev) => (prev === 'featured' ? 'all' : 'featured'))}
+                  className={`${styles.featuredFilterToggle} ${
+                    productFeaturedFilter === 'featured' ? styles.featuredFilterToggleActive : ''
+                  }`}
+                  title={productFeaturedFilter === 'featured' ? 'Show all creations' : 'Show only creations pinned to Homepage'}
+                >
+                  <Star size={13} fill={productFeaturedFilter === 'featured' ? '#F59E0B' : 'none'} />
+                  <span>Pinned to Home ({products.filter((p) => p.featured).length})</span>
+                </button>
               </div>
 
               <button
@@ -2839,7 +2872,7 @@ export function AdminDispatchView() {
                   const dtdcLabel = getDtdcTierLabel(p.productWeightGrams || 250);
 
                   return (
-                    <div key={p.id} className={styles.creationCard}>
+                    <div key={p.id} className={`${styles.creationCard} ${p.featured ? styles.creationCardFeatured : ''}`}>
                       <div className={styles.creationCardHeader}>
                         <img
                           src={primaryImg}
@@ -2867,9 +2900,10 @@ export function AdminDispatchView() {
                           type="button"
                           className={`${styles.featuredStarBtn} ${p.featured ? styles.featuredStarActive : ''}`}
                           onClick={() => handleToggleFeatured(p.id, Boolean(p.featured))}
-                          title={p.featured ? 'Pinned on Homepage (Click to unpin)' : 'Click to Feature on Homepage'}
+                          title={p.featured ? 'Pinned on Homepage (Click to unpin)' : 'Click to Pin on Homepage'}
+                          aria-label={p.featured ? 'Unpin from homepage' : 'Pin to homepage'}
                         >
-                          <Star size={18} fill={p.featured ? '#F59E0B' : 'none'} />
+                          <Star size={19} fill={p.featured ? '#F59E0B' : 'none'} />
                         </button>
                       </div>
 
@@ -2879,6 +2913,12 @@ export function AdminDispatchView() {
                         </p>
 
                         <div className={styles.creationBadgesRow}>
+                          {p.featured && (
+                            <span className={styles.pinnedBadge} title="Featured on Homepage Signature section">
+                              <Star size={10} fill="#B45309" />
+                              <span>PINNED TO HOME</span>
+                            </span>
+                          )}
                           <span className={styles.creationWeightBadge} title="Product weight used for DTDC Courier Tier">
                             <Scale size={11} />
                             <span>{p.productWeightGrams || 250}g • {dtdcLabel}</span>

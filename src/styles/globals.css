@@ -892,20 +892,17 @@ button {
   gap: var(--space-6);
   max-width: 1140px;
   margin: 0 auto;
+  justify-content: center;
 }
 
 @media (min-width: 640px) {
   .featured-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
+    gap: var(--space-6);
+    justify-content: center;
   }
 }
 
-@media (min-width: 1024px) {
-  .featured-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-6);
-  }
-}
 
 .product-card {
   background-color: var(--bg-surface);

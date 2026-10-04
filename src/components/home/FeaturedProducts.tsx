@@ -50,7 +50,13 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
   const [addedId, setAddedId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/products')
+    if (initialProducts && initialProducts.length > 0) {
+      setProductsList(initialProducts);
+    }
+  }, [initialProducts]);
+
+  useEffect(() => {
+    fetch('/api/products', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.products && Array.isArray(data.products) && data.products.length > 0) {
@@ -63,34 +69,24 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
   const featuredProducts = useMemo(() => {
     // 1. First pick creations that are explicitly marked as featured by admin
     const explicitlyFeatured = productsList.filter((p) => p.featured);
-    if (explicitlyFeatured.length >= 3) {
-      return explicitlyFeatured.slice(0, 3);
+    
+    // If admin has pinned ANY creations (1, 2, 3, 4, etc.), show EXACTLY the pinned items!
+    // Do NOT inject unwanted fallback products when the admin has explicitly curated pinned items.
+    if (explicitlyFeatured.length > 0) {
+      return explicitlyFeatured;
     }
 
-    // 2. If fewer than 3, supplement with default signature slugs or available items
+    // 2. ONLY if 0 products are pinned by admin, fallback gracefully to default signature creations
     const fallbackItems = DEFAULT_FEATURED_SLUGS.map((slug) =>
       productsList.find((p) => p.slug === slug)
     ).filter((p): p is Product => Boolean(p));
 
-    const combined = [...explicitlyFeatured];
-    for (const item of fallbackItems) {
-      if (!combined.some((c) => c.id === item.id)) {
-        combined.push(item);
-      }
-      if (combined.length >= 3) break;
+    if (fallbackItems.length > 0) {
+      return fallbackItems;
     }
 
-    // 3. Fallback to any products from catalog if still less than 3
-    if (combined.length < 3) {
-      for (const item of productsList) {
-        if (!combined.some((c) => c.id === item.id)) {
-          combined.push(item);
-        }
-        if (combined.length >= 3) break;
-      }
-    }
-
-    return combined.slice(0, 3);
+    // 3. Absolute fallback to first available items from catalog if no default signature match
+    return productsList.slice(0, 3);
   }, [productsList]);
 
   const handleAdd = (e: React.MouseEvent, product: Product) => {

@@ -6,7 +6,16 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const products = getAllServerProducts();
-    return NextResponse.json({ success: true, products });
+    return NextResponse.json(
+      { success: true, products },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      }
+    );
   } catch (error: any) {
     console.error('Error fetching public products:', error);
     return NextResponse.json(

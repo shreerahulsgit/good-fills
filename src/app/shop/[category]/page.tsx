@@ -2,7 +2,10 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CATEGORIES } from '@/data/products';
 import { ProductCategory } from '@/types';
+import { getAllServerProducts } from '@/lib/server-products';
 import { ShopCatalogView } from '@/components/shop/ShopCatalogView';
+
+export const dynamic = 'force-dynamic';
 
 interface CategoryPageProps {
   params: {
@@ -49,9 +52,11 @@ export default function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
+  const products = getAllServerProducts();
+
   return (
     <main>
-      <ShopCatalogView initialCategory={category} />
+      <ShopCatalogView initialCategory={category} initialProducts={products} />
     </main>
   );
 }

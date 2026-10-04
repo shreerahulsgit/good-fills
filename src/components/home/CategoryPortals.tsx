@@ -1,22 +1,17 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { CATEGORIES, PRODUCTS } from '@/data/products';
+import { Product } from '@/types';
 
 const luxuryEase = [0.16, 1, 0.3, 1] as const;
 
-// Calculate exact product counts dynamically
-const categoriesWithCounts = CATEGORIES.map((cat, idx) => {
-  const count = PRODUCTS.filter((p) => p.category === cat.id).length;
-  return {
-    ...cat,
-    num: `0${idx + 1}`,
-    count,
-  };
-});
+interface CategoryPortalsProps {
+  initialProducts?: Product[];
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -41,7 +36,30 @@ const cardVariants = {
   },
 };
 
-export function CategoryPortals() {
+export function CategoryPortals({ initialProducts }: CategoryPortalsProps) {
+  const [productsList, setProductsList] = useState<Product[]>(initialProducts || PRODUCTS);
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+          setProductsList(data.products);
+        }
+      })
+      .catch((err) => console.error('Error fetching category counts:', err));
+  }, []);
+
+  const categoriesWithCounts = useMemo(() => {
+    return CATEGORIES.map((cat, idx) => {
+      const count = productsList.filter((p) => p.category === cat.id).length;
+      return {
+        ...cat,
+        num: `0${idx + 1}`,
+        count,
+      };
+    });
+  }, [productsList]);
   return (
     <section className="portals-section">
       <div className="container">
@@ -64,7 +82,7 @@ export function CategoryPortals() {
             transition={{ duration: 0.8, ease: luxuryEase, delay: 0.12 }}
             className="portals-subtitle"
           >
-            13 handmade creations organized across four traditional everyday disciplines.
+            {productsList.length} handmade creations organized across four traditional everyday disciplines.
           </motion.p>
         </div>
 

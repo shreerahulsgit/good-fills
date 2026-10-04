@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ShoppingBag, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -10,16 +10,16 @@ import { Product } from '@/types';
 
 const luxuryEase = [0.16, 1, 0.3, 1] as const;
 
-// Curate the top 3 signature creations
-const FEATURED_SLUGS = [
+// Default fallback signature slugs
+const DEFAULT_FEATURED_SLUGS = [
   'kids-nutrition-powder',
   'ragi-porridge-mix',
   'ubtan-face-pack',
 ];
 
-const featuredProducts = FEATURED_SLUGS.map((slug) =>
-  PRODUCTS.find((p) => p.slug === slug)
-).filter((p): p is Product => Boolean(p));
+interface FeaturedProductsProps {
+  initialProducts?: Product[];
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -44,9 +44,54 @@ const cardVariants = {
   },
 };
 
-export function FeaturedProducts() {
+export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
   const { addItem, openCart } = useCart();
+  const [productsList, setProductsList] = useState<Product[]>(initialProducts || PRODUCTS);
   const [addedId, setAddedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+          setProductsList(data.products);
+        }
+      })
+      .catch((err) => console.error('Error fetching featured products:', err));
+  }, []);
+
+  const featuredProducts = useMemo(() => {
+    // 1. First pick creations that are explicitly marked as featured by admin
+    const explicitlyFeatured = productsList.filter((p) => p.featured);
+    if (explicitlyFeatured.length >= 3) {
+      return explicitlyFeatured.slice(0, 3);
+    }
+
+    // 2. If fewer than 3, supplement with default signature slugs or available items
+    const fallbackItems = DEFAULT_FEATURED_SLUGS.map((slug) =>
+      productsList.find((p) => p.slug === slug)
+    ).filter((p): p is Product => Boolean(p));
+
+    const combined = [...explicitlyFeatured];
+    for (const item of fallbackItems) {
+      if (!combined.some((c) => c.id === item.id)) {
+        combined.push(item);
+      }
+      if (combined.length >= 3) break;
+    }
+
+    // 3. Fallback to any products from catalog if still less than 3
+    if (combined.length < 3) {
+      for (const item of productsList) {
+        if (!combined.some((c) => c.id === item.id)) {
+          combined.push(item);
+        }
+        if (combined.length >= 3) break;
+      }
+    }
+
+    return combined.slice(0, 3);
+  }, [productsList]);
 
   const handleAdd = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
@@ -80,7 +125,7 @@ export function FeaturedProducts() {
             className="featured-header-action"
           >
             <Link href="/shop" className="featured-view-all group">
-              <span>View All 13 Products</span>
+              <span>View All {productsList.length} Creations</span>
               <ArrowRight size={15} className="featured-arrow" />
             </Link>
           </motion.div>
@@ -108,7 +153,7 @@ export function FeaturedProducts() {
                   {/* Image Container with Subtle Hover Zoom */}
                   <div className="product-image-wrap">
                     <img
-                      src={product.images.primary}
+                      src={product.images?.primary || '/logo.png'}
                       alt={product.name}
                       className="product-img"
                     />
@@ -118,10 +163,24 @@ export function FeaturedProducts() {
                       {product.packSize}
                     </div>
 
-                    {/* Freshly Made Badge */}
-                    <div className="product-badge-made">
-                      Made to Order
-                    </div>
+                    {/* Freshly Made / Stock Badge */}
+                    {product.availability === 'sold-out' ? (
+                      <div className="product-badge-made" style={{ backgroundColor: 'rgba(220, 38, 38, 0.95)', color: '#FFFFFF' }}>
+                        Sold Out
+                      </div>
+                    ) : product.availability === 'temporarily-unavailable' ? (
+                      <div className="product-badge-made" style={{ backgroundColor: 'rgba(217, 119, 6, 0.95)', color: '#FFFFFF' }}>
+                        Temp. Unavailable
+                      </div>
+                    ) : product.availability === 'coming-soon' ? (
+                      <div className="product-badge-made" style={{ backgroundColor: 'rgba(37, 99, 235, 0.95)', color: '#FFFFFF' }}>
+                        Coming Soon
+                      </div>
+                    ) : (
+                      <div className="product-badge-made">
+                        Made to Order
+                      </div>
+                    )}
                   </div>
 
                   {/* Product Details */}
@@ -139,28 +198,49 @@ export function FeaturedProducts() {
                         <span className="product-amount">{product.price}</span>
                       </div>
 
-                      {/* Tactile Quick-Add Button */}
-                      <motion.button
-                        type="button"
-                        onClick={(e) => handleAdd(e, product)}
-                        className={`product-add-btn ${isAdded ? 'btn-added' : ''}`}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.94 }}
-                        transition={{ type: 'spring', stiffness: 450, damping: 20 }}
-                        aria-label={`Add ${product.name} to bag`}
-                      >
-                        {isAdded ? (
-                          <>
-                            <Check size={14} strokeWidth={2.5} />
-                            <span>Added</span>
-                          </>
-                        ) : (
-                          <>
-                            <ShoppingBag size={14} />
-                            <span>Add to Bag</span>
-                          </>
-                        )}
-                      </motion.button>
+                      {/* Tactile Quick-Add Button (Stock aware) */}
+                      {product.availability && product.availability !== 'available' ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="product-add-btn"
+                          style={{ opacity: 0.6, cursor: 'not-allowed', backgroundColor: '#9CA3AF' }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
+                          <span>
+                            {product.availability === 'sold-out'
+                              ? 'Sold Out'
+                              : product.availability === 'coming-soon'
+                              ? 'Coming Soon'
+                              : 'Unavailable'}
+                          </span>
+                        </button>
+                      ) : (
+                        <motion.button
+                          type="button"
+                          onClick={(e) => handleAdd(e, product)}
+                          className={`product-add-btn ${isAdded ? 'btn-added' : ''}`}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.94 }}
+                          transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+                          aria-label={`Add ${product.name} to bag`}
+                        >
+                          {isAdded ? (
+                            <>
+                              <Check size={14} strokeWidth={2.5} />
+                              <span>Added</span>
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingBag size={14} />
+                              <span>Add to Bag</span>
+                            </>
+                          )}
+                        </motion.button>
+                      )}
                     </div>
                   </div>
                 </Link>

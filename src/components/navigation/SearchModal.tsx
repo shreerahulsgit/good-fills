@@ -15,12 +15,23 @@ interface SearchModalProps {
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Product[]>([]);
+  const [productsList, setProductsList] = useState<Product[]>(PRODUCTS);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 50);
       document.body.style.overflow = 'hidden';
+
+      // Fetch live products catalog on open
+      fetch('/api/products')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+            setProductsList(data.products);
+          }
+        })
+        .catch(() => {});
     } else {
       document.body.style.overflow = 'auto';
       setQuery('');
@@ -38,16 +49,16 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       return;
     }
 
-    const filtered = PRODUCTS.filter(product => {
+    const filtered = productsList.filter(product => {
       const matchName = product.name.toLowerCase().includes(trimmed);
       const matchCategory = product.category.toLowerCase().includes(trimmed);
-      const matchDesc = product.shortDescription.toLowerCase().includes(trimmed);
-      const matchIngredients = product.ingredients.some(ing => ing.toLowerCase().includes(trimmed));
+      const matchDesc = (product.shortDescription || '').toLowerCase().includes(trimmed);
+      const matchIngredients = (product.ingredients || []).some(ing => ing.toLowerCase().includes(trimmed));
       return matchName || matchCategory || matchDesc || matchIngredients;
     });
 
     setResults(filtered);
-  }, [query]);
+  }, [query, productsList]);
 
   // Handle escape key
   useEffect(() => {
@@ -233,7 +244,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border-hairline)')}
                   >
                     <img 
-                      src={prod.images.primary} 
+                      src={prod.images?.primary || '/logo.png'} 
                       alt={prod.name} 
                       style={{ width: '56px', height: '56px', objectFit: 'cover', borderRadius: 'var(--radius-xs)' }}
                     />
@@ -241,6 +252,21 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                         <h4 style={{ fontSize: '1.05rem', margin: 0 }}>{prod.name}</h4>
                         <span className="badge" style={{ fontSize: '0.7rem' }}>{prod.packSize}</span>
+                        {prod.availability && prod.availability !== 'available' && (
+                          <span style={{
+                            fontSize: '0.65rem',
+                            fontWeight: 700,
+                            padding: '2px 6px',
+                            backgroundColor: prod.availability === 'sold-out' ? '#FEF2F2' : '#FFFBEB',
+                            color: prod.availability === 'sold-out' ? '#DC2626' : '#D97706'
+                          }}>
+                            {prod.availability === 'sold-out'
+                              ? 'Sold Out'
+                              : prod.availability === 'coming-soon'
+                              ? 'Coming Soon'
+                              : 'Unavailable'}
+                          </span>
+                        )}
                       </div>
                       <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: '2px 0 0' }}>
                         {prod.shortDescription}

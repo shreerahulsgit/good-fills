@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   ShoppingBag,
@@ -27,33 +27,45 @@ const luxuryEase = [0.16, 1, 0.3, 1] as const;
 
 interface ProductDetailViewProps {
   product: Product;
+  allProducts?: Product[];
 }
 
 type TabType = 'ingredients' | 'preparation' | 'storage' | 'shipping';
 
-export function ProductDetailView({ product }: ProductDetailViewProps) {
+export function ProductDetailView({ product, allProducts }: ProductDetailViewProps) {
   const { addItem, openCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('ingredients');
+  const [catalogList, setCatalogList] = useState<Product[]>(allProducts || PRODUCTS);
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+          setCatalogList(data.products);
+        }
+      })
+      .catch((err) => console.error('Error refreshing related products:', err));
+  }, []);
 
   const categoryInfo = CATEGORIES.find((c) => c.id === product.category);
   const shippingInfo = calculateDomesticShipping(product.productWeightGrams * quantity);
 
   // Related products from the same category or general catalog (excluding current product)
-  const relatedProducts = PRODUCTS.filter(
-    (p) => p.id !== product.id && p.category === product.category
-  )
-    .slice(0, 3);
+  const finalRelated = useMemo(() => {
+    const sameCat = catalogList.filter(
+      (p) => p.id !== product.id && p.category === product.category
+    ).slice(0, 3);
 
-  // Fallback if category has fewer than 3 items
-  const finalRelated =
-    relatedProducts.length >= 3
-      ? relatedProducts
-      : [
-          ...relatedProducts,
-          ...PRODUCTS.filter((p) => p.id !== product.id && !relatedProducts.includes(p)),
-        ].slice(0, 3);
+    if (sameCat.length >= 3) return sameCat;
+
+    return [
+      ...sameCat,
+      ...catalogList.filter((p) => p.id !== product.id && !sameCat.some((sc) => sc.id === p.id)),
+    ].slice(0, 3);
+  }, [catalogList, product.id, product.category]);
 
   const handleQuantityChange = (delta: number) => {
     setQuantity((prev) => Math.max(1, Math.min(20, prev + delta)));
@@ -151,6 +163,30 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
               </span>
               <span className={styles.tagDivider}>•</span>
               <span className={styles.provenanceBadge}>BENGALURU KITCHEN</span>
+              {product.availability === 'sold-out' && (
+                <>
+                  <span className={styles.tagDivider}>•</span>
+                  <span style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA', padding: '2px 8px', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                    Sold Out
+                  </span>
+                </>
+              )}
+              {product.availability === 'temporarily-unavailable' && (
+                <>
+                  <span className={styles.tagDivider}>•</span>
+                  <span style={{ backgroundColor: '#FFFBEB', color: '#D97706', border: '1px solid #FDE68A', padding: '2px 8px', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                    Temporarily Unavailable
+                  </span>
+                </>
+              )}
+              {product.availability === 'coming-soon' && (
+                <>
+                  <span className={styles.tagDivider}>•</span>
+                  <span style={{ backgroundColor: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', padding: '2px 8px', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                    Coming Soon
+                  </span>
+                </>
+              )}
             </div>
 
             {/* Product Title */}
@@ -244,7 +280,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                 <button
                   type="button"
                   onClick={() => handleQuantityChange(-1)}
-                  disabled={quantity <= 1}
+                  disabled={quantity <= 1 || (product.availability && product.availability !== 'available')}
                   className={styles.stepperBtn}
                   aria-label="Decrease quantity"
                 >
@@ -254,7 +290,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                 <button
                   type="button"
                   onClick={() => handleQuantityChange(1)}
-                  disabled={quantity >= 20}
+                  disabled={quantity >= 20 || (product.availability && product.availability !== 'available')}
                   className={styles.stepperBtn}
                   aria-label="Increase quantity"
                 >
@@ -262,26 +298,55 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                 </button>
               </div>
 
-              <motion.button
-                type="button"
-                onClick={handleAddToCart}
-                className={`${styles.addToBagBtn} ${isAdded ? styles.isAdded : ''}`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-              >
-                {isAdded ? (
-                  <>
-                    <Check size={16} strokeWidth={2.5} />
-                    <span>Added to Bag</span>
-                  </>
-                ) : (
-                  <>
-                    <ShoppingBag size={16} strokeWidth={2} />
-                    <span>Add to Bag • ₹{product.price * quantity}</span>
-                  </>
-                )}
-              </motion.button>
+              {product.availability === 'sold-out' ? (
+                <button
+                  type="button"
+                  disabled
+                  className={styles.addToBagBtn}
+                  style={{ opacity: 0.6, cursor: 'not-allowed', backgroundColor: '#9CA3AF' }}
+                >
+                  <span>Sold Out — Batch Fully Allocated</span>
+                </button>
+              ) : product.availability === 'coming-soon' ? (
+                <button
+                  type="button"
+                  disabled
+                  className={styles.addToBagBtn}
+                  style={{ opacity: 0.6, cursor: 'not-allowed', backgroundColor: '#9CA3AF' }}
+                >
+                  <span>Coming Soon — Milling Fresh Soon</span>
+                </button>
+              ) : product.availability === 'temporarily-unavailable' ? (
+                <button
+                  type="button"
+                  disabled
+                  className={styles.addToBagBtn}
+                  style={{ opacity: 0.6, cursor: 'not-allowed', backgroundColor: '#9CA3AF' }}
+                >
+                  <span>Temporarily Unavailable</span>
+                </button>
+              ) : (
+                <motion.button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className={`${styles.addToBagBtn} ${isAdded ? styles.isAdded : ''}`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                >
+                  {isAdded ? (
+                    <>
+                      <Check size={16} strokeWidth={2.5} />
+                      <span>Added to Bag</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag size={16} strokeWidth={2} />
+                      <span>Add to Bag • ₹{product.price * quantity}</span>
+                    </>
+                  )}
+                </motion.button>
+              )}
             </div>
 
             {/* WhatsApp & Call Atelier Consultation Row */}
@@ -513,7 +578,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
             </div>
 
             <div className={styles.relatedGrid}>
-              {finalRelated.map((rel) => (
+              {finalRelated.map((rel: Product) => (
                 <div key={rel.id} className="product-card group">
                   <Link href={`/product/${rel.slug}`} className="product-card-link">
                     <div className="product-image-wrap">

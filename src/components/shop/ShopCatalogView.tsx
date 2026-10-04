@@ -24,29 +24,15 @@ const luxuryEase = [0.16, 1, 0.3, 1] as const;
 
 interface ShopCatalogViewProps {
   initialCategory?: ProductCategory | 'all';
+  initialProducts?: Product[];
 }
-
-const CATEGORY_TABS: { id: 'all' | ProductCategory; label: string; count: number }[] = [
-  { id: 'all', label: 'All Creations', count: PRODUCTS.length },
-  { id: 'baby-kids', label: 'Baby & Kids', count: PRODUCTS.filter((p) => p.category === 'baby-kids').length },
-  {
-    id: 'nutrition-wellness',
-    label: 'Nutrition & Wellness',
-    count: PRODUCTS.filter((p) => p.category === 'nutrition-wellness').length,
-  },
-  { id: 'skin-bath', label: 'Skin & Bath', count: PRODUCTS.filter((p) => p.category === 'skin-bath').length },
-  {
-    id: 'pantry-beverages',
-    label: 'Pantry & Beverages',
-    count: PRODUCTS.filter((p) => p.category === 'pantry-beverages').length,
-  },
-];
 
 type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'name-asc';
 
-export function ShopCatalogView({ initialCategory = 'all' }: ShopCatalogViewProps) {
+export function ShopCatalogView({ initialCategory = 'all', initialProducts }: ShopCatalogViewProps) {
   const router = useRouter();
   const { addItem, openCart } = useCart();
+  const [productsList, setProductsList] = useState<Product[]>(initialProducts || PRODUCTS);
   const [selectedCategory, setSelectedCategory] = useState<'all' | ProductCategory>(initialCategory);
   const [sortBy, setSortBy] = useState<SortOption>('featured');
   const [addedId, setAddedId] = useState<string | null>(null);
@@ -56,13 +42,41 @@ export function ShopCatalogView({ initialCategory = 'all' }: ShopCatalogViewProp
     setSelectedCategory(initialCategory);
   }, [initialCategory]);
 
+  // Revalidate live products from server API
+  useEffect(() => {
+    fetch('/api/products')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+          setProductsList(data.products);
+        }
+      })
+      .catch((err) => console.error('Error refreshing live products:', err));
+  }, []);
+
+  const categoryTabs = useMemo(() => [
+    { id: 'all' as const, label: 'All Creations', count: productsList.length },
+    { id: 'baby-kids' as const, label: 'Baby & Kids', count: productsList.filter((p) => p.category === 'baby-kids').length },
+    {
+      id: 'nutrition-wellness' as const,
+      label: 'Nutrition & Wellness',
+      count: productsList.filter((p) => p.category === 'nutrition-wellness').length,
+    },
+    { id: 'skin-bath' as const, label: 'Skin & Bath', count: productsList.filter((p) => p.category === 'skin-bath').length },
+    {
+      id: 'pantry-beverages' as const,
+      label: 'Pantry & Beverages',
+      count: productsList.filter((p) => p.category === 'pantry-beverages').length,
+    },
+  ], [productsList]);
+
   const activeCategoryInfo = useMemo(() => {
     if (selectedCategory === 'all') return null;
     return CATEGORIES.find((c) => c.id === selectedCategory) || null;
   }, [selectedCategory]);
 
   const filteredProducts = useMemo(() => {
-    let result = [...PRODUCTS];
+    let result = [...productsList];
 
     // Category filter
     if (selectedCategory !== 'all') {
@@ -87,7 +101,7 @@ export function ShopCatalogView({ initialCategory = 'all' }: ShopCatalogViewProp
     }
 
     return result;
-  }, [selectedCategory, sortBy]);
+  }, [productsList, selectedCategory, sortBy]);
 
   const handleTabChange = (catId: 'all' | ProductCategory) => {
     setSelectedCategory(catId);
@@ -153,7 +167,7 @@ export function ShopCatalogView({ initialCategory = 'all' }: ShopCatalogViewProp
           <div className="shop-toolbar-inner">
             <div className="shop-tabs-scroll-area">
               <div className="shop-tabs-pill-track">
-                {CATEGORY_TABS.map((tab) => {
+                {categoryTabs.map((tab) => {
                   const isActive = tab.id === selectedCategory;
                   return (
                     <button
@@ -216,7 +230,7 @@ export function ShopCatalogView({ initialCategory = 'all' }: ShopCatalogViewProp
         <div className="shop-meta-strip">
           <div className="shop-meta-left">
             <span className="shop-meta-count">
-              Showing <strong>{filteredProducts.length}</strong> of <strong>{PRODUCTS.length}</strong> creations
+              Showing <strong>{filteredProducts.length}</strong> of <strong>{productsList.length}</strong> creations
             </span>
           </div>
 
@@ -275,13 +289,25 @@ export function ShopCatalogView({ initialCategory = 'all' }: ShopCatalogViewProp
                         <span>{product.packSize}</span>
                       </div>
 
-                      {/* Made to order status */}
-                      {product.madeToOrder && (
+                      {/* Availability status badge */}
+                      {product.availability === 'sold-out' ? (
+                        <div className="product-badge-made" style={{ backgroundColor: 'rgba(220, 38, 38, 0.95)', color: '#FFFFFF' }}>
+                          <span>Sold Out</span>
+                        </div>
+                      ) : product.availability === 'temporarily-unavailable' ? (
+                        <div className="product-badge-made" style={{ backgroundColor: 'rgba(217, 119, 6, 0.95)', color: '#FFFFFF' }}>
+                          <span>Temp. Unavailable</span>
+                        </div>
+                      ) : product.availability === 'coming-soon' ? (
+                        <div className="product-badge-made" style={{ backgroundColor: 'rgba(37, 99, 235, 0.95)', color: '#FFFFFF' }}>
+                          <span>Coming Soon</span>
+                        </div>
+                      ) : product.madeToOrder ? (
                         <div className="product-badge-made">
                           <span className="badge-made-dot" />
                           <span>Made to Order</span>
                         </div>
-                      )}
+                      ) : null}
                     </div>
 
                     {/* Information Body */}
@@ -314,27 +340,49 @@ export function ShopCatalogView({ initialCategory = 'all' }: ShopCatalogViewProp
                           <span className="product-weight-sub">per {product.packSize}</span>
                         </div>
 
-                        <motion.button
-                          type="button"
-                          onClick={(e) => handleAdd(e, product)}
-                          className={`product-add-btn ${isAdded ? 'btn-added' : ''}`}
-                          whileHover={{ scale: 1.04 }}
-                          whileTap={{ scale: 0.94 }}
-                          transition={{ type: 'spring', stiffness: 450, damping: 20 }}
-                          aria-label={`Add ${product.name} to bag`}
-                        >
-                          {isAdded ? (
-                            <>
-                              <Check size={14} strokeWidth={2.5} />
-                              <span>Added</span>
-                            </>
-                          ) : (
-                            <>
-                              <ShoppingBag size={14} strokeWidth={2} />
-                              <span>Add to Bag</span>
-                            </>
-                          )}
-                        </motion.button>
+                        {/* Action Button: Live stock aware */}
+                        {product.availability && product.availability !== 'available' ? (
+                          <button
+                            type="button"
+                            disabled
+                            className="product-add-btn"
+                            style={{ opacity: 0.6, cursor: 'not-allowed', backgroundColor: '#9CA3AF' }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                          >
+                            <span>
+                              {product.availability === 'sold-out'
+                                ? 'Sold Out'
+                                : product.availability === 'coming-soon'
+                                ? 'Coming Soon'
+                                : 'Unavailable'}
+                            </span>
+                          </button>
+                        ) : (
+                          <motion.button
+                            type="button"
+                            onClick={(e) => handleAdd(e, product)}
+                            className={`product-add-btn ${isAdded ? 'btn-added' : ''}`}
+                            whileHover={{ scale: 1.04 }}
+                            whileTap={{ scale: 0.94 }}
+                            transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+                            aria-label={`Add ${product.name} to bag`}
+                          >
+                            {isAdded ? (
+                              <>
+                                <Check size={14} strokeWidth={2.5} />
+                                <span>Added</span>
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingBag size={14} strokeWidth={2} />
+                                <span>Add to Bag</span>
+                              </>
+                            )}
+                          </motion.button>
+                        )}
                       </div>
                     </div>
                   </Link>

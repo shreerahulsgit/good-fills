@@ -1324,9 +1324,10 @@ export function AdminDispatchView() {
                 setActiveSidebarTab('kitchen');
                 setIsMobileDrawerOpen(false);
               }}
+              title="Daily kitchen cooking, roasting, and milling planner"
             >
               <Flame size={18} />
-              <span>Kitchen Batch</span>
+              <span>Kitchen Prep</span>
               {pendingKitchenBatchCount > 0 && (
                 <span className={styles.navCountBadge} style={{ backgroundColor: 'var(--accent-terracotta)', color: '#FFFFFF' }}>
                   {pendingKitchenBatchCount}

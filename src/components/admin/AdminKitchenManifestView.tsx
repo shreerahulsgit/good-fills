@@ -33,7 +33,7 @@ interface AdminKitchenManifestViewProps {
   adminPin?: string;
 }
 
-// Authentic Atelier Culinary Specifications for Made-to-Order Bangalore Kitchen
+// Simple, Everyday Kitchen Preparation Instructions
 const KITCHEN_RECIPES: Record<string, {
   roastProfile: string;
   millingTexture: string;
@@ -41,84 +41,84 @@ const KITCHEN_RECIPES: Record<string, {
   packagingGuidance: string;
 }> = {
   'prod-01': {
-    sproutingTime: '24-hour Sprouted Moong & Ragi',
-    roastProfile: 'Gentle iron skillet roast until nutty grain aroma',
-    millingTexture: 'Ultra-fine 100-mesh silky flour for baby digestion',
-    packagingGuidance: 'Cool completely before sealing in 250g gold airtight pouches',
+    sproutingTime: 'Sprouted Green Moong & Ragi',
+    roastProfile: 'Slow roast on iron pan until warm and nutty',
+    millingTexture: 'Grind very fine and silky smooth (gentle for baby tummy)',
+    packagingGuidance: 'Let it cool down completely, then seal in 250g pouches',
   },
   'prod-02': {
-    sproutingTime: '48-hour Sprouted Mandya Finger Millet',
-    roastProfile: 'Slow wood-fired / iron skillet roast until popping aroma',
-    millingTexture: 'Velvety stone-milled powder, 100% lump-free',
-    packagingGuidance: 'Airtight nitrogen flush seal with 6-month batch stamp',
+    sproutingTime: 'Sprouted Mandya Ragi (Finger Millet)',
+    roastProfile: 'Slow roast on low flame until grains pop and smell fresh',
+    millingTexture: 'Stone grind into soft smooth powder with zero lumps',
+    packagingGuidance: 'Seal tightly in airtight pouch with today’s date stamp',
   },
   'prod-03': {
-    sproutingTime: 'Sprouted Millets & Raw Himalayan Nuts',
-    roastProfile: 'Cold-roast seeds; dry roast nuts separately to preserve oils',
-    millingTexture: 'Medium-fine digestible texture with saffron infusion',
-    packagingGuidance: 'Seal immediately to preserve delicate saffron & cardamom volatiles',
+    sproutingTime: 'Sprouted Millets with Almonds & Cashews',
+    roastProfile: 'Roast nuts and seeds gently on low flame to keep good oils',
+    millingTexture: 'Grind into soft powder and mix well with saffron & cardamom',
+    packagingGuidance: 'Seal pouch immediately to keep aroma fresh',
   },
   'prod-04': {
-    sproutingTime: '36-hour Dharwad Whole Green Gram',
-    roastProfile: 'Light golden roast to deactivate oligosaccharides',
-    millingTexture: 'Silky digestible flour, zero coarse husks',
-    packagingGuidance: 'Double-sealed moisture barrier pouch (250g)',
+    sproutingTime: 'Sprouted Whole Green Moong',
+    roastProfile: 'Light golden roast so it is very easy on digestion',
+    millingTexture: 'Grind into smooth flour and sieve out rough skins',
+    packagingGuidance: 'Seal tightly in 250g moisture-proof pouch',
   },
   'prod-05': {
-    sproutingTime: 'Traditional Karnataka Sprouted Ragi & Red Rice',
-    roastProfile: 'Slow malt roasting over low flame',
-    millingTexture: 'Double-sieved malt extract flour',
-    packagingGuidance: 'Gold zipper pouch; pack with batch dispatch label',
+    sproutingTime: 'Sprouted Ragi & Traditional Red Rice',
+    roastProfile: 'Slow roast over low flame until fragrant',
+    millingTexture: 'Grind and sieve twice for soft, smooth porridge flour',
+    packagingGuidance: 'Pack in pouch and attach batch label',
   },
   'prod-06': {
-    sproutingTime: '5 Ancient Millets (Kodo, Foxtail, Little, Barnyard, Proso)',
-    roastProfile: 'De-husked and multi-grain slow flame roasted',
-    millingTexture: 'Nutrient-dense fine porridge meal',
-    packagingGuidance: 'Pack tightly in 250g nitrogen-sealed bags',
+    sproutingTime: '5 Millets (Foxtail, Kodo, Little, Barnyard, Proso)',
+    roastProfile: 'Clean grains and slow roast evenly on low flame',
+    millingTexture: 'Grind into fine porridge powder',
+    packagingGuidance: 'Pack tightly in 250g airtight pouches',
   },
   'prod-07': {
     sproutingTime: 'Wild Kasturi Turmeric & Sun-Dried Rose Petals',
-    roastProfile: 'Zero heat processing — purely shade dried botanical blending',
-    millingTexture: 'Stone-pulverized, sieved 3 times through silk mesh',
-    packagingGuidance: 'Airtight foil pack to preserve natural essential oils',
+    roastProfile: 'Do not heat — keep natural herbs raw and dry',
+    millingTexture: 'Grind fine and sieve 3 times for silky smooth powder',
+    packagingGuidance: 'Pack in foil pouch to protect natural herbal scent',
   },
   'prod-08': {
-    sproutingTime: 'Cooling Botanicals, Neem & Green Moong',
-    roastProfile: 'Zero heat botanical shade drying',
-    millingTexture: 'Gentle body scrub grain, 100% soap-free',
-    packagingGuidance: '200g standing pouch with tamper-evident seal',
+    sproutingTime: 'Neem Leaves, Green Moong & Cooling Herbs',
+    roastProfile: 'Do not heat — keep botanicals fresh and dry',
+    millingTexture: 'Grind to a gentle bath scrub texture (not too fine)',
+    packagingGuidance: 'Pack in 200g pouch and seal securely',
   },
   'prod-09': {
-    sproutingTime: 'Sprouted Soya, Chickpeas & Raw Cold Seeds',
-    roastProfile: 'Flash roasted to eliminate phytates while keeping protein intact',
-    millingTexture: 'High-bioavailability micro-particle grind',
-    packagingGuidance: '400g moisture barrier pouch',
+    sproutingTime: 'Sprouted Soya, Chickpeas & Seeds',
+    roastProfile: 'Roast on pan to make light and easy to digest',
+    millingTexture: 'Grind into fine smooth health drink powder',
+    packagingGuidance: 'Seal in 400g moisture-proof pouch',
   },
   'prod-10': {
-    sproutingTime: '13 Himalayan & Western Ghats Wild Herbs',
-    roastProfile: 'Shade-dried Ashwagandha, Tulsi, Licorice, Mulethi',
-    millingTexture: 'Coarse botanical decoction cut (not powdered)',
-    packagingGuidance: '150g resealable aromatic pouch',
+    sproutingTime: '13 Herbs (Ashwagandha, Tulsi, Licorice, Mulethi)',
+    roastProfile: 'Clean and naturally dry herbs (no direct flame)',
+    millingTexture: 'Crush into small pieces for tea decoction (do not make fine powder)',
+    packagingGuidance: 'Pack in 150g resealable freshness pouch',
   },
   'prod-11': {
-    sproutingTime: 'Chikmagalur Plantation A Arabica & Robusta',
-    roastProfile: 'Artisan medium-dark drum roast + 20% roasted chicory',
-    millingTexture: 'Traditional South Indian brass filter drip coarse grind',
-    packagingGuidance: 'Pack warm in 500g one-way valve degassing foil bags',
+    sproutingTime: 'Chikmagalur Arabica & Robusta Coffee Beans',
+    roastProfile: 'Dark roast coffee beans blended with 20% roasted chicory',
+    millingTexture: 'Grind coarse for traditional South Indian filter coffee',
+    packagingGuidance: 'Pack in 500g coffee pouch and seal tight',
   },
   'prod-12': {
-    sproutingTime: 'Wild Western Ghats Forest Apiary',
-    roastProfile: 'Unheated, cold-settled multifloral raw honey',
-    millingTexture: 'Natural raw nectar, muslin gravity-strained',
-    packagingGuidance: '500g glass jar with tamper-proof wooden-top seal',
+    sproutingTime: 'Pure Forest Wild Honey',
+    roastProfile: 'Unheated, 100% raw wild honey',
+    millingTexture: 'Filter through clean cotton cloth (never apply heat)',
+    packagingGuidance: 'Pour into clean 500g glass jar and seal lid tightly',
   },
 };
 
 const DEFAULT_RECIPE = {
-  sproutingTime: 'Hand-selected traditional whole grains',
-  roastProfile: 'Small-batch artisanal pan roasting',
-  millingTexture: 'Traditional stone-ground fine texture',
-  packagingGuidance: 'Sealed fresh to order with batch dispatch code',
+  sproutingTime: 'Clean whole grains & ingredients',
+  roastProfile: 'Roast gently on low heat',
+  millingTexture: 'Grind smooth on stone mill',
+  packagingGuidance: 'Seal fresh in pouch with date stamp',
 };
 
 interface AggregatedBatchProduct {
@@ -320,28 +320,28 @@ export function AdminKitchenManifestView({
   const handleAdvanceAllBatch = async () => {
     const confirmedOrders = relevantOrders.filter((o) => o.orderStatus === 'Confirmed');
     if (confirmedOrders.length === 0) {
-      showToast('All batch orders are already marked as Prepared & Packed!', 'info');
+      showToast('All orders in this list are already marked as packed!', 'info');
       return;
     }
 
     if (
       !window.confirm(
-        `Advance ${confirmedOrders.length} orders to "Prepared & Packed (Processing)"? This updates customer live tracking portals.`
+        `Mark ${confirmedOrders.length} orders as cooked & packed? This will update the customer tracking page so they know their order is ready.`
       )
     ) {
       return;
     }
 
     setIsAdvancingAll(true);
-    showToast(`Advancing ${confirmedOrders.length} orders in kitchen queue...`, 'info');
+    showToast(`Updating ${confirmedOrders.length} orders in kitchen...`, 'info');
 
     try {
       for (const order of confirmedOrders) {
         await onQuickAdvance(order.id, 'Processing');
       }
-      showToast(`Batch updated! All ${confirmedOrders.length} orders marked Prepared & Packed.`, 'success');
+      showToast(`Done! All ${confirmedOrders.length} orders marked as cooked & packed.`, 'success');
     } catch {
-      showToast('Error updating some orders in batch.', 'error');
+      showToast('Could not update some orders. Please try again.', 'error');
     } finally {
       setIsAdvancingAll(false);
     }
@@ -360,15 +360,15 @@ export function AdminKitchenManifestView({
       <header className={styles.headerBanner}>
         <div className={styles.headerLeft}>
           <div className={styles.eyebrowRow}>
-            <span className={styles.eyebrow}>Bengaluru Atelier Production Deck</span>
+            <span className={styles.eyebrow}>Good Fills Kitchen</span>
             <span className={styles.liveBadge}>
               <span className={styles.liveDot} />
               <span>Live Kitchen Shift</span>
             </span>
           </div>
-          <h1 className={styles.title}>Kitchen Batch Prep Manifest & Daily Milling Planner</h1>
+          <h1 className={styles.title}>Kitchen Prep &amp; Daily Milling Guide</h1>
           <p className={styles.subtitle}>
-            Live made-to-order production queue. Aggregates all open patron orders into exact raw milling weights, pan-roasting batches, and packaging slips for zero warehouse storage.
+            Everything you need to cook, roast, grind, and pack today for customer orders. All orders are combined so you can see the exact weights to weigh and packets to fill.
           </p>
         </div>
 
@@ -380,7 +380,7 @@ export function AdminKitchenManifestView({
             title="Print clean A4 kitchen clipboard sheet"
           >
             <Printer size={15} />
-            <span>Print Kitchen Sheet</span>
+            <span>Print Prep Sheet</span>
           </button>
 
           <button
@@ -388,10 +388,10 @@ export function AdminKitchenManifestView({
             onClick={handleAdvanceAllBatch}
             disabled={isAdvancingAll || relevantOrders.length === 0}
             className={styles.advanceAllBtn}
-            title="Advance all confirmed orders in this batch to Prepared & Packed"
+            title="Mark all confirmed orders in this list as packed and ready"
           >
             <CheckCircle2 size={15} />
-            <span>{isAdvancingAll ? 'Updating Orders...' : 'Mark Batch Prepared & Packed'}</span>
+            <span>{isAdvancingAll ? 'Updating Orders...' : 'Mark All as Packed ✓'}</span>
           </button>
         </div>
       </header>
@@ -400,25 +400,25 @@ export function AdminKitchenManifestView({
       <section className={styles.metricsGrid} aria-label="Kitchen Batch Metrics">
         <div className={styles.metricCard}>
           <div className={styles.metricHeader}>
-            <span className={styles.metricLabel}>Batch Queue</span>
+            <span className={styles.metricLabel}>Orders to Cook &amp; Pack</span>
             <Clock size={16} className={styles.metricIcon} />
           </div>
           <div className={styles.metricValue}>{totalOrdersInBatch}</div>
-          <div className={styles.metricSubtext}>Open patron orders to prepare</div>
+          <div className={styles.metricSubtext}>Orders waiting for kitchen prep</div>
         </div>
 
         <div className={styles.metricCard}>
           <div className={styles.metricHeader}>
-            <span className={styles.metricLabel}>Packs to Fill</span>
+            <span className={styles.metricLabel}>Packets to Fill</span>
             <Package size={16} className={styles.metricIcon} />
           </div>
           <div className={styles.metricValue}>{totalPacksInBatch}</div>
-          <div className={styles.metricSubtext}>Airtight pouches to seal warm</div>
+          <div className={styles.metricSubtext}>Total pouches to fill and seal</div>
         </div>
 
         <div className={styles.metricCard}>
           <div className={styles.metricHeader}>
-            <span className={styles.metricLabel}>Raw Milling Weight</span>
+            <span className={styles.metricLabel}>Total Grain Weight</span>
             <Scale size={16} className={styles.metricIcon} />
           </div>
           <div className={styles.metricValue}>
@@ -426,12 +426,12 @@ export function AdminKitchenManifestView({
               ? `${(totalNetGramsInBatch / 1000).toFixed(2)} kg`
               : `${totalNetGramsInBatch} g`}
           </div>
-          <div className={styles.metricSubtext}>Total sprouted grains & botanicals</div>
+          <div className={styles.metricSubtext}>Total ingredients to weigh &amp; grind</div>
         </div>
 
         <div className={styles.metricCard}>
           <div className={styles.metricHeader}>
-            <span className={styles.metricLabel}>Prep Checklist</span>
+            <span className={styles.metricLabel}>Kitchen Progress</span>
             <ChefHat size={16} className={styles.metricIcon} />
           </div>
           <div className={styles.metricValue}>{checklistPercent}%</div>
@@ -439,7 +439,7 @@ export function AdminKitchenManifestView({
             <div className={styles.progressBarFill} style={{ width: `${checklistPercent}%` }} />
           </div>
           <div className={styles.metricSubtext} style={{ marginTop: '4px' }}>
-            {completedChecklistItems} of {totalChecklistItems} kitchen steps completed
+            {completedChecklistItems} of {totalChecklistItems} prep steps done
           </div>
         </div>
       </section>
@@ -453,9 +453,9 @@ export function AdminKitchenManifestView({
             onChange={(e) => setStatusFilter(e.target.value as any)}
             aria-label="Filter by order status"
           >
-            <option value="pending">Queue: Confirmed (Needs Prep)</option>
-            <option value="all-active">Queue: Confirmed + Packed</option>
-            <option value="all">Queue: All Recent Orders</option>
+            <option value="pending">Waiting to be Prepared</option>
+            <option value="all-active">In Progress &amp; Packed</option>
+            <option value="all">All Recent Orders</option>
           </select>
 
           <select
@@ -464,9 +464,9 @@ export function AdminKitchenManifestView({
             onChange={(e) => setDateFilter(e.target.value as any)}
             aria-label="Filter by date range"
           >
-            <option value="all">All Pending Fulfillment</option>
-            <option value="today">Today&apos;s Orders Only</option>
-            <option value="48h">Past 48 Hours</option>
+            <option value="all">All Pending Orders</option>
+            <option value="today">Today&apos;s Orders</option>
+            <option value="48h">Past 2 Days</option>
           </select>
 
           <select
@@ -477,7 +477,7 @@ export function AdminKitchenManifestView({
           >
             <option value="all">All Categories</option>
             <option value="baby-kids">Baby &amp; Kids</option>
-            <option value="nutrition-wellness">Nutrition &amp; Wellness</option>
+            <option value="nutrition-wellness">Health &amp; Wellness</option>
             <option value="pantry-beverages">Pantry &amp; Beverages</option>
             <option value="skin-bath">Skin &amp; Bath</option>
           </select>
@@ -487,7 +487,7 @@ export function AdminKitchenManifestView({
           <Search size={14} color="var(--text-muted)" />
           <input
             type="text"
-            placeholder="Search grain or recipe..."
+            placeholder="Search by item or ingredient..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={styles.searchInput}
@@ -500,9 +500,9 @@ export function AdminKitchenManifestView({
         <div className={styles.sectionBlockHeader}>
           <div>
             <h2 className={styles.sectionBlockTitle}>
-              Today&apos;s Roasting &amp; Milling Deck ({aggregatedProducts.length} Creations)
+              Items to Roast &amp; Grind Today ({aggregatedProducts.length} items)
             </h2>
-            <span className={styles.sectionBlockCount}>{todayFormatted} • Small-Batch Made-to-Order</span>
+            <span className={styles.sectionBlockCount}>{todayFormatted} • Made Fresh for Today&apos;s Orders</span>
           </div>
         </div>
 
@@ -510,10 +510,10 @@ export function AdminKitchenManifestView({
           <div className={styles.emptyState}>
             <CheckCircle2 size={40} color="#22c55e" style={{ margin: '0 auto 12px' }} />
             <h3 style={{ margin: '0 0 6px 0', fontSize: '1.2rem', fontWeight: 700 }}>
-              All Kitchen Batches Complete!
+              All Kitchen Prep is Done!
             </h3>
             <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-              There are no pending confirmed orders waiting for kitchen preparation under the selected filters.
+              There are no orders waiting to be cooked or ground right now.
             </p>
           </div>
         ) : (
@@ -541,7 +541,7 @@ export function AdminKitchenManifestView({
                           <span className={styles.cardProductCategory}>{batch.category.replace('-', ' & ')}</span>
                           <h3 className={styles.cardProductName}>{batch.productName}</h3>
                           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            Pack: {batch.packSize}
+                            Pack size: {batch.packSize}
                           </span>
                         </div>
                       </div>
@@ -553,18 +553,18 @@ export function AdminKitchenManifestView({
                             : `${batch.totalGrams} g`}
                         </span>
                         <span className={styles.weightPacksLabel}>
-                          {batch.totalQuantity} {batch.totalQuantity === 1 ? 'pack' : 'packs'} to fill
+                          {batch.totalQuantity} {batch.totalQuantity === 1 ? 'packet' : 'packets'} to pack
                         </span>
                       </div>
                     </div>
 
-                    {/* Atelier Kitchen Preparation Specs */}
+                    {/* How to prepare & make */}
                     <div className={styles.recipeGuideBox} style={{ marginTop: 'var(--space-3)' }}>
-                      <span className={styles.recipeTitle}>Traditional Roasting &amp; Milling Specs:</span>
-                      <div>• <strong>Grain:</strong> {batch.recipe.sproutingTime}</div>
-                      <div>• <strong>Roast:</strong> {batch.recipe.roastProfile}</div>
-                      <div>• <strong>Grind:</strong> {batch.recipe.millingTexture}</div>
-                      <div>• <strong>Pack:</strong> {batch.recipe.packagingGuidance}</div>
+                      <span className={styles.recipeTitle}>How to Prepare &amp; Make:</span>
+                      <div>• <strong>Ingredients:</strong> {batch.recipe.sproutingTime}</div>
+                      <div>• <strong>Roasting:</strong> {batch.recipe.roastProfile}</div>
+                      <div>• <strong>Grinding:</strong> {batch.recipe.millingTexture}</div>
+                      <div>• <strong>Packing:</strong> {batch.recipe.packagingGuidance}</div>
                     </div>
                   </div>
 
@@ -575,40 +575,40 @@ export function AdminKitchenManifestView({
                         <span className={`${styles.customCheckbox} ${itemCheck.weighed ? styles.customCheckboxChecked : ''}`}>
                           {itemCheck.weighed && <Check size={11} strokeWidth={3} />}
                         </span>
-                        <span>1. Weighed Raw Grains ({batch.totalGrams}g)</span>
+                        <span>1. Weigh ingredients ({batch.totalGrams}g)</span>
                       </label>
 
                       <label className={styles.checklistItem} onClick={() => toggleChecklistStep(batch.productId, 'roasted')}>
                         <span className={`${styles.customCheckbox} ${itemCheck.roasted ? styles.customCheckboxChecked : ''}`}>
                           {itemCheck.roasted && <Check size={11} strokeWidth={3} />}
                         </span>
-                        <span>2. Pan / Skillet Roasted Warm</span>
+                        <span>2. Roast on pan</span>
                       </label>
 
                       <label className={styles.checklistItem} onClick={() => toggleChecklistStep(batch.productId, 'milled')}>
                         <span className={`${styles.customCheckbox} ${itemCheck.milled ? styles.customCheckboxChecked : ''}`}>
                           {itemCheck.milled && <Check size={11} strokeWidth={3} />}
                         </span>
-                        <span>3. Stone Milled &amp; Mesh Sieved</span>
+                        <span>3. Grind on stone mill &amp; sieve</span>
                       </label>
 
                       <label className={styles.checklistItem} onClick={() => toggleChecklistStep(batch.productId, 'packed')}>
                         <span className={`${styles.customCheckbox} ${itemCheck.packed ? styles.customCheckboxChecked : ''}`}>
                           {itemCheck.packed && <Check size={11} strokeWidth={3} />}
                         </span>
-                        <span>4. Foil Sealed &amp; Labeled ({batch.totalQuantity} pouches)</span>
+                        <span>4. Pack in pouches &amp; label ({batch.totalQuantity} packets)</span>
                       </label>
                     </div>
 
-                    {/* Associated Patron Orders */}
+                    {/* Associated Customer Orders */}
                     <div style={{ marginTop: 'var(--space-3)' }}>
                       <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>
-                        Required for Orders:
+                        Needed for orders:
                       </span>
                       <div className={styles.orderRefsDeck}>
                         {batch.orderRefs.map((ref, idx) => (
                           <span key={idx} className={styles.orderRefPill} title={`${ref.customerName} (${ref.city})`}>
-                            #{ref.orderId.slice(-6)} ({ref.quantity}x)
+                            Order #{ref.orderId.slice(-6)} ({ref.quantity} pack)
                           </span>
                         ))}
                       </div>
@@ -626,9 +626,9 @@ export function AdminKitchenManifestView({
         <div className={styles.sectionBlockHeader}>
           <div>
             <h2 className={styles.sectionBlockTitle}>
-              Order Packaging Slips ({relevantOrders.length} Orders)
+              Customer Orders &amp; Packing List ({relevantOrders.length} Orders)
             </h2>
-            <span className={styles.sectionBlockCount}>Cross-reference individual parcels and pack contents</span>
+            <span className={styles.sectionBlockCount}>Check each customer&apos;s order and mark them as packed once ready</span>
           </div>
         </div>
 
@@ -636,10 +636,10 @@ export function AdminKitchenManifestView({
           <table className={styles.manifestTable}>
             <thead>
               <tr>
-                <th>Order Ref</th>
-                <th>Patron &amp; City</th>
-                <th>Kitchen Creations Breakdown</th>
-                <th>Net Weight</th>
+                <th>Order #</th>
+                <th>Customer &amp; City</th>
+                <th>Items to Pack</th>
+                <th>Total Weight</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
@@ -695,12 +695,12 @@ export function AdminKitchenManifestView({
                       <td>
                         {isConfirmed && (
                           <span className={styles.statusPillConfirmed}>
-                            Needs Prep
+                            Needs Cooking
                           </span>
                         )}
                         {isProcessing && (
                           <span className={styles.statusPillProcessing}>
-                            Prepared &amp; Packed
+                            Packed &amp; Ready
                           </span>
                         )}
                         {!isConfirmed && !isProcessing && (
@@ -716,14 +716,14 @@ export function AdminKitchenManifestView({
                             type="button"
                             onClick={() => onQuickAdvance(order.id, 'Processing')}
                             className={styles.actionBtnPrepared}
-                            title="Mark this order freshly prepared and packed"
+                            title="Mark this order freshly cooked and packed"
                           >
                             Mark Packed ✓
                           </button>
                         )}
                         {isProcessing && (
                           <span style={{ fontSize: '0.78rem', color: '#166534', fontWeight: 700 }}>
-                            Ready for DTDC
+                            Ready for Courier Pickup
                           </span>
                         )}
                       </td>

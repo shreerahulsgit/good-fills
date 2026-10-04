@@ -740,3 +740,13 @@ export function addFounderReply(reviewId: string, message: string): Review | nul
   }
   return null;
 }
+
+/**
+ * Resets reviews store back to original authentic seed reviews
+ */
+export function resetReviewsToSeed(): void {
+  initReviewsStore();
+  reviewsCache.clear();
+  INITIAL_REVIEWS.forEach((rev) => reviewsCache.set(rev.id, { ...rev }));
+  persistReviews();
+}

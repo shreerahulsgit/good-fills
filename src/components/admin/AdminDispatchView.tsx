@@ -180,6 +180,7 @@ export function AdminDispatchView() {
   // Inquiries Desk State
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [isLoadingInquiries, setIsLoadingInquiries] = useState(false);
+  const [isResettingData, setIsResettingData] = useState(false);
 
   // Products Management State
   const [products, setProducts] = useState<Product[]>([]);
@@ -355,6 +356,43 @@ export function AdminDispatchView() {
       }
     } catch {
       showToast('Failed to update inquiry status', 'error');
+    }
+  };
+
+  const handleResetTestData = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to erase all test data?\n\nThis will completely wipe:\n- All customer orders & dispatch consignments\n- All patron accounts & saved addresses\n- All contact inquiries & messages\n- All test reviews\n\nYour 13 artisanal product creations will remain intact.'
+    );
+    if (!confirmed) return;
+
+    setIsResettingData(true);
+    const activePin = pin || (typeof window !== 'undefined' ? sessionStorage.getItem('goodfills_admin_pin') || '2026' : '2026');
+
+    try {
+      const res = await fetch(`/api/admin/reset?pin=${activePin}`, {
+        method: 'POST',
+        headers: { 'x-admin-pin': activePin },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setOrders([]);
+        setEditStates({});
+        setSelectedOrderIds([]);
+        setInquiries([]);
+        try {
+          localStorage.removeItem('good_fills_orders');
+          localStorage.removeItem('gf_patron_auth');
+          localStorage.removeItem('gf_cart');
+          localStorage.removeItem('gf_helpful_reviews');
+        } catch {}
+        showToast('All test orders, customers, and inquiries erased!', 'success');
+      } else {
+        throw new Error(data.error || 'Failed to erase data');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Error erasing test data', 'error');
+    } finally {
+      setIsResettingData(false);
     }
   };
 
@@ -1394,6 +1432,17 @@ export function AdminDispatchView() {
             <button onClick={handleLogout} className={styles.footerLinkBtn}>
               <LogOut size={15} />
               <span>Lock Console</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleResetTestData}
+              disabled={isResettingData}
+              className={styles.footerLinkBtn}
+              style={{ color: '#DC2626', marginTop: '6px' }}
+              title="Wipe test orders, customers, and inquiries for a clean slate"
+            >
+              <Trash2 size={15} />
+              <span>{isResettingData ? 'Erasing...' : 'Reset Test Data'}</span>
             </button>
           </div>
         </div>

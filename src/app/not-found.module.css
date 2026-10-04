@@ -1,0 +1,229 @@
+.pageWrapper {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px 100px;
+  background-color: var(--bg-canvas, #FAF8F5);
+}
+
+.container {
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.eyebrowTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background-color: #FAF2EB;
+  border: 1px solid rgba(158, 74, 40, 0.2);
+  color: var(--accent-terracotta, #9E4A28);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 24px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--accent-terracotta, #9E4A28);
+}
+
+.bigCode {
+  font-family: var(--font-serif, 'Playfair Display', serif);
+  font-size: clamp(4.5rem, 10vw, 7.5rem);
+  font-weight: 300;
+  color: rgba(158, 74, 40, 0.18);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  margin: 0 auto 12px;
+  user-select: none;
+}
+
+.title {
+  font-family: var(--font-serif, 'Playfair Display', serif);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 400;
+  color: #1A1A1A;
+  line-height: 1.2;
+  margin: 0 0 16px;
+}
+
+.title em {
+  font-style: italic;
+  font-family: var(--font-serif, 'Playfair Display', serif);
+  color: var(--accent-terracotta, #9E4A28);
+}
+
+.description {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.98rem;
+  color: #555555;
+  line-height: 1.6;
+  max-width: 580px;
+  margin: 0 auto 36px;
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  background-color: var(--accent-terracotta, #9E4A28);
+  color: #FFFFFF;
+  text-decoration: none;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 1px solid var(--accent-terracotta, #9E4A28);
+  transition: all 0.2s ease;
+}
+
+.primaryBtn:hover {
+  background-color: #83391B;
+  border-color: #83391B;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(158, 74, 40, 0.2);
+}
+
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 24px;
+  background-color: transparent;
+  color: #2D2D2D;
+  text-decoration: none;
+  font-size: 0.84rem;
+  font-weight: 600;
+  border: 1px solid #D5CFC9;
+  transition: all 0.2s ease;
+}
+
+.secondaryBtn:hover {
+  background-color: #FFFFFF;
+  border-color: #1A1A1A;
+  color: #000000;
+  transform: translateY(-1px);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0 auto 32px;
+  max-width: 460px;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background-color: #E6E1DC;
+}
+
+.dividerLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #888888;
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.categoryCard {
+  background-color: #FFFFFF;
+  border: 1px solid #EBE5DF;
+  padding: 18px 12px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.categoryCard:hover {
+  border-color: var(--accent-terracotta, #9E4A28);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.categoryIcon {
+  color: var(--accent-terracotta, #9E4A28);
+}
+
+.categoryName {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #222222;
+  text-align: center;
+}
+
+.categorySub {
+  font-size: 0.68rem;
+  color: #888888;
+}
+
+.supportFooter {
+  padding-top: 24px;
+  border-top: 1px solid #ECE7E2;
+  font-size: 0.82rem;
+  color: #666666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.supportLink {
+  color: var(--accent-terracotta, #9E4A28);
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.supportLink:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .categoryGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .actionRow {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .primaryBtn, .secondaryBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}

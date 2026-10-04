@@ -1085,6 +1085,50 @@ button {
   color: #FFFFFF;
 }
 
+.product-inline-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--accent-terracotta);
+  border-radius: 0px;
+  overflow: hidden;
+  height: 38px;
+}
+
+.stepper-action-btn {
+  background: transparent;
+  border: none;
+  padding: 0 10px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-terracotta);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.stepper-action-btn:hover {
+  background-color: var(--accent-terracotta);
+  color: #FFFFFF;
+}
+
+.stepper-count-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 0 8px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  background-color: var(--bg-cream);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid rgba(151, 65, 29, 0.2);
+  border-right: 1px solid rgba(151, 65, 29, 0.2);
+}
+
 /* ========================================================
    HOMEPAGE — CATEGORY PORTALS (EXPLORE BY FAMILY)
    ======================================================== */

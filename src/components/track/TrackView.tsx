@@ -269,7 +269,7 @@ export function TrackView() {
                       textDecoration: 'none',
                       marginRight: '12px',
                       padding: '3px 8px',
-                      borderRadius: '6px',
+                      borderRadius: 0,
                       backgroundColor: 'rgba(151, 65, 29, 0.08)'
                     }}
                     title="View & Download Official Invoice"

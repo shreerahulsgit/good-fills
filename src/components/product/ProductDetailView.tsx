@@ -74,8 +74,7 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
   const handleAddToCart = () => {
     addItem(product, quantity);
     setIsAdded(true);
-    setTimeout(() => setIsAdded(false), 1500);
-    openCart();
+    setTimeout(() => setIsAdded(false), 1800);
   };
 
   const getPreparationGuidance = (category: ProductCategory) => {

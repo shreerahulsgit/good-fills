@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import {
   ShoppingBag,
   Check,
+  Minus,
+  Plus,
   SlidersHorizontal,
   Clock,
   Truck,
@@ -31,7 +33,7 @@ type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'name-asc';
 
 export function ShopCatalogView({ initialCategory = 'all', initialProducts }: ShopCatalogViewProps) {
   const router = useRouter();
-  const { addItem, openCart } = useCart();
+  const { addItem, updateQuantity, items } = useCart();
   const [productsList, setProductsList] = useState<Product[]>(initialProducts || PRODUCTS);
   const [selectedCategory, setSelectedCategory] = useState<'all' | ProductCategory>(initialCategory);
   const [sortBy, setSortBy] = useState<SortOption>('featured');
@@ -118,7 +120,6 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
     addItem(product, 1);
     setAddedId(product.id);
     setTimeout(() => setAddedId(null), 1400);
-    openCart();
   };
 
   return (
@@ -258,6 +259,8 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
           <AnimatePresence>
             {filteredProducts.map((product) => {
               const isAdded = addedId === product.id;
+              const inCartItem = items.find((i) => i.product.id === product.id);
+              const inCartQty = inCartItem?.quantity || 0;
               const ingredientHighlights =
                 product.ingredients && product.ingredients.length > 0
                   ? product.ingredients.slice(0, 3).join(' • ')
@@ -360,6 +363,40 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
                                 : 'Unavailable'}
                             </span>
                           </button>
+                        ) : inCartQty > 0 ? (
+                          <div
+                            className="product-inline-stepper"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                          >
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                updateQuantity(product.id, inCartQty - 1);
+                              }}
+                              className="stepper-action-btn"
+                              aria-label={`Decrease ${product.name} quantity`}
+                            >
+                              <Minus size={13} strokeWidth={2.5} />
+                            </button>
+                            <span className="stepper-count-label">{inCartQty} in bag</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                updateQuantity(product.id, inCartQty + 1);
+                              }}
+                              className="stepper-action-btn"
+                              aria-label={`Increase ${product.name} quantity`}
+                            >
+                              <Plus size={13} strokeWidth={2.5} />
+                            </button>
+                          </div>
                         ) : (
                           <motion.button
                             type="button"
@@ -373,7 +410,7 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
                             {isAdded ? (
                               <>
                                 <Check size={14} strokeWidth={2.5} />
-                                <span>Added</span>
+                                <span>Added ✓</span>
                               </>
                             ) : (
                               <>

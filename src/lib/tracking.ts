@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Order, ShippingAddress } from '@/types';
 import { PRODUCTS } from '@/data/products';
-import { getAllServerOrdersAsync } from '@/lib/server-orders';
+import { getAllServerOrders, getAllServerOrdersAsync } from '@/lib/server-orders';
 
 export type MilestoneStatus = 'completed' | 'in_progress' | 'pending';
 
@@ -345,45 +345,74 @@ export function buildTrackingTelemetry(order: Order, forcedStage?: number): Trac
     packageSpecs,
     milestones,
     items,
-    subtotal: order.subtotal || 225,
-    shippingCost: order.shippingCost || 100,
-    total: order.total || 325,
+    subtotal: typeof order.subtotal === 'number' ? order.subtotal : (order.total || 0),
+    shippingCost: typeof order.shippingCost === 'number' ? order.shippingCost : 0,
+    total: typeof order.total === 'number' ? order.total : 0,
   };
 }
 
 /**
- * Searches orders by Order ID, DTDC tracking number, or phone number
+ * Searches orders by Order ID, DTDC tracking number, phone number, or email address
  */
 export async function searchTrackingOrder(query: string): Promise<TrackingTelemetryResult | null> {
-  const cleanQuery = query.trim().toUpperCase();
-  if (!cleanQuery) return null;
+  const rawQuery = (query || '').trim();
+  if (!rawQuery) return null;
+  const cleanQuery = rawQuery.toUpperCase();
 
-  let orders = loadOrdersFromDisk();
+  // Combine loaded disk orders + in-memory cached orders
+  const diskOrders = loadOrdersFromDisk();
+  let serverOrders: Order[] = [];
+  try {
+    serverOrders = getAllServerOrders();
+  } catch {}
+
+  const ordersMap = new Map<string, Order>();
+  diskOrders.forEach((o) => ordersMap.set(o.id, o));
+  serverOrders.forEach((o) => ordersMap.set(o.id, o));
+  let orders = Array.from(ordersMap.values()).sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 
   const findMatch = (list: Order[]) => {
-    // 1. Direct match by Order ID (e.g. "ORD-7776")
-    const idMatch = list.find(
-      (o) =>
-        o.id.toUpperCase() === cleanQuery ||
-        o.id.toUpperCase().replace(/\D/g, '') === cleanQuery.replace(/\D/g, '')
-    );
+    // 1. Direct match by Order ID (e.g. "ORD-5616" or "5616")
+    const idDigits = cleanQuery.replace(/\D/g, '');
+    const idMatch = list.find((o) => {
+      const oIdUpper = o.id.toUpperCase();
+      if (oIdUpper === cleanQuery) return true;
+      if (idDigits.length >= 4 && oIdUpper.replace(/\D/g, '') === idDigits) return true;
+      return false;
+    });
     if (idMatch) return buildTrackingTelemetry(idMatch);
 
-    // 2. Direct match by DTDC Consignment number
-    const awbMatch = list.find(
-      (o) => o.trackingNumber && o.trackingNumber.toUpperCase() === cleanQuery
-    );
+    // 2. Direct match by DTDC Consignment number (AWB)
+    const awbMatch = list.find((o) => {
+      if (!o.trackingNumber) return false;
+      const cleanAwb = o.trackingNumber.trim().toUpperCase().replace(/\s+/g, '');
+      const testAwb = cleanQuery.replace(/\s+/g, '');
+      return cleanAwb === testAwb;
+    });
     if (awbMatch) return buildTrackingTelemetry(awbMatch);
 
-    // 3. Match by Phone Number (last 10 digits)
-    const phoneDigits = cleanQuery.replace(/\D/g, '');
+    // 3. Match by Phone Number (last 10 digits or 8+ digits)
+    const phoneDigits = cleanQuery.replace(/\D/g, '').slice(-10);
     if (phoneDigits.length >= 8) {
       const phoneMatch = list.find((o) => {
-        const oDigits = (o.customerPhone || '').replace(/\D/g, '');
-        return oDigits.endsWith(phoneDigits) || phoneDigits.endsWith(oDigits);
+        const oPhone = (o.customerPhone || o.shippingAddress?.phone || '').replace(/\D/g, '').slice(-10);
+        return oPhone && (oPhone.endsWith(phoneDigits) || phoneDigits.endsWith(oPhone));
       });
       if (phoneMatch) return buildTrackingTelemetry(phoneMatch);
     }
+
+    // 4. Match by Email Address
+    if (rawQuery.includes('@')) {
+      const testEmail = rawQuery.toLowerCase();
+      const emailMatch = list.find((o) => {
+        const oEmail = (o.customerEmail || o.shippingAddress?.email || '').trim().toLowerCase();
+        return oEmail === testEmail;
+      });
+      if (emailMatch) return buildTrackingTelemetry(emailMatch);
+    }
+
     return null;
   };
 

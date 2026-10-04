@@ -21,10 +21,13 @@ import {
   Trash2,
   Check,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  FileText,
+  Copy
 } from 'lucide-react';
 import { Order, ShippingAddress } from '@/types';
 import { useCustomerAuth } from '@/lib/customer-auth-context';
+import { useCart } from '@/lib/cart-context';
 import { 
   signInWithGoogle, 
   signInWithEmail, 
@@ -36,10 +39,13 @@ import styles from './AccountView.module.css';
 export function AccountView() {
   const searchParams = useSearchParams();
   const { currentUser, orders, login, logout, updateUser, isLoading: isLoadingSession } = useCustomerAuth();
+  const { addItem, openCart } = useCart();
 
   // Authentication state
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [copiedAwb, setCopiedAwb] = useState<string | null>(null);
+  const [reorderingOrderId, setReorderingOrderId] = useState<string | null>(null);
 
   // 2-Way Authentication State (Google + Email/Password)
   const [authMode, setAuthMode] = useState<'signin' | 'register'>('signin');
@@ -450,6 +456,30 @@ export function AccountView() {
     }
   };
 
+  const handleCopyAwb = (awb: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    navigator.clipboard.writeText(awb);
+    setCopiedAwb(awb);
+    setTimeout(() => setCopiedAwb(null), 2400);
+  };
+
+  const handleReorder = (order: Order) => {
+    setReorderingOrderId(order.id);
+    let itemsAdded = 0;
+    order.items.forEach((item) => {
+      if (item.product) {
+        addItem(item.product, item.quantity);
+        itemsAdded++;
+      }
+    });
+    if (itemsAdded > 0) {
+      openCart();
+    }
+    setTimeout(() => {
+      setReorderingOrderId(null);
+    }, 2200);
+  };
+
   // Loading session check
   if (isLoadingSession) {
     return (
@@ -619,6 +649,23 @@ export function AccountView() {
           <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
             <span>🔒 Secure account access. Zero SMS spam or carrier delivery delays.</span>
           </div>
+
+          <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px dashed var(--border-hairline)', textAlign: 'center' }}>
+            <Link
+              href="/track"
+              style={{
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                color: 'var(--accent-terracotta)',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <Truck size={14} /> Looking for quick order tracking? Track with Order ID or Mobile ↗
+            </Link>
+          </div>
         </div>
       </main>
     );
@@ -729,7 +776,24 @@ export function AccountView() {
                             <span className={styles.orderIdText}>{order.id}</span>
                             <span className={styles.orderDateText}>Placed on {formatDate(order.createdAt)}</span>
                           </div>
-                          <div>{getStatusBadge(order)}</div>
+                          <div className={styles.orderCardTopRight}>
+                            {order.trackingNumber && (
+                              <div className={styles.dtdcAwbPill} title="DTDC Express Consignment Tracking">
+                                <span className={styles.dtdcBrand}>DTDC</span>
+                                <span className={styles.awbCode}>{order.trackingNumber}</span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleCopyAwb(order.trackingNumber!, e)}
+                                  className={styles.copyAwbBtn}
+                                  title="Copy Consignment Number"
+                                >
+                                  {copiedAwb === order.trackingNumber ? <Check size={11} color="#27ae60" /> : <Copy size={11} />}
+                                  <span>{copiedAwb === order.trackingNumber ? 'Copied' : 'Copy'}</span>
+                                </button>
+                              </div>
+                            )}
+                            <div>{getStatusBadge(order)}</div>
+                          </div>
                         </div>
 
                         {/* Order Body: Products + Summary */}
@@ -769,17 +833,53 @@ export function AccountView() {
                             </div>
                             <div className={styles.summaryRow}>
                               <span style={{ color: 'var(--text-secondary)' }}>Doorstep Courier:</span>
-                              <span style={{ color: '#27ae60', fontWeight: 600 }}>FREE</span>
+                              {order.shippingCost && order.shippingCost > 0 ? (
+                                <span>₹{order.shippingCost.toLocaleString('en-IN')}</span>
+                              ) : (
+                                <span style={{ color: '#27ae60', fontWeight: 600 }}>FREE</span>
+                              )}
                             </div>
                             <div className={`${styles.summaryRow} ${styles.totalRow}`}>
                               <span>Order Total:</span>
                               <span>₹{order.total.toLocaleString('en-IN')}</span>
                             </div>
 
-                            {/* Direct Tracking Action */}
-                            <Link href={`/track?id=${order.id}`} className={styles.trackActionBtn}>
-                              <Truck size={14} /> Track Live Delivery ↗
-                            </Link>
+                            {/* Actions Group */}
+                            <div className={styles.orderActionsRow}>
+                              <Link href={`/track?id=${order.id}`} className={styles.trackActionBtn}>
+                                <Truck size={14} /> Track Live Delivery ↗
+                              </Link>
+
+                              <div className={styles.secondaryActionsGroup}>
+                                <Link 
+                                  href={`/invoice/${order.id}`} 
+                                  className={styles.invoiceActionBtn}
+                                  title="View & Download Official Tax Invoice"
+                                >
+                                  <FileText size={13} />
+                                  <span>Tax Invoice</span>
+                                </Link>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleReorder(order)}
+                                  className={styles.reorderActionBtn}
+                                  title="Reorder all items from this order into your cart"
+                                >
+                                  {reorderingOrderId === order.id ? (
+                                    <>
+                                      <Check size={13} style={{ color: '#27ae60' }} />
+                                      <span>Added to Bag</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ShoppingBag size={13} />
+                                      <span>Reorder Items</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            </div>
 
                             {/* Delivery Address Note */}
                             {order.shippingAddress && (

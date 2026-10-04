@@ -1,52 +1,84 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { CustomerUser, Order, ShippingAddress } from '@/types';
+import { getAllServerOrders } from '@/lib/server-orders';
 
-const DATA_DIR = path.join(process.cwd(), '.data');
-const ORDERS_FILE = path.join(DATA_DIR, 'server-orders.json');
-const CUSTOMERS_FILE = path.join(DATA_DIR, 'customers.json');
+const PRIMARY_DATA_DIR = path.join(process.cwd(), '.data');
+const PRIMARY_ORDERS_FILE = path.join(PRIMARY_DATA_DIR, 'server-orders.json');
+const PRIMARY_CUSTOMERS_FILE = path.join(PRIMARY_DATA_DIR, 'customers.json');
 
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
+const TMP_DATA_DIR = path.join(os.tmpdir(), 'good-fills-data');
+const TMP_ORDERS_FILE = path.join(TMP_DATA_DIR, 'server-orders.json');
+const TMP_CUSTOMERS_FILE = path.join(TMP_DATA_DIR, 'customers.json');
+
+function ensureDataDirs() {
+  if (!fs.existsSync(PRIMARY_DATA_DIR)) {
     try {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    } catch {
-      // Ignore in read-only environments
-    }
+      fs.mkdirSync(PRIMARY_DATA_DIR, { recursive: true });
+    } catch {}
+  }
+  if (!fs.existsSync(TMP_DATA_DIR)) {
+    try {
+      fs.mkdirSync(TMP_DATA_DIR, { recursive: true });
+    } catch {}
   }
 }
 
 function loadOrders(): Order[] {
   try {
-    if (fs.existsSync(ORDERS_FILE)) {
-      const data = JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));
-      if (Array.isArray(data)) return data;
+    const list = getAllServerOrders();
+    if (Array.isArray(list) && list.length > 0) return list;
+  } catch {}
+
+  const ordersMap = new Map<string, Order>();
+  try {
+    if (fs.existsSync(PRIMARY_ORDERS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(PRIMARY_ORDERS_FILE, 'utf8'));
+      if (Array.isArray(data)) data.forEach((o: Order) => ordersMap.set(o.id, o));
     }
-  } catch (err) {
-    console.error('Error loading orders in server-customer:', err);
-  }
-  return [];
+  } catch {}
+
+  try {
+    if (fs.existsSync(TMP_ORDERS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(TMP_ORDERS_FILE, 'utf8'));
+      if (Array.isArray(data)) data.forEach((o: Order) => ordersMap.set(o.id, o));
+    }
+  } catch {}
+
+  return Array.from(ordersMap.values()).sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 }
 
 function loadCustomers(): Record<string, CustomerUser> {
+  const map: Record<string, CustomerUser> = {};
   try {
-    if (fs.existsSync(CUSTOMERS_FILE)) {
-      const data = JSON.parse(fs.readFileSync(CUSTOMERS_FILE, 'utf8'));
-      if (data && typeof data === 'object') return data;
+    if (fs.existsSync(PRIMARY_CUSTOMERS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(PRIMARY_CUSTOMERS_FILE, 'utf8'));
+      if (data && typeof data === 'object') Object.assign(map, data);
     }
-  } catch (err) {
-    console.error('Error loading customers:', err);
-  }
-  return {};
+  } catch {}
+
+  try {
+    if (fs.existsSync(TMP_CUSTOMERS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(TMP_CUSTOMERS_FILE, 'utf8'));
+      if (data && typeof data === 'object') Object.assign(map, data);
+    }
+  } catch {}
+
+  return map;
 }
 
 function saveCustomers(customers: Record<string, CustomerUser>) {
+  const serialized = JSON.stringify(customers, null, 2);
+  ensureDataDirs();
   try {
-    ensureDataDir();
-    fs.writeFileSync(CUSTOMERS_FILE, JSON.stringify(customers, null, 2), 'utf8');
-  } catch (err) {
-    console.error('Error saving customers:', err);
-  }
+    fs.writeFileSync(PRIMARY_CUSTOMERS_FILE, serialized, 'utf8');
+  } catch {}
+  try {
+    fs.writeFileSync(TMP_CUSTOMERS_FILE, serialized, 'utf8');
+  } catch {}
 }
 
 export function clearAllCustomers(): void {
@@ -54,7 +86,31 @@ export function clearAllCustomers(): void {
 }
 
 /**
- * Retrieves a customer profile by email or user ID, along with their past orders.
+ * Finds all orders matching either email or 10-digit mobile phone number
+ */
+export function findCustomerOrders(allOrders: Order[], email?: string, phone?: string): Order[] {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const cleanPhone = (phone || '').replace(/\D/g, '').slice(-10);
+
+  return allOrders
+    .filter((o) => {
+      const oEmail = (o.customerEmail || o.shippingAddress?.email || '').trim().toLowerCase();
+      if (cleanEmail && oEmail && oEmail === cleanEmail) {
+        return true;
+      }
+      const oPhone = (o.customerPhone || o.shippingAddress?.phone || '').replace(/\D/g, '').slice(-10);
+      if (cleanPhone && cleanPhone.length >= 8 && oPhone && oPhone.length >= 8) {
+        if (oPhone.endsWith(cleanPhone) || cleanPhone.endsWith(oPhone)) {
+          return true;
+        }
+      }
+      return false;
+    })
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+/**
+ * Retrieves a customer profile by email, phone number, or user ID, along with their past orders.
  */
 export function getCustomerProfile(identifier: string): { user: CustomerUser; orders: Order[] } | null {
   const clean = identifier.trim().toLowerCase();
@@ -63,15 +119,26 @@ export function getCustomerProfile(identifier: string): { user: CustomerUser; or
   const allOrders = loadOrders();
   const savedCustomers = loadCustomers();
 
-  // Find all orders matching this email
-  const customerOrders = allOrders
-    .filter((o) => (o.customerEmail || '').toLowerCase() === clean)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const isEmail = clean.includes('@');
+  const cleanPhone = clean.replace(/\D/g, '').slice(-10);
 
-  // Check saved customer file by email key or direct match
-  const customerKey = `email_${clean}`;
-  let user = savedCustomers[customerKey] || Object.values(savedCustomers).find((u) => u.email?.toLowerCase() === clean);
+  // 1. Check saved customer file by email key, phone key, or direct property match
+  let user: CustomerUser | undefined =
+    savedCustomers[`email_${clean}`] ||
+    savedCustomers[`phone_${cleanPhone}`] ||
+    Object.values(savedCustomers).find(
+      (u) =>
+        (u.email && u.email.toLowerCase() === clean) ||
+        (cleanPhone.length >= 8 && u.phone && u.phone.replace(/\D/g, '').endsWith(cleanPhone)) ||
+        u.id === clean
+    );
 
+  // 2. Fetch all matching orders by email or phone
+  const searchEmail = isEmail ? clean : user?.email;
+  const searchPhone = cleanPhone.length >= 8 ? cleanPhone : user?.phone;
+  const customerOrders = findCustomerOrders(allOrders, searchEmail, searchPhone);
+
+  // 3. Synthesize customer profile from previous orders if not explicitly registered
   if (!user && customerOrders.length > 0) {
     const latestOrder = customerOrders[0];
     const addresses: ShippingAddress[] = [];
@@ -90,18 +157,37 @@ export function getCustomerProfile(identifier: string): { user: CustomerUser; or
     user = {
       id: latestOrder.customerId || `CUST-${Date.now().toString().slice(-6)}`,
       name: latestOrder.customerName || 'Good Fills Customer',
-      email: latestOrder.customerEmail || clean,
-      phone: latestOrder.customerPhone || '',
+      email: latestOrder.customerEmail || (isEmail ? clean : ''),
+      phone: latestOrder.customerPhone || cleanPhone,
       role: 'customer',
       addresses,
       createdAt: customerOrders[customerOrders.length - 1].createdAt || new Date().toISOString(),
     };
 
+    const customerKey = isEmail ? `email_${clean}` : `phone_${cleanPhone}`;
     savedCustomers[customerKey] = user;
     saveCustomers(savedCustomers);
   }
 
   if (!user) return null;
+
+  // 4. Enrich missing phone/email if found from orders
+  if (customerOrders.length > 0) {
+    let changed = false;
+    if (!user.phone && customerOrders[0].customerPhone) {
+      user.phone = customerOrders[0].customerPhone;
+      changed = true;
+    }
+    if (!user.email && customerOrders[0].customerEmail) {
+      user.email = customerOrders[0].customerEmail;
+      changed = true;
+    }
+    if (changed) {
+      const key = user.email ? `email_${user.email.toLowerCase()}` : `phone_${user.phone.replace(/\D/g, '').slice(-10)}`;
+      savedCustomers[key] = user;
+      saveCustomers(savedCustomers);
+    }
+  }
 
   return {
     user,
@@ -195,12 +281,10 @@ export function loginOrRegisterWithGoogle(googleData: {
   const allOrders = loadOrders();
   const savedCustomers = loadCustomers();
 
-  const customerOrders = allOrders
-    .filter((o) => (o.customerEmail || '').toLowerCase() === email)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
   const customerKey = `email_${email}`;
   let user = savedCustomers[customerKey];
+
+  const customerOrders = findCustomerOrders(allOrders, email, user?.phone);
 
   if (!user && customerOrders.length > 0) {
     const latestOrder = customerOrders[0];

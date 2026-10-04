@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowRight, ShoppingBag, Check } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Check, Minus, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { PRODUCTS } from '@/data/products';
 import { useCart } from '@/lib/cart-context';
@@ -45,7 +45,7 @@ const cardVariants = {
 };
 
 export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
-  const { addItem, openCart } = useCart();
+  const { addItem, updateQuantity, items } = useCart();
   const [productsList, setProductsList] = useState<Product[]>(initialProducts || PRODUCTS);
   const [addedId, setAddedId] = useState<string | null>(null);
 
@@ -95,7 +95,6 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
     addItem(product, 1);
     setAddedId(product.id);
     setTimeout(() => setAddedId(null), 1400);
-    openCart();
   };
 
   return (
@@ -137,6 +136,8 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
         >
           {featuredProducts.map((product) => {
             const isAdded = addedId === product.id;
+            const inCartItem = items.find((i) => i.product.id === product.id);
+            const inCartQty = inCartItem?.quantity || 0;
             return (
               <motion.div
                 key={product.id}
@@ -214,6 +215,40 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
                               : 'Unavailable'}
                           </span>
                         </button>
+                      ) : inCartQty > 0 ? (
+                        <div
+                          className="product-inline-stepper"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              updateQuantity(product.id, inCartQty - 1);
+                            }}
+                            className="stepper-action-btn"
+                            aria-label={`Decrease ${product.name} quantity`}
+                          >
+                            <Minus size={13} strokeWidth={2.5} />
+                          </button>
+                          <span className="stepper-count-label">{inCartQty} in bag</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              updateQuantity(product.id, inCartQty + 1);
+                            }}
+                            className="stepper-action-btn"
+                            aria-label={`Increase ${product.name} quantity`}
+                          >
+                            <Plus size={13} strokeWidth={2.5} />
+                          </button>
+                        </div>
                       ) : (
                         <motion.button
                           type="button"
@@ -227,7 +262,7 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
                           {isAdded ? (
                             <>
                               <Check size={14} strokeWidth={2.5} />
-                              <span>Added</span>
+                              <span>Added ✓</span>
                             </>
                           ) : (
                             <>

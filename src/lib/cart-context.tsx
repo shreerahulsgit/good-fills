@@ -4,12 +4,19 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, CartItem, ShippingCalculation } from '@/types';
 import { calculateDomesticShipping } from '@/lib/shipping';
 
+export interface AddedToastData {
+  product: Product;
+  quantity: number;
+  timestamp: number;
+}
+
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, quantity?: number) => void;
+  addItem: (product: Product, quantity?: number, options?: { openDrawer?: boolean }) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   removeItem: (productId: string) => void;
   clearCart: () => void;
+  getItemQuantity: (productId: string) => number;
   totalItems: number;
   totalWeightGrams: number;
   subtotal: number;
@@ -19,6 +26,8 @@ interface CartContextType {
   setIsCartOpen: (open: boolean) => void;
   openCart: () => void;
   closeCart: () => void;
+  lastAddedItem: AddedToastData | null;
+  dismissToast: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -54,9 +63,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, isHydrated]);
 
-  const addItem = (product: Product, quantity = 1) => {
-    setItems(currentItems => {
-      const existingIndex = currentItems.findIndex(i => i.product.id === product.id);
+  const [lastAddedItem, setLastAddedItem] = useState<AddedToastData | null>(null);
+
+  const addItem = (product: Product, quantity = 1, options?: { openDrawer?: boolean }) => {
+    setItems((currentItems) => {
+      const existingIndex = currentItems.findIndex((i) => i.product.id === product.id);
       if (existingIndex > -1) {
         const next = [...currentItems];
         next[existingIndex].quantity += quantity;
@@ -64,7 +75,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       return [...currentItems, { product, quantity }];
     });
-    setIsCartOpen(true);
+
+    setLastAddedItem({
+      product,
+      quantity,
+      timestamp: Date.now(),
+    });
+
+    // Only force open full drawer if caller explicitly requests it (e.g. from buy now / reorder)
+    if (options?.openDrawer) {
+      setIsCartOpen(true);
+    }
+  };
+
+  const dismissToast = () => setLastAddedItem(null);
+
+  const getItemQuantity = (productId: string): number => {
+    const item = items.find((i) => i.product.id === productId);
+    return item ? item.quantity : 0;
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
@@ -112,6 +140,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updateQuantity,
         removeItem,
         clearCart,
+        getItemQuantity,
         totalItems,
         totalWeightGrams,
         subtotal,
@@ -120,7 +149,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         isCartOpen,
         setIsCartOpen,
         openCart,
-        closeCart
+        closeCart,
+        lastAddedItem,
+        dismissToast,
       }}
     >
       {children}

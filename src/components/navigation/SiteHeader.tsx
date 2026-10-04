@@ -9,6 +9,7 @@ import { useCustomerAuth } from '@/lib/customer-auth-context';
 import { CATEGORIES } from '@/data/products';
 import { SearchModal } from '@/components/navigation/SearchModal';
 import { CartDrawer } from '@/components/cart/CartDrawer';
+import { CartToastNotification } from '@/components/cart/CartToastNotification';
 import { InternationalDeliveryModal } from '@/components/common/InternationalDeliveryModal';
 import {
   ShoppingBag,
@@ -428,7 +429,15 @@ export function SiteHeader() {
             >
               <ShoppingBag size={16} />
               <span>Bag</span>
-              <span className={styles.cartCountPill}>{totalItems}</span>
+              <motion.span
+                key={totalItems}
+                initial={{ scale: 1.25 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                className={styles.cartCountPill}
+              >
+                {totalItems}
+              </motion.span>
             </button>
 
             {/* Mobile / Tablet ONLY Bag Button (<= 1040px) */}
@@ -440,7 +449,15 @@ export function SiteHeader() {
             >
               <ShoppingBag size={20} />
               {totalItems > 0 && (
-                <span className={styles.mobileCartBadge}>{totalItems}</span>
+                <motion.span
+                  key={totalItems}
+                  initial={{ scale: 1.3 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                  className={styles.mobileCartBadge}
+                >
+                  {totalItems}
+                </motion.span>
               )}
             </button>
           </div>
@@ -621,6 +638,7 @@ export function SiteHeader() {
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       <InternationalDeliveryModal />
       <CartDrawer />
+      <CartToastNotification />
     </>
   );
 }

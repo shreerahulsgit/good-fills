@@ -506,6 +506,60 @@
   flex-wrap: wrap;
 }
 
+.orderCardTopRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.dtdcAwbPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-family: var(--font-sans);
+  border-radius: 0;
+}
+
+.dtdcBrand {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #c0392b;
+  text-transform: uppercase;
+}
+
+.awbCode {
+  font-family: monospace;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.05em;
+}
+
+.copyAwbBtn {
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border-left: 1px solid var(--border-hairline);
+  margin-left: 2px;
+  padding-left: 6px;
+  transition: color var(--transition-fast);
+}
+
+.copyAwbBtn:hover {
+  color: var(--accent-terracotta);
+}
+
 .orderIdText {
   font-weight: 700;
   font-size: 1.05rem;
@@ -637,6 +691,13 @@
   color: var(--text-primary);
 }
 
+.orderActionsRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: var(--space-2);
+}
+
 .trackActionBtn {
   background-color: var(--accent-terracotta);
   color: var(--text-light);
@@ -652,11 +713,61 @@
   text-decoration: none;
   border-radius: 0;
   transition: background-color var(--transition-fast);
-  margin-top: var(--space-2);
 }
 
 .trackActionBtn:hover {
   background-color: var(--accent-terracotta-hover);
+}
+
+.secondaryActionsGroup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.invoiceActionBtn {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  padding: 8px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  border-radius: 0;
+  transition: all var(--transition-fast);
+}
+
+.invoiceActionBtn:hover {
+  border-color: var(--accent-terracotta);
+  color: var(--accent-terracotta);
+  background-color: var(--bg-cream);
+}
+
+.reorderActionBtn {
+  background-color: var(--bg-surface);
+  color: var(--accent-terracotta);
+  border: 1px solid var(--accent-terracotta);
+  padding: 8px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all var(--transition-fast);
+}
+
+.reorderActionBtn:hover {
+  background-color: var(--accent-terracotta);
+  color: var(--text-light);
 }
 
 .deliveryAddressNote {

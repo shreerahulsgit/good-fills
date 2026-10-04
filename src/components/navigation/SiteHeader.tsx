@@ -131,18 +131,12 @@ export function SiteHeader() {
           <div className={styles.announcementContainer}>
             <span className={styles.announcementText}>
               ✈️ <strong>International Delivery Available</strong> — Custom DTDC courier rates for overseas orders.{' '}
-              <button
-                type="button"
-                onClick={() => {
-                  if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('gf_open_intl_toast'));
-                  }
-                }}
+              <Link
+                href="/international-delivery"
                 className={styles.announcementLink}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
               >
                 Learn more &amp; order &rarr;
-              </button>
+              </Link>
             </span>
           </div>
         </aside>

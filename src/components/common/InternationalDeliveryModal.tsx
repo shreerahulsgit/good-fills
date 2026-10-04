@@ -21,28 +21,39 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
     'Hello Good Fills! 🌿 I would like to place an order for delivery outside India. Please share details on courier rates and items.'
   )}`;
 
-  // Start hidden so it NEVER appears on the preloader screen
+  const [isMounted, setIsMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Trigger on home page AFTER preload finishes
   useEffect(() => {
-    // Only activate after the preloader curtain has completely lifted and home page is visible
-    if (!showPreloader && isLoaded) {
-      if (pathname === '/') {
-        const isDismissed =
-          typeof window !== 'undefined' &&
-          sessionStorage.getItem('gf_intl_corner_toast_dismissed') === 'true';
+    if (!isMounted) return;
 
-        if (!isDismissed) {
-          // Graceful 800ms delay after home page content is revealed
-          const timer = setTimeout(() => {
-            setIsVisible(true);
-          }, 800);
-          return () => clearTimeout(timer);
-        }
+    if (pathname !== '/') {
+      setIsVisible(false);
+      return;
+    }
+
+    if (!showPreloader && isLoaded) {
+      let isDismissed = false;
+      try {
+        isDismissed = sessionStorage.getItem('gf_intl_corner_toast_dismissed') === 'true';
+      } catch {
+        isDismissed = false;
+      }
+
+      if (!isDismissed) {
+        // Graceful delay after home page content is revealed
+        const timer = setTimeout(() => {
+          setIsVisible(true);
+        }, 800);
+        return () => clearTimeout(timer);
       }
     }
-  }, [showPreloader, isLoaded, pathname]);
+  }, [isMounted, showPreloader, isLoaded, pathname]);
 
   // Sync with prop if explicitly provided
   useEffect(() => {
@@ -51,12 +62,14 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
     }
   }, [propIsOpen]);
 
-  // Listen to open events from anywhere (e.g. top announcement bar click)
+  // Listen to open events from anywhere
   useEffect(() => {
     const handleOpen = () => {
       setIsVisible(true);
-      if (typeof window !== 'undefined') {
+      try {
         sessionStorage.removeItem('gf_intl_corner_toast_dismissed');
+      } catch {
+        // ignore
       }
     };
     window.addEventListener('gf_open_intl_toast', handleOpen);
@@ -65,26 +78,27 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
 
   const handleDismiss = () => {
     setIsVisible(false);
-    if (typeof window !== 'undefined') {
+    try {
       sessionStorage.setItem('gf_intl_corner_toast_dismissed', 'true');
+    } catch {
+      // ignore
     }
     if (propOnClose) propOnClose();
   };
 
-  // NEVER render on the preloader screen
-  if (showPreloader || !isVisible) return null;
+  // Only render on client, on home page, and when preloader is finished
+  if (!isMounted || pathname !== '/' || showPreloader || !isVisible) return null;
 
   return (
     <aside
       className={styles.floatingContainer}
-      role="region"
       aria-label="International delivery notification"
     >
       <div className={styles.toastCard}>
         {/* Card Header with Badge & Cross Button */}
         <div className={styles.cardHeader}>
           <span className={styles.badge}>
-            <Globe size={11} />
+            <Globe size={10} />
             Worldwide Delivery
           </span>
 
@@ -95,14 +109,14 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
             title="Dismiss notice"
             aria-label="Close international delivery notice"
           >
-            <X size={14} />
+            <X size={12} />
           </button>
         </div>
 
         {/* Content */}
         <h4 className={styles.title}>Delivering Outside India?</h4>
         <p className={styles.desc}>
-          We ship homemade nutrition, food &amp; skincare worldwide via DTDC with custom weight-based rates.
+          We ship fresh nutrition, food &amp; skincare worldwide via DTDC with custom weight rates.
         </p>
 
         {/* Actions */}
@@ -113,7 +127,7 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
             rel="noopener noreferrer"
             className={styles.whatsappBtn}
           >
-            <MessageCircle size={15} />
+            <MessageCircle size={13} />
             <span>Chat on WhatsApp</span>
           </a>
 
@@ -122,7 +136,7 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
             className={styles.callBtn}
             title={`Call +91 ${atelierPhone}`}
           >
-            <PhoneCall size={14} />
+            <PhoneCall size={12} />
             <span>Call</span>
           </a>
         </div>
@@ -135,7 +149,7 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
             onClick={handleDismiss}
           >
             <span>View shipping guide</span>
-            <ArrowRight size={11} />
+            <ArrowRight size={10} />
           </Link>
 
           <button

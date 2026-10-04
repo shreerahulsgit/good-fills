@@ -633,20 +633,35 @@ export async function getAllServerOrdersAsync(): Promise<Order[]> {
         for (const rzpOrder of ((ordersRes as any)?.items || [])) {
           const existing = getOrderByRazorpayOrderId(rzpOrder.id);
           const pmt = capturedPayments.get(rzpOrder.id);
+          const isPaid = rzpOrder.status === 'paid' || Boolean(pmt);
 
           if (!existing) {
-            // Reconstruct and save
-            await resolveOrderFromRazorpay(rzpOrder.id, {
-              razorpayPaymentId: pmt?.id,
-            });
+            // CRITICAL INTEGRITY CHECK:
+            // ONLY reconstruct/import an order from Razorpay API if it was actually PAID.
+            // Abandoned carts, cancelled checkouts, or timed-out payment attempts must NEVER
+            // be created as active dispatch orders in the system!
+            if (isPaid) {
+              await resolveOrderFromRazorpay(rzpOrder.id, {
+                razorpayPaymentId: pmt?.id,
+              });
+            }
           } else {
             // If Razorpay order is paid or payment captured, ensure order is marked Paid
-            if ((rzpOrder.status === 'paid' || pmt) && existing.paymentStatus !== 'Paid') {
+            if (isPaid && existing.paymentStatus !== 'Paid') {
               existing.paymentStatus = 'Paid';
               existing.orderStatus = existing.orderStatus === 'Pending' ? 'Confirmed' : existing.orderStatus;
               existing.razorpayPaymentId = pmt?.id || existing.razorpayPaymentId;
               ordersCache.set(existing.id, existing);
               persistOrders();
+            } else if (!isPaid && existing.paymentStatus === 'Pending') {
+              // If payment was attempted or timed out and never captured after 15 minutes, mark Failed/Cancelled
+              const ageMs = Date.now() - new Date(existing.createdAt).getTime();
+              if (ageMs > 15 * 60 * 1000) {
+                existing.paymentStatus = 'Failed';
+                existing.orderStatus = 'Cancelled';
+                ordersCache.set(existing.id, existing);
+                persistOrders();
+              }
             }
           }
         }

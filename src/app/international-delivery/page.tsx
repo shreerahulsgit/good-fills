@@ -3,19 +3,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   Globe,
-  Truck,
-  Scale,
-  ShieldCheck,
-  MessageCircle,
-  PhoneCall,
   Clock,
-  Package,
+  PhoneCall,
+  MessageCircle,
   ArrowRight,
-  HelpCircle,
 } from 'lucide-react';
+import styles from '@/components/legal/PolicyLayout.module.css';
 
 export const metadata: Metadata = {
-  title: 'International Delivery & Global Shipping • Good Fills',
+  title: 'International Delivery & Global Shipping • Good Fills Bengaluru Atelier',
   description:
     'Handcrafted homemade food, nutrition, and skincare shipped worldwide from Bengaluru via DTDC International courier. Transparent weight-based shipping quotes.',
 };
@@ -23,230 +19,185 @@ export const metadata: Metadata = {
 export default function InternationalDeliveryPage() {
   const atelierPhone = '9742068899';
   const whatsappUrl = `https://wa.me/91${atelierPhone}?text=${encodeURIComponent(
-    'Hello Good Fills! 🌿 I would like to inquire about international delivery outside India. Please share details on courier rates and order placement.'
+    'Hello Good Fills! 🌿 I would like to place an order for delivery outside India. Please share details on courier rates and order placement.'
   )}`;
 
   return (
-    <div style={{ backgroundColor: 'var(--bg-canvas)', minHeight: '100vh', padding: 'var(--space-12) 0 var(--space-20)' }}>
-      <div className="container" style={{ maxWidth: '960px' }}>
-        {/* Breadcrumb Navigation */}
-        <nav style={{ marginBottom: 'var(--space-6)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          <Link href="/" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Home</Link>
-          <span style={{ margin: '0 8px' }}>/</span>
-          <span style={{ color: 'var(--accent-terracotta)', fontWeight: 600 }}>International Delivery</span>
-        </nav>
+    <div className={styles.policyPageWrapper}>
+      <div className={styles.policyContainer}>
 
-        {/* Hero Header */}
-        <header style={{ marginBottom: 'var(--space-10)', textAlign: 'left' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            backgroundColor: 'rgba(151, 65, 29, 0.08)',
-            color: 'var(--accent-terracotta)',
-            fontFamily: 'var(--font-sans)',
-            fontSize: '0.72rem',
-            fontWeight: 800,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            padding: '4px 12px',
-            borderRadius: '999px',
-            marginBottom: 'var(--space-3)',
-          }}>
+        {/* 1. TOP EDITORIAL META STRIP */}
+        <div className={styles.metaHeader}>
+          <div className={styles.metaEyebrow}>
             <Globe size={13} />
-            Global Atelier Dispatch
+            <span>Good Fills Atelier · International Logistics</span>
           </div>
+          <div className={styles.metaRight}>
+            <span className={styles.metaBadge}>Worldwide Air Cargo</span>
+            <span>DTDC International Express</span>
+          </div>
+        </div>
 
-          <h1 style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 'clamp(2.2rem, 4vw, 3.2rem)',
-            fontWeight: 400,
-            color: 'var(--text-primary)',
-            lineHeight: 1.15,
-            margin: '0 0 var(--space-4)',
-          }}>
-            International Delivery &amp; Worldwide Shipping
+        {/* 2. HERO TITLE BLOCK */}
+        <div className={styles.heroBlock}>
+          <h1 className={styles.heroTitle}>
+            International Delivery &amp; <em>Worldwide Shipping</em>
           </h1>
-
-          <p style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: '1.05rem',
-            color: 'var(--text-secondary)',
-            lineHeight: 1.6,
-            maxWidth: '740px',
-            margin: 0,
-          }}>
-            Good Fills prepares every batch fresh to order in our Bengaluru home kitchen. We fulfill deliveries worldwide to customers seeking pure, unadulterated traditional nutrition and skincare.
+          <p className={styles.heroLead}>
+            Freshly prepared to order in our Bengaluru home kitchen within 24–48 hours of order confirmation. Dispatched worldwide to customers seeking pure, unadulterated traditional nutrition and skincare.
           </p>
-        </header>
+        </div>
 
-        {/* Highlight Action Card */}
-        <div style={{
-          background: 'linear-gradient(135deg, #FAF6F0 0%, #F4ECE0 100%)',
-          border: '1px solid rgba(151, 65, 29, 0.2)',
-          borderRadius: '20px',
-          padding: 'clamp(24px, 4vw, 36px)',
-          marginBottom: 'var(--space-12)',
-          boxShadow: '0 4px 20px rgba(34, 24, 19, 0.04)',
-        }}>
-          <h2 style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '1.5rem',
-            fontWeight: 600,
-            color: 'var(--text-primary)',
-            margin: '0 0 10px',
-          }}>
-            How to Place an International Order
-          </h2>
-          <p style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: '0.92rem',
-            color: 'var(--text-secondary)',
-            lineHeight: 1.6,
-            marginBottom: 'var(--space-6)',
-          }}>
-            Because international courier tariffs depend heavily on gross parcel weight (including export packaging) and destination customs clearance, our website does not charge automated flat shipping for overseas addresses. Instead, our kitchen coordinates your order directly:
-          </p>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '16px',
-            marginBottom: 'var(--space-6)',
-          }}>
-            <div style={{ backgroundColor: '#FFFFFF', padding: '16px', borderRadius: '12px', border: '1px solid rgba(151, 65, 29, 0.12)' }}>
-              <div style={{ fontWeight: 700, color: 'var(--accent-terracotta)', fontSize: '0.82rem', marginBottom: '4px' }}>STEP 01</div>
-              <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.92rem', marginBottom: '4px' }}>Select Your Products</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                Browse our catalog and note your required items and quantities.
-              </div>
+        {/* 3. MAIN ARTICLE CONTENT */}
+        <article className={styles.policyArticle}>
+          {/* Highlight Notice Box */}
+          <div className={styles.highlightNotice}>
+            <div className={styles.noticeTitle}>
+              <PhoneCall size={16} />
+              <span>Direct Call-First Ordering · Kitchen Line +91 {atelierPhone}</span>
             </div>
-
-            <div style={{ backgroundColor: '#FFFFFF', padding: '16px', borderRadius: '12px', border: '1px solid rgba(151, 65, 29, 0.12)' }}>
-              <div style={{ fontWeight: 700, color: 'var(--accent-terracotta)', fontSize: '0.82rem', marginBottom: '4px' }}>STEP 02</div>
-              <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.92rem', marginBottom: '4px' }}>Connect with Kitchen Desk</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                WhatsApp or call us with your delivery address &amp; postal code.
-              </div>
-            </div>
-
-            <div style={{ backgroundColor: '#FFFFFF', padding: '16px', borderRadius: '12px', border: '1px solid rgba(151, 65, 29, 0.12)' }}>
-              <div style={{ fontWeight: 700, color: 'var(--accent-terracotta)', fontSize: '0.82rem', marginBottom: '4px' }}>STEP 03</div>
-              <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.92rem', marginBottom: '4px' }}>Exact Quote &amp; Dispatch</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                We weigh the parcel, share exact DTDC courier costs, and send secure payment link.
-              </div>
-            </div>
+            <p className={styles.noticeText}>
+              Because international air courier charges are high and vary significantly depending on gross parcel weight, destination customs regulations, and daily cargo tariffs, we do not automate international shipping checkout online. The moment you wish to order from outside India, please place a direct call to our atelier desk at <strong>+91 {atelierPhone}</strong> (or message on WhatsApp) so we can assess current courier rates and coordinate your batch personally.
+            </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <h2>1. How to Place an International Order</h2>
+          <p>
+            Ordering your favorite traditional Good Fills creations from abroad is simple and handled with personalized concierge care:
+          </p>
+          <ul>
+            <li>
+              <strong>Step 1 — Browse &amp; Choose Your Products:</strong> Browse our online catalog and decide which fresh homemade foods, nutrition mixes, or skincare creations you want.
+            </li>
+            <li>
+              <strong>Step 2 — Call Our Atelier Desk (+91 {atelierPhone}):</strong> The moment you want to place an international order, call our kitchen directly at <strong>+91 {atelierPhone}</strong> <em>(or message on WhatsApp for international timezones)</em> with your item list and destination country.
+            </li>
+            <li>
+              <strong>Step 3 — Custom Courier Rate &amp; Timeline Confirmation:</strong> Because international courier tariffs depend on current air freight rates and destination customs, our team confirms the exact courier charges and delivery schedule directly with you.
+            </li>
+            <li>
+              <strong>Step 4 — Fresh Batch Preparation &amp; Payment:</strong> Once confirmed on the call, your order is freshly soaked, sprouted, and stone-milled in our Bengaluru kitchen, and payment is processed securely.
+            </li>
+            <li>
+              <strong>Step 5 — Export Packaging &amp; Doorstep Delivery:</strong> Your order is sealed in altitude-resistant barrier pouches and dispatched via DTDC International Express, with live tracking shared with you.
+            </li>
+          </ul>
+
+          <h2>2. Serviceable Destinations &amp; Estimated Air Transit</h2>
+          <p>
+            We fulfill deliveries worldwide through DTDC International Air Courier network to all major overseas destinations:
+          </p>
+
+          <div className={styles.tableWrap}>
+            <table className={styles.policyTable}>
+              <thead>
+                <tr>
+                  <th>Destination Region</th>
+                  <th>Estimated Air Transit</th>
+                  <th>Courier Network Service</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>North America (USA &amp; Canada)</strong></td>
+                  <td>6 – 9 Business Days</td>
+                  <td>DTDC International Air Express</td>
+                </tr>
+                <tr>
+                  <td><strong>United Kingdom &amp; European Union</strong></td>
+                  <td>6 – 8 Business Days</td>
+                  <td>DTDC International Air Priority</td>
+                </tr>
+                <tr>
+                  <td><strong>United Arab Emirates &amp; GCC</strong></td>
+                  <td>4 – 6 Business Days</td>
+                  <td>DTDC Gulf Express</td>
+                </tr>
+                <tr>
+                  <td><strong>Singapore, Malaysia &amp; APAC</strong></td>
+                  <td>5 – 7 Business Days</td>
+                  <td>DTDC Asia Air Express</td>
+                </tr>
+                <tr>
+                  <td><strong>Australia &amp; New Zealand</strong></td>
+                  <td>7 – 10 Business Days</td>
+                  <td>DTDC Oceanic Air Express</td>
+                </tr>
+                <tr>
+                  <td><strong>Rest of the World</strong></td>
+                  <td>8 – 12 Business Days</td>
+                  <td>DTDC Global Partner Network</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+            *Transit times are counted from date of DTDC courier dispatch from Bengaluru and exclude potential delays at destination customs control.
+          </p>
+
+          <h2>3. Export Packaging &amp; Freshness Guarantee</h2>
+          <p>
+            Every product sent internationally undergoes specialized multi-barrier export packing:
+          </p>
+          <ul>
+            <li>
+              <strong>Airtight Moisture Barriers:</strong> Food powders and porridge blends are heat-sealed in multi-layer food-grade pouches that insulate against altitude pressure changes during flight.
+            </li>
+            <li>
+              <strong>Zero Additives or Fillers:</strong> Even for international shipments, we never add synthetic preservatives or stabilizers. Natural freshness is guaranteed for up to 6 months when kept sealed.
+            </li>
+            <li>
+              <strong>Shock-Absorbing Outer Box:</strong> Parcels are cushioned with reinforced corrugated layers to withstand transit across international air cargo hubs.
+            </li>
+          </ul>
+
+          <h2>4. Customs Declarations &amp; Import Regulations</h2>
+          <p>
+            All international consignments are accompanied by standard commercial invoices and required HS tariff classification codes. Any destination country import customs duties, local taxes (VAT/GST), or administrative clearance charges levied by foreign customs are the responsibility of the recipient.
+          </p>
+        </article>
+
+        {/* 4. ATELIER CONCIERGE HELP CARD */}
+        <section className={styles.supportCard}>
+          <div className={styles.supportLeft}>
+            <div className={styles.supportEyebrow}>
+              <Globe size={13} />
+              <span>International Concierge Desk</span>
+            </div>
+            <h3 className={styles.supportTitle}>Ready to Place an Overseas Order?</h3>
+            <p className={styles.supportDesc}>
+              Call our Bengaluru kitchen team directly at <strong>+91 {atelierPhone}</strong> or connect on WhatsApp. We will confirm item availability, calculate gross weight, and share current air courier rates.
+            </p>
+          </div>
+
+          <div className={styles.supportActions}>
+            <a
+              href={`tel:+91${atelierPhone}`}
+              className={styles.whatsappBtn}
+              style={{ backgroundColor: 'var(--accent-terracotta)' }}
+            >
+              <PhoneCall size={15} />
+              <span>Call Kitchen (+91 {atelierPhone})</span>
+            </a>
+
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                backgroundColor: '#128C7E',
-                color: '#FFFFFF',
-                fontFamily: 'var(--font-sans)',
-                fontSize: '0.9rem',
-                fontWeight: 700,
-                padding: '12px 24px',
-                borderRadius: '999px',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 14px rgba(18, 140, 126, 0.24)',
-              }}
+              className={styles.contactPageBtn}
             >
-              <MessageCircle size={17} />
-              <span>Connect on WhatsApp (+91 {atelierPhone})</span>
+              <MessageCircle size={15} />
+              <span>WhatsApp Desk</span>
             </a>
 
-            <a
-              href={`tel:+91${atelierPhone}`}
-              style={{
-                backgroundColor: '#FFFFFF',
-                color: 'var(--text-primary)',
-                border: '1px solid rgba(151, 65, 29, 0.25)',
-                fontFamily: 'var(--font-sans)',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                padding: '12px 22px',
-                borderRadius: '999px',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
-            >
-              <PhoneCall size={16} />
-              <span>Call Kitchen Directly</span>
-            </a>
-          </div>
-        </div>
-
-        {/* FAQ Section */}
-        <section style={{ marginTop: 'var(--space-12)' }}>
-          <h2 style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '1.8rem',
-            fontWeight: 400,
-            color: 'var(--text-primary)',
-            marginBottom: 'var(--space-6)',
-          }}>
-            Frequently Asked Questions
-          </h2>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-hairline)', borderRadius: '14px', padding: '20px' }}>
-              <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px' }}>
-                Which countries do you deliver to?
-              </h3>
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.86rem', color: 'var(--text-secondary)', lineHeight: 1.55, margin: 0 }}>
-                We ship to USA, UK, Canada, Australia, UAE, Singapore, Malaysia, and most European countries supported by DTDC International air courier network.
-              </p>
-            </div>
-
-            <div style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-hairline)', borderRadius: '14px', padding: '20px' }}>
-              <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px' }}>
-                How long does international transit take?
-              </h3>
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.86rem', color: 'var(--text-secondary)', lineHeight: 1.55, margin: 0 }}>
-                Orders are freshly prepared within 24–48 hours of order confirmation. Air courier delivery typically takes 6–10 business days depending on customs clearance in the destination country.
-              </p>
-            </div>
-
-            <div style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-hairline)', borderRadius: '14px', padding: '20px' }}>
-              <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px' }}>
-                How are food items packaged for international flights?
-              </h3>
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.86rem', color: 'var(--text-secondary)', lineHeight: 1.55, margin: 0 }}>
-                All powders, porridge mixes, and food items are heat-sealed in multilayer moisture-barrier pouches and packed with protective cushioning to withstand altitude and transit pressures.
-              </p>
-            </div>
+            <Link href="/shop" className={styles.contactPageBtn}>
+              <span>Browse Catalog</span>
+              <ArrowRight size={13} />
+            </Link>
           </div>
         </section>
 
-        {/* Back to Catalog Link */}
-        <div style={{ marginTop: 'var(--space-12)', textAlign: 'center' }}>
-          <Link
-            href="/shop"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontFamily: 'var(--font-sans)',
-              fontSize: '0.92rem',
-              fontWeight: 700,
-              color: 'var(--accent-terracotta)',
-              textDecoration: 'none',
-            }}
-          >
-            <span>Browse Good Fills Catalog</span>
-            <ArrowRight size={15} />
-          </Link>
-        </div>
       </div>
     </div>
   );

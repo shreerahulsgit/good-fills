@@ -40,7 +40,7 @@ import {
   PieChart as PieChartIcon,
   Printer
 } from 'lucide-react';
-import { Order, OrderStatus, ShipmentStatus } from '@/types';
+import { Order, OrderStatus, ShipmentStatus, PaymentStatus } from '@/types';
 import { PRODUCTS } from '@/data/products';
 import { Inquiry } from '@/lib/inquiries';
 import styles from './AdminDispatchView.module.css';
@@ -51,7 +51,7 @@ type OrderDateTab = 'all' | 'today' | 'yesterday' | 'week' | 'month';
 type ManifestLayout = 'table' | 'cards';
 type SortOption = 'newest' | 'oldest' | 'highest' | 'lowest' | 'name';
 
-type UnifiedStatus = 'Confirmed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
+type UnifiedStatus = 'Confirmed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled' | 'Payment Pending';
 
 interface Toast {
   id: string;
@@ -59,8 +59,13 @@ interface Toast {
   type: 'success' | 'info' | 'error';
 }
 
-const getUnifiedStatus = (orderStatus?: OrderStatus, shipmentStatus?: ShipmentStatus): UnifiedStatus => {
-  if (orderStatus === 'Cancelled') return 'Cancelled';
+const getUnifiedStatus = (
+  orderStatus?: OrderStatus, 
+  shipmentStatus?: ShipmentStatus, 
+  paymentStatus?: PaymentStatus
+): UnifiedStatus => {
+  if (paymentStatus === 'Failed' || orderStatus === 'Cancelled') return 'Cancelled';
+  if (paymentStatus === 'Pending' || orderStatus === 'Pending') return 'Payment Pending';
   if (orderStatus === 'Delivered' || shipmentStatus === 'Delivered') return 'Delivered';
   if (shipmentStatus === 'Out for Delivery') return 'Out for Delivery';
   if (shipmentStatus === 'In Transit' || shipmentStatus === 'Handed Over' || orderStatus === 'Shipped') return 'Shipped';
@@ -68,9 +73,15 @@ const getUnifiedStatus = (orderStatus?: OrderStatus, shipmentStatus?: ShipmentSt
   return 'Confirmed';
 };
 
-const getUnifiedStatusLabel = (orderStatus?: OrderStatus, shipmentStatus?: ShipmentStatus): string => {
-  const s = getUnifiedStatus(orderStatus, shipmentStatus);
+const getUnifiedStatusLabel = (
+  orderStatus?: OrderStatus, 
+  shipmentStatus?: ShipmentStatus, 
+  paymentStatus?: PaymentStatus
+): string => {
+  const s = getUnifiedStatus(orderStatus, shipmentStatus, paymentStatus);
   switch (s) {
+    case 'Payment Pending':
+      return 'Payment Pending (Unpaid)';
     case 'Processing':
       return 'Prepared & Packed';
     case 'Shipped':
@@ -80,9 +91,10 @@ const getUnifiedStatusLabel = (orderStatus?: OrderStatus, shipmentStatus?: Shipm
     case 'Delivered':
       return 'Delivered';
     case 'Cancelled':
-      return 'Cancelled';
+      return 'Cancelled / Failed';
+    case 'Confirmed':
     default:
-      return 'Order Confirmed';
+      return 'Order Confirmed (Paid)';
   }
 };
 
@@ -127,6 +139,7 @@ const getNextStatusConfig = (current: UnifiedStatus): {
         icon: '🔄',
         colorScheme: 'gray',
       };
+    case 'Payment Pending':
     case 'Delivered':
     default:
       return null;
@@ -357,7 +370,7 @@ export function AdminDispatchView() {
     }));
 
     setOpenStatusMenuId(null);
-    showToast(`Order #${orderId} marked as ${getUnifiedStatusLabel(newOrderStatus, newShipmentStatus)}`, 'success');
+    showToast(`Order #${orderId} marked as ${getUnifiedStatusLabel(newOrderStatus, newShipmentStatus, 'Paid')}`, 'success');
 
     // Call backend
     try {
@@ -491,7 +504,7 @@ export function AdminDispatchView() {
     const rawPhone = (order.customerPhone || '').replace(/[^0-9]/g, '');
     const cleanPhone = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
     const firstName = order.customerName ? order.customerName.split(' ')[0] : 'Customer';
-    const status = getUnifiedStatus(order.orderStatus, order.shipmentStatus);
+    const status = getUnifiedStatus(order.orderStatus, order.shipmentStatus, order.paymentStatus);
 
     let message = `Hello ${firstName}! `;
     if (status === 'Confirmed') {
@@ -552,7 +565,7 @@ export function AdminDispatchView() {
 
       // 2. Secondary Status Filter
       if (statusFilter !== 'all') {
-        const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
+        const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
         if (statusFilter === 'Shipped') {
           if (u !== 'Shipped' && u !== 'Out for Delivery') return false;
         } else if (u !== statusFilter) {
@@ -625,17 +638,18 @@ export function AdminDispatchView() {
 
   // Analytics Calculations
   const analyticsData = useMemo(() => {
-    const subset = dateFilteredOrders;
-    const totalRevenue = subset.reduce((sum, o) => sum + (o.total || 0), 0);
-    const subtotalRevenue = subset.reduce((sum, o) => sum + (o.subtotal || 0), 0);
-    const shippingRevenue = subset.reduce((sum, o) => sum + (o.shippingCost || 0), 0);
-    const aov = subset.length > 0 ? Math.round(totalRevenue / subset.length) : 0;
+    // CRITICAL: Analytics revenue, AOV, and sales metrics strictly require PAID status
+    const paidSubset = dateFilteredOrders.filter((o) => o.paymentStatus === 'Paid');
+    const totalRevenue = paidSubset.reduce((sum, o) => sum + (o.total || 0), 0);
+    const subtotalRevenue = paidSubset.reduce((sum, o) => sum + (o.subtotal || 0), 0);
+    const shippingRevenue = paidSubset.reduce((sum, o) => sum + (o.shippingCost || 0), 0);
+    const aov = paidSubset.length > 0 ? Math.round(totalRevenue / paidSubset.length) : 0;
 
     let totalWeightGrams = 0;
     let totalPacksSold = 0;
     const productCounts: Record<string, { id: string; name: string; packSize: string; quantity: number; revenue: number; price: number; image?: string }> = {};
 
-    subset.forEach((o) => {
+    paidSubset.forEach((o) => {
       totalWeightGrams += o.weightGrams || 250;
 
       (o.items || []).forEach((it) => {
@@ -657,13 +671,13 @@ export function AdminDispatchView() {
       });
     });
 
-    const confirmedCount = subset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus) === 'Confirmed').length;
-    const processingCount = subset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus) === 'Processing').length;
-    const shippedCount = subset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus) === 'Shipped' || getUnifiedStatus(o.orderStatus, o.shipmentStatus) === 'Out for Delivery').length;
-    const deliveredCount = subset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus) === 'Delivered').length;
+    const confirmedCount = paidSubset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) === 'Confirmed').length;
+    const processingCount = paidSubset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) === 'Processing').length;
+    const shippedCount = paidSubset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) === 'Shipped' || getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) === 'Out for Delivery').length;
+    const deliveredCount = paidSubset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) === 'Delivered').length;
 
-    const shippedTotal = subset.filter((o) => o.orderStatus === 'Shipped' || o.orderStatus === 'Delivered').length;
-    const assignedAwbCount = subset.filter((o) => o.trackingNumber && o.trackingNumber.trim().length > 0).length;
+    const shippedTotal = paidSubset.filter((o) => o.orderStatus === 'Shipped' || o.orderStatus === 'Delivered').length;
+    const assignedAwbCount = paidSubset.filter((o) => o.trackingNumber && o.trackingNumber.trim().length > 0).length;
     const awbRate = shippedTotal > 0 ? Math.round((assignedAwbCount / shippedTotal) * 100) : 100;
 
     // Top products array sorted by quantity
@@ -696,7 +710,7 @@ export function AdminDispatchView() {
       subtotalRevenue,
       shippingRevenue,
       aov,
-      orderCount: subset.length,
+      orderCount: paidSubset.length,
       totalPacksSold,
       totalWeightKg: (totalWeightGrams / 1000).toFixed(1),
       confirmedCount,
@@ -714,14 +728,15 @@ export function AdminDispatchView() {
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const fullNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-    // Compute actual orders & dispatches for each month
+    // Compute actual orders & dispatches for each month (Strictly Paid Orders)
     const counts: Record<number, { orders: number; dispatched: number }> = {};
-    orders.forEach((o) => {
+    const paidOrders = orders.filter((o) => o.paymentStatus === 'Paid');
+    paidOrders.forEach((o) => {
       const d = new Date(o.createdAt);
       const m = d.getMonth();
       if (!counts[m]) counts[m] = { orders: 0, dispatched: 0 };
       counts[m].orders += 1;
-      const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
+      const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
       if (u === 'Shipped' || u === 'Out for Delivery' || u === 'Delivered') {
         counts[m].dispatched += 1;
       }
@@ -792,7 +807,7 @@ export function AdminDispatchView() {
       o.shippingCost || 0,
       o.total || 0,
       o.paymentStatus || 'Paid',
-      getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus),
+      getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus, o.paymentStatus),
       `"${o.trackingNumber || ''}"`,
     ]);
 
@@ -1383,12 +1398,12 @@ export function AdminDispatchView() {
 
             {/* BOTTOM ROW: ACTIVE DISPATCH QUEUE (LEFT) & FULFILLMENT STATUS (RIGHT) */}
             <div className={styles.productsAndDonutRow}>
-              {/* Left: Active Dispatch Queue */}
+              {/* Left: Active Dispatch Queue (STRICTLY PAID ORDERS ONLY) */}
               <div className={styles.topCreationsPanel}>
                 <div className={styles.panelHeaderRow}>
                   <div className={styles.chartTitle}>Active Dispatch Queue</div>
                   <span className={styles.panelBadgeSmall}>
-                    {orders.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus) !== 'Delivered').length} Actionable
+                    {orders.filter((o) => o.paymentStatus === 'Paid' && getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) !== 'Delivered').length} Actionable
                   </span>
                 </div>
 
@@ -1403,7 +1418,7 @@ export function AdminDispatchView() {
                       </tr>
                     </thead>
                     <tbody>
-                      {orders.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus) !== 'Delivered').length === 0 ? (
+                      {orders.filter((o) => o.paymentStatus === 'Paid' && getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) !== 'Delivered').length === 0 ? (
                         <tr>
                           <td colSpan={4} style={{ textAlign: 'center', padding: '32px 16px', color: '#9CA3AF', fontSize: '0.82rem' }}>
                             No actionable orders in the queue. All orders are fulfilled or pending placement.
@@ -1411,10 +1426,10 @@ export function AdminDispatchView() {
                         </tr>
                       ) : (
                         orders
-                          .filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus) !== 'Delivered')
+                          .filter((o) => o.paymentStatus === 'Paid' && getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) !== 'Delivered')
                           .slice(0, 4)
                           .map((o) => {
-                            const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
+                            const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
                             const next = getNextStatusConfig(u);
                             return (
                               <tr key={o.id}>
@@ -1438,7 +1453,7 @@ export function AdminDispatchView() {
                                         : styles.pillConfirmedSmall
                                     }
                                   >
-                                    {getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus)}
+                                    {getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus, o.paymentStatus)}
                                   </span>
                                 </td>
                                 <td>
@@ -1708,7 +1723,7 @@ export function AdminDispatchView() {
                           isSaving: false,
                           justSaved: false,
                         };
-                        const uStatus = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
+                        const uStatus = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
                         const nextConfig = getNextStatusConfig(uStatus);
                         const relativeAge = getRelativeDateLabel(o.createdAt);
                         const isSelected = selectedOrderIds.includes(o.id);
@@ -1765,9 +1780,16 @@ export function AdminDispatchView() {
                             <td>
                               <div className={styles.tableAmountCol}>
                                 <span className={styles.tableTotalVal}>₹{o.total}</span>
-                                <span className={styles.paymentMethodBadge}>
-                                  {o.paymentMethod || 'Razorpay UPI'}
-                                </span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '3px' }}>
+                                  <span className={styles.paymentMethodBadge}>
+                                    {o.paymentMethod || 'Razorpay UPI'}
+                                  </span>
+                                  {o.paymentStatus === 'Paid' ? (
+                                    <span className={styles.paymentBadgePaid}>Paid ✓</span>
+                                  ) : (
+                                    <span className={styles.paymentBadgeUnpaid}>Unpaid ⚠️</span>
+                                  )}
+                                </div>
                               </div>
                             </td>
 
@@ -1788,11 +1810,13 @@ export function AdminDispatchView() {
                                       ? styles.pillProcessing
                                       : uStatus === 'Cancelled'
                                       ? styles.pillCancelled
+                                      : uStatus === 'Payment Pending'
+                                      ? styles.pillPending
                                       : styles.pillConfirmed
                                   }`}
                                   title="Click to jump to any status"
                                 >
-                                  <span>{getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus)}</span>
+                                  <span>{getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus, o.paymentStatus)}</span>
                                   <ChevronDown size={11} />
                                 </button>
 
@@ -1867,6 +1891,15 @@ export function AdminDispatchView() {
                                     </>
                                   )}
                                 </motion.button>
+                              ) : uStatus === 'Payment Pending' ? (
+                                <span className={styles.paymentBadgeUnpaid} style={{ padding: '4px 8px', fontSize: '0.72rem' }}>
+                                  <AlertCircle size={12} />
+                                  <span>Unpaid • Awaiting</span>
+                                </span>
+                              ) : uStatus === 'Cancelled' ? (
+                                <span className={styles.paymentBadgeUnpaid} style={{ padding: '4px 8px', fontSize: '0.72rem' }}>
+                                  <span>Cancelled / Failed</span>
+                                </span>
                               ) : (
                                 <span className={styles.fulfilledCompleteBadge}>
                                   <CheckCircle2 size={13} />
@@ -1966,7 +1999,7 @@ export function AdminDispatchView() {
                       isSaving: false,
                       justSaved: false,
                     };
-                    const uStatus = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
+                    const uStatus = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
                     const nextConfig = getNextStatusConfig(uStatus);
                     const relativeAge = getRelativeDateLabel(o.createdAt);
                     const isSelected = selectedOrderIds.includes(o.id);
@@ -2002,10 +2035,14 @@ export function AdminDispatchView() {
                                 ? styles.pillShippedSmall
                                 : uStatus === 'Processing'
                                 ? styles.pillProcessingSmall
+                                : uStatus === 'Cancelled'
+                                ? styles.pillCancelledSmall
+                                : uStatus === 'Payment Pending'
+                                ? styles.pillPendingSmall
                                 : styles.pillConfirmedSmall
                             }
                           >
-                            {getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus)}
+                            {getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus, o.paymentStatus)}
                           </span>
                         </div>
 
@@ -2078,6 +2115,15 @@ export function AdminDispatchView() {
                                   </>
                                 )}
                               </motion.button>
+                            ) : uStatus === 'Payment Pending' ? (
+                              <div className={styles.unpaidAlertBadgeMobile}>
+                                <AlertCircle size={14} />
+                                <span>Awaiting Payment — Do Not Pack</span>
+                              </div>
+                            ) : uStatus === 'Cancelled' ? (
+                              <div className={styles.cancelledBadgeMobile}>
+                                <span>Order Cancelled / Failed</span>
+                              </div>
                             ) : (
                               <div className={styles.fulfilledCompleteBadgeMobile}>
                                 <CheckCircle2 size={15} />

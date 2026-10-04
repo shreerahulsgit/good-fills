@@ -37,15 +37,18 @@ export function FeaturedTestimonials({ initialReviews = [] }: FeaturedTestimonia
     const published = reviewsList.filter((r) => r.status !== 'hidden');
     const featured = published.filter((r) => r.isFeatured);
 
-    if (featured.length >= 3) {
-      return featured.slice(0, 6);
+    if (featured.length > 0) {
+      if (featured.length >= 3) {
+        return featured.slice(0, 6);
+      }
+      const remaining = published.filter((r) => !r.isFeatured && r.rating >= 4);
+      remaining.sort((a, b) => (b.helpfulCount || 0) - (a.helpfulCount || 0));
+      return [...featured, ...remaining.slice(0, 3 - featured.length)];
     }
 
-    const remaining = published.filter((r) => !r.isFeatured && r.rating >= 4);
-    remaining.sort((a, b) => (b.helpfulCount || 0) - (a.helpfulCount || 0));
-
-    const combined = [...featured, ...remaining];
-    return combined.slice(0, 3);
+    const fallback = published.filter((r) => r.rating >= 4);
+    fallback.sort((a, b) => (b.helpfulCount || 0) - (a.helpfulCount || 0));
+    return fallback.slice(0, 3);
   }, [reviewsList]);
 
   if (displayedReviews.length === 0) {
@@ -95,7 +98,7 @@ export function FeaturedTestimonials({ initialReviews = [] }: FeaturedTestimonia
           {displayedReviews.map((review, idx) => (
             <motion.article
               key={review.id}
-              className={styles.card}
+              className={`${styles.card} ${review.isFeatured ? styles.cardFeatured : ''}`}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
@@ -116,12 +119,20 @@ export function FeaturedTestimonials({ initialReviews = [] }: FeaturedTestimonia
                     ))}
                   </div>
 
-                  {review.isVerifiedBuyer && (
-                    <span className={styles.verifiedBadge}>
-                      <ShieldCheck size={11} strokeWidth={2.5} />
-                      Verified
-                    </span>
-                  )}
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    {review.isFeatured && (
+                      <span className={styles.featuredBadge}>
+                        <Sparkles size={11} />
+                        Featured
+                      </span>
+                    )}
+                    {review.isVerifiedBuyer && (
+                      <span className={styles.verifiedBadge}>
+                        <ShieldCheck size={11} strokeWidth={2.5} />
+                        Verified
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <Link

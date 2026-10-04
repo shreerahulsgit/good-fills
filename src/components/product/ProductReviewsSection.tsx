@@ -467,6 +467,21 @@ export function ProductReviewsSection({ product, initialSummary }: ProductReview
                 <h3 className={styles.reviewTitle}>{review.title}</h3>
                 <p className={styles.reviewComment}>{review.comment}</p>
 
+                {review.founderReply && (
+                  <div className={styles.founderReplyBlock}>
+                    <div className={styles.founderReplyHeader}>
+                      <span className={styles.founderReplyBadge}>Good Fills Kitchen Team</span>
+                      <span className={styles.founderReplyDate}>
+                        {new Date(review.founderReply.repliedAt).toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'short',
+                        })}
+                      </span>
+                    </div>
+                    <p className={styles.founderReplyBody}>&ldquo;{review.founderReply.message}&rdquo;</p>
+                  </div>
+                )}
+
                 <div className={styles.cardFooter}>
                   <div className={styles.authorMeta}>
                     <span className={styles.authorName}>{review.authorName}</span>

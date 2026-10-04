@@ -16,6 +16,12 @@ export interface Review {
   isVerifiedBuyer: boolean;
   helpfulCount: number;
   createdAt: string;
+  isFeatured?: boolean; // Highlighted as top testimonial
+  status?: 'published' | 'hidden'; // Moderation status
+  founderReply?: {
+    message: string;
+    repliedAt: string;
+  };
 }
 
 export interface ProductReviewSummary {
@@ -572,8 +578,9 @@ export function getProductReviewSummary(productIdOrSlug: string): ProductReviewS
 
   const matched = Array.from(reviewsCache.values()).filter(
     (r) =>
-      r.productId.toLowerCase() === targetId ||
-      r.productId.toLowerCase() === productIdOrSlug.toLowerCase()
+      r.status !== 'hidden' &&
+      (r.productId.toLowerCase() === targetId ||
+        r.productId.toLowerCase() === productIdOrSlug.toLowerCase())
   );
 
   matched.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -675,4 +682,61 @@ export function voteReviewHelpful(reviewId: string): number {
     return r.helpfulCount;
   }
   return 0;
+}
+
+/**
+ * Deletes a review by ID
+ */
+export function deleteReview(reviewId: string): boolean {
+  initReviewsStore();
+  const existed = reviewsCache.delete(reviewId);
+  if (existed) {
+    persistReviews();
+  }
+  return existed;
+}
+
+/**
+ * Toggles featured status for top testimonials
+ */
+export function toggleFeaturedReview(reviewId: string): boolean {
+  initReviewsStore();
+  const r = reviewsCache.get(reviewId);
+  if (r) {
+    r.isFeatured = !r.isFeatured;
+    persistReviews();
+    return Boolean(r.isFeatured);
+  }
+  return false;
+}
+
+/**
+ * Toggles review visibility between published and hidden
+ */
+export function toggleReviewVisibility(reviewId: string, forcedStatus?: 'published' | 'hidden'): Review | null {
+  initReviewsStore();
+  const r = reviewsCache.get(reviewId);
+  if (r) {
+    r.status = forcedStatus || (r.status === 'hidden' ? 'published' : 'hidden');
+    persistReviews();
+    return r;
+  }
+  return null;
+}
+
+/**
+ * Adds or updates a founder/kitchen response note
+ */
+export function addFounderReply(reviewId: string, message: string): Review | null {
+  initReviewsStore();
+  const r = reviewsCache.get(reviewId);
+  if (r) {
+    r.founderReply = {
+      message: message.trim(),
+      repliedAt: new Date().toISOString(),
+    };
+    persistReviews();
+    return r;
+  }
+  return null;
 }

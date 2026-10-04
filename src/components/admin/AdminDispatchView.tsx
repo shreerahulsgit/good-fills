@@ -50,10 +50,11 @@ import { Order, OrderStatus, ShipmentStatus, PaymentStatus, Product, ProductCate
 import { PRODUCTS } from '@/data/products';
 import { Inquiry } from '@/lib/inquiries';
 import { AdminKitchenManifestView } from './AdminKitchenManifestView';
+import { AdminReviewsModerationView } from './AdminReviewsModerationView';
 import styles from './AdminDispatchView.module.css';
 
 type DatePreset = 'all' | 'today' | 'yesterday' | '7days' | 'month' | 'custom';
-type SidebarTab = 'dashboard' | 'orders' | 'kitchen' | 'products' | 'inquiries';
+type SidebarTab = 'dashboard' | 'orders' | 'kitchen' | 'products' | 'reviews' | 'inquiries';
 type OrderDateTab = 'all' | 'today' | 'yesterday' | 'week' | 'month';
 type ManifestLayout = 'table' | 'cards';
 type SortOption = 'newest' | 'oldest' | 'highest' | 'lowest' | 'name';
@@ -1352,6 +1353,20 @@ export function AdminDispatchView() {
 
             <button
               type="button"
+              className={`${styles.navItem} ${activeSidebarTab === 'reviews' ? styles.navItemActive : ''}`}
+              onClick={() => {
+                setActiveSidebarTab('reviews');
+                setIsMobileDrawerOpen(false);
+              }}
+              title="Customer feedback, ratings, and testimonial moderation"
+            >
+              <Star size={18} />
+              <span>Reviews</span>
+              {activeSidebarTab === 'reviews' && <div className={styles.activePillMarker} />}
+            </button>
+
+            <button
+              type="button"
               className={`${styles.navItem} ${activeSidebarTab === 'inquiries' ? styles.navItemActive : ''}`}
               onClick={() => {
                 setActiveSidebarTab('inquiries');
@@ -1455,6 +1470,14 @@ export function AdminDispatchView() {
           >
             <ShoppingBag size={14} />
             <span>Products ({products.length})</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.mobileTabBtn} ${activeSidebarTab === 'reviews' ? styles.mobileTabBtnActive : ''}`}
+            onClick={() => setActiveSidebarTab('reviews')}
+          >
+            <Star size={14} />
+            <span>Reviews</span>
           </button>
           <button
             type="button"
@@ -3014,6 +3037,20 @@ export function AdminDispatchView() {
               </div>
             )}
           </div>
+        )}
+
+        {/* ====================================================================
+            TAB REVIEWS: CUSTOMER REVIEWS & TESTIMONIALS MODERATION CONSOLE
+            ==================================================================== */}
+        {activeSidebarTab === 'reviews' && (
+          <AdminReviewsModerationView
+            showToast={showToast}
+            onNavigateToOrder={(orderId) => {
+              setActiveSidebarTab('orders');
+              setActiveDateTab('all');
+              setSearchTerm(orderId);
+            }}
+          />
         )}
       </div>
 

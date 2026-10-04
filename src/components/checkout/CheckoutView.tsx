@@ -26,6 +26,7 @@ import { formatCurrency } from '@/lib/shipping';
 import { saveOrder } from '@/lib/orders';
 import { loadRazorpayScript } from '@/lib/loadRazorpayScript';
 import { ShippingAddress } from '@/types';
+import { LocationDetector } from './LocationDetector';
 import styles from './CheckoutView.module.css';
 
 const INDIAN_STATES = [
@@ -752,6 +753,38 @@ export function CheckoutView() {
                     Order confirmation &amp; digital invoice sent here.
                   </span>
                   {errors.email && <span className={styles.errorText}>{errors.email}</span>}
+                </div>
+
+                {/* 1-Click Current Location GPS Detector */}
+                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                  <LocationDetector
+                    onLocationDetected={(loc) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        city: loc.city || prev.city,
+                        state: loc.state || prev.state,
+                        pincode: loc.pincode || prev.pincode,
+                        addressLine2: loc.addressLine2 || prev.addressLine2,
+                        addressLine1: loc.addressLine1
+                          ? (prev.addressLine1 ? `${prev.addressLine1}, ${loc.addressLine1}` : loc.addressLine1)
+                          : prev.addressLine1,
+                      }));
+
+                      setErrors((prev) => {
+                        const next = { ...prev };
+                        if (loc.city) delete next.city;
+                        if (loc.state) delete next.state;
+                        if (loc.pincode) delete next.pincode;
+                        if (loc.addressLine1) delete next.addressLine1;
+                        return next;
+                      });
+
+                      const addrInput = document.getElementById('addressLine1');
+                      if (addrInput) {
+                        addrInput.focus();
+                      }
+                    }}
+                  />
                 </div>
 
                 {/* Street Address */}

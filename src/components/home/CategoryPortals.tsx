@@ -52,7 +52,9 @@ export function CategoryPortals({ initialProducts }: CategoryPortalsProps) {
 
   const categoriesWithCounts = useMemo(() => {
     return CATEGORIES.map((cat, idx) => {
-      const count = productsList.filter((p) => p.category === cat.id).length;
+      const count = productsList.filter(
+        (p) => p.category === cat.id && p.id !== 'prod-live-test' && p.price > 1
+      ).length;
       return {
         ...cat,
         num: `0${idx + 1}`,

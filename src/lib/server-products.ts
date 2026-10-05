@@ -37,12 +37,12 @@ export function initProductStore(force = false) {
     try {
       if (fs.existsSync(PRIMARY_PRODUCTS_FILE)) {
         const stat = fs.statSync(PRIMARY_PRODUCTS_FILE);
-        if (stat.mtimeMs > lastLoadedMtime) {
+        if (stat.mtimeMs !== lastLoadedMtime) {
           shouldReload = true;
         }
       } else if (fs.existsSync(TMP_PRODUCTS_FILE)) {
         const stat = fs.statSync(TMP_PRODUCTS_FILE);
-        if (stat.mtimeMs > lastLoadedMtime) {
+        if (stat.mtimeMs !== lastLoadedMtime) {
           shouldReload = true;
         }
       }
@@ -90,8 +90,20 @@ export function initProductStore(force = false) {
     }
   }
 
-  // 3. Fallback: Seed with default catalog from src/data/products.ts
-  if (!loaded || productsCache.size === 0) {
+  // 3. Auto-sync any newly added catalog items (like test items or new additions)
+  if (loaded) {
+    let hasAdditions = false;
+    PRODUCTS.forEach((defaultProd) => {
+      if (!productsCache.has(defaultProd.id)) {
+        productsCache.set(defaultProd.id, { ...defaultProd });
+        hasAdditions = true;
+      }
+    });
+    if (hasAdditions) {
+      persistProducts();
+    }
+  } else if (productsCache.size === 0) {
+    // 4. Fallback: Seed with default catalog from src/data/products.ts
     productsCache.clear();
     PRODUCTS.forEach((p) => productsCache.set(p.id, { ...p }));
     persistProducts();
@@ -122,8 +134,8 @@ function persistProducts() {
   }
 }
 
-export function getAllServerProducts(): Product[] {
-  initProductStore();
+export function getAllServerProducts(force = false): Product[] {
+  initProductStore(force);
   return Array.from(productsCache.values());
 }
 

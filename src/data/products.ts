@@ -85,7 +85,7 @@ export const PRODUCTS: Product[] = [
     storageInstructions: 'Store in a clean, airtight container. Use a dry spoon for each serving.',
     shelfLife: '6 months',
     availability: 'available',
-    featured: true,
+    featured: false,
     images: PRODUCT_ASSETS['ragi-porridge-mix'],
     fssaiCompliant: true,
     madeToOrder: true
@@ -162,7 +162,7 @@ export const PRODUCTS: Product[] = [
     storageInstructions: 'Store in an airtight glass or steel jar in a cool, shaded pantry.',
     shelfLife: '6 months',
     availability: 'available',
-    featured: true,
+    featured: false,
     images: PRODUCT_ASSETS['kids-nutrition-powder'],
     fssaiCompliant: true,
     madeToOrder: true
@@ -197,7 +197,7 @@ export const PRODUCTS: Product[] = [
     storageInstructions: 'Keep in an airtight container away from heat and moisture.',
     shelfLife: '6 months',
     availability: 'available',
-    featured: false,
+    featured: true,
     images: PRODUCT_ASSETS['baby-ragi-sari'],
     fssaiCompliant: true,
     madeToOrder: true
@@ -269,7 +269,7 @@ export const PRODUCTS: Product[] = [
     storageInstructions: 'Store in a sealed container in a cool, dark location.',
     shelfLife: '6 months',
     availability: 'available',
-    featured: false,
+    featured: true,
     images: PRODUCT_ASSETS['wonder-millet-mix'],
     fssaiCompliant: true,
     madeToOrder: true
@@ -310,7 +310,7 @@ export const PRODUCTS: Product[] = [
     storageInstructions: 'Store in an airtight container. Refrigeration recommended during peak summer.',
     shelfLife: '6 months',
     availability: 'available',
-    featured: true,
+    featured: false,
     images: PRODUCT_ASSETS['homemade-protein-powder'],
     fssaiCompliant: true,
     madeToOrder: true
@@ -380,7 +380,7 @@ export const PRODUCTS: Product[] = [
     storageInstructions: 'Store sealed away from bathroom humidity.',
     shelfLife: '6 months',
     availability: 'available',
-    featured: true,
+    featured: false,
     images: PRODUCT_ASSETS['ubtan-face-pack'],
     fssaiCompliant: true,
     madeToOrder: true
@@ -486,7 +486,7 @@ export const PRODUCTS: Product[] = [
     storageInstructions: 'Transfer immediately to an airtight container to preserve roast aroma.',
     shelfLife: '6 months',
     availability: 'available',
-    featured: true,
+    featured: false,
     images: PRODUCT_ASSETS['filter-coffee-powder'],
     fssaiCompliant: true,
     madeToOrder: true
@@ -512,7 +512,7 @@ export const PRODUCTS: Product[] = [
     storageInstructions: 'Atelier test creation.',
     shelfLife: 'Immediate',
     availability: 'available',
-    featured: true,
+    featured: false,
     images: {
       primary: '/logo.png',
       packaging: '/logo.png',

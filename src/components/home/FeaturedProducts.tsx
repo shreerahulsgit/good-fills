@@ -56,37 +56,30 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
   }, [initialProducts]);
 
   useEffect(() => {
-    fetch('/api/products', { cache: 'no-store' })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
-          setProductsList(data.products);
-        }
-      })
-      .catch((err) => console.error('Error fetching featured products:', err));
+    const refreshProducts = () => {
+      fetch(`/api/products?t=${Date.now()}`, { cache: 'no-store' })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+            setProductsList(data.products);
+          }
+        })
+        .catch((err) => console.error('Error fetching featured products:', err));
+    };
+
+    refreshProducts();
+
+    // Auto-refresh when switching back to tab from admin console
+    window.addEventListener('focus', refreshProducts);
+    return () => window.removeEventListener('focus', refreshProducts);
   }, []);
 
   const featuredProducts = useMemo(() => {
-    // 1. First pick creations that are explicitly marked as featured by admin
-    const explicitlyFeatured = productsList.filter((p) => p.featured);
-    
-    // If admin has pinned ANY creations (1, 2, 3, 4, etc.), show EXACTLY the pinned items!
-    // Do NOT inject unwanted fallback products when the admin has explicitly curated pinned items.
-    if (explicitlyFeatured.length > 0) {
-      return explicitlyFeatured;
-    }
-
-    // 2. ONLY if 0 products are pinned by admin, fallback gracefully to default signature creations
-    const fallbackItems = DEFAULT_FEATURED_SLUGS.map((slug) =>
-      productsList.find((p) => p.slug === slug)
-    ).filter((p): p is Product => Boolean(p));
-
-    if (fallbackItems.length > 0) {
-      return fallbackItems;
-    }
-
-    // 3. Absolute fallback to first available items from catalog if no default signature match
-    return productsList.slice(0, 3);
+    // Show strictly creations that are explicitly marked as featured by admin
+    // Never allow test products to leak onto homepage
+    return productsList.filter(
+      (p) => Boolean(p.featured) && p.id !== 'prod-live-test' && p.price > 1
+    );
   }, [productsList]);
 
   const handleAdd = (e: React.MouseEvent, product: Product) => {
@@ -96,6 +89,11 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
     setAddedId(product.id);
     setTimeout(() => setAddedId(null), 1400);
   };
+
+  // If admin has unpinned all products from homepage, hide section cleanly
+  if (featuredProducts.length === 0) {
+    return null;
+  }
 
   return (
     <section className="featured-section">

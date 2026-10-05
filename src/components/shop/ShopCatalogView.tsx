@@ -57,21 +57,25 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
       .catch((err) => console.error('Error refreshing live products:', err));
   }, []);
 
+  const publicProducts = useMemo(() => {
+    return productsList.filter((p) => p.id !== 'prod-live-test' && p.price > 1);
+  }, [productsList]);
+
   const categoryTabs = useMemo(() => [
-    { id: 'all' as const, label: 'All Creations', count: productsList.length },
-    { id: 'baby-kids' as const, label: 'Baby & Kids', count: productsList.filter((p) => p.category === 'baby-kids').length },
+    { id: 'all' as const, label: 'All Creations', count: publicProducts.length },
+    { id: 'baby-kids' as const, label: 'Baby & Kids', count: publicProducts.filter((p) => p.category === 'baby-kids').length },
     {
       id: 'nutrition-wellness' as const,
       label: 'Nutrition & Wellness',
-      count: productsList.filter((p) => p.category === 'nutrition-wellness').length,
+      count: publicProducts.filter((p) => p.category === 'nutrition-wellness').length,
     },
-    { id: 'skin-bath' as const, label: 'Skin & Bath', count: productsList.filter((p) => p.category === 'skin-bath').length },
+    { id: 'skin-bath' as const, label: 'Skin & Bath', count: publicProducts.filter((p) => p.category === 'skin-bath').length },
     {
       id: 'pantry-beverages' as const,
       label: 'Pantry & Beverages',
-      count: productsList.filter((p) => p.category === 'pantry-beverages').length,
+      count: publicProducts.filter((p) => p.category === 'pantry-beverages').length,
     },
-  ], [productsList]);
+  ], [publicProducts]);
 
   const activeCategoryInfo = useMemo(() => {
     if (selectedCategory === 'all') return null;
@@ -79,7 +83,7 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
   }, [selectedCategory]);
 
   const filteredProducts = useMemo(() => {
-    let result = [...productsList];
+    let result = [...publicProducts];
 
     // Category filter
     if (selectedCategory !== 'all') {
@@ -104,7 +108,7 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
     }
 
     return result;
-  }, [productsList, selectedCategory, sortBy]);
+  }, [publicProducts, selectedCategory, sortBy]);
 
   const handleTabChange = (catId: 'all' | ProductCategory) => {
     setSelectedCategory(catId);

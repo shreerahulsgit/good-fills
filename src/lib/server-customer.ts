@@ -238,10 +238,12 @@ export function manageCustomerAddress(
   const profile = getCustomerProfile(identifier);
   if (!profile) return null;
 
-  const clean = identifier.trim().toLowerCase();
-  const customerKey = `email_${clean}`;
-
   const savedCustomers = loadCustomers();
+  const existingEntry = Object.entries(savedCustomers).find(([, candidate]) => candidate.id === profile.user.id);
+  const fallbackKey = profile.user.email
+    ? `email_${profile.user.email.trim().toLowerCase()}`
+    : `phone_${(profile.user.phone || identifier).replace(/\D/g, '').slice(-10)}`;
+  const customerKey = existingEntry?.[0] || fallbackKey;
   let user = savedCustomers[customerKey] || profile.user;
   user.addresses = user.addresses || [];
 

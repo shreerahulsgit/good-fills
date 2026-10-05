@@ -6,11 +6,11 @@
 .pageWrapper {
   min-height: 100vh;
   background-color: var(--bg-cream);
-  padding: var(--space-10) 0 var(--space-20);
+  padding: var(--space-10) 0 var(--space-16);
 }
 
 .confirmationContainer {
-  max-width: 760px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 

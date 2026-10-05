@@ -1294,6 +1294,7 @@
   cursor: pointer;
   padding: 6px 8px;
   border-radius: 12px;
+  min-width: 24%;
   text-align: left;
   transition: all var(--transition-fast);
 }

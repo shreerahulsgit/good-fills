@@ -285,7 +285,7 @@ export function CartDrawer() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Tracked Express Shipping</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>Shipping Charges</span>
                   <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>({shipping.slabDescription})</span>
                 </div>
                 <strong style={{ color: 'var(--accent-terracotta)' }}>{formatCurrency(shipping.shippingCost)}</strong>
@@ -314,11 +314,6 @@ export function CartDrawer() {
                 <span>Total Amount</span>
                 <span>{formatCurrency(grandTotal)}</span>
               </div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-4)' }}>
-              <ShieldCheck size={14} style={{ color: 'var(--accent-sage)', flexShrink: 0 }} />
-              <span>Made to order in Bengaluru • UPI Payment only at checkout</span>
             </div>
 
             <Link 

@@ -123,12 +123,11 @@
   left: 0;
   right: 0;
   width: 100%;
+  z-index: 60;
   transition: background-color var(--transition-smooth), border-color var(--transition-smooth), box-shadow var(--transition-smooth);
 }
 
-:global(body.intro-active) .headerHome,
-:global(body.intro-active) .headerRoot {
-  transform: translateY(-100%);
+:global(body.intro-active) .headerHome {
   opacity: 0;
   pointer-events: none;
 }

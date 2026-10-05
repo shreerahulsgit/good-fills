@@ -78,8 +78,16 @@ export function HeroSection() {
                   document.body.classList.add('intro-active');
                 }
               },
-              onLeave: () => document.body.classList.remove('intro-active'),
-              onLeaveBack: () => document.body.classList.add('intro-active'),
+              onLeave: () => {
+                document.body.classList.remove('intro-active');
+                const nav = document.getElementById('master-nav');
+                if (nav) gsap.set(nav, { y: '0%', yPercent: 0, opacity: 1 });
+              },
+              onLeaveBack: () => {
+                document.body.classList.add('intro-active');
+                const nav = document.getElementById('master-nav');
+                if (nav) gsap.set(nav, { y: '-100%', yPercent: 0, opacity: 0 });
+              },
             },
           });
 
@@ -126,9 +134,9 @@ export function HeroSection() {
             tl.fromTo(bgOverlayRef.current, { opacity: 0.15 }, { opacity: 1, ease: 'sine.out', duration: 0.55 }, 0.12);
           }
 
-          // STEP 3: Hero content 3D curtain unmasking
+          // STEP 3: Hero content unmasking (crisp, zero blur)
           if (heroWrapperRef.current) {
-            tl.to(heroWrapperRef.current, { opacity: 1, pointerEvents: 'auto', duration: 0.10 }, 0.35);
+            tl.to(heroWrapperRef.current, { opacity: 1, pointerEvents: 'auto', duration: 0.10 }, 0.28);
           }
 
           heroLinesRef.current.filter(Boolean).forEach((el, i) => {
@@ -136,29 +144,35 @@ export function HeroSection() {
             if (!inner) return;
             tl.fromTo(
               inner,
-              { y: '110%', rotateX: 75, opacity: 0, filter: 'blur(6px)' },
-              { y: '0%', rotateX: 0, opacity: 1, filter: 'blur(0px)', duration: 0.28, ease: 'power3.out' },
-              0.38 + i * 0.07
+              { y: '100%', opacity: 0 },
+              { y: '0%', opacity: 1, duration: 0.24, ease: 'power3.out' },
+              0.32 + i * 0.06
             );
           });
 
           if (heroLabelRef.current) {
-            tl.fromTo(heroLabelRef.current, { opacity: 0, x: -25, filter: 'blur(3px)' }, { opacity: 1, x: 0, filter: 'blur(0px)', duration: 0.22, ease: 'power3.out' }, 0.48);
+            tl.fromTo(heroLabelRef.current, { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.18, ease: 'power3.out' }, 0.38);
           }
           if (heroLineRef.current) {
-            tl.fromTo(heroLineRef.current, { scaleX: 0 }, { scaleX: 1, duration: 0.22, ease: 'power2.inOut' }, 0.50);
+            tl.fromTo(heroLineRef.current, { scaleX: 0 }, { scaleX: 1, duration: 0.18, ease: 'power2.inOut' }, 0.40);
           }
           if (heroDescRef.current) {
-            tl.fromTo(heroDescRef.current, { opacity: 0, y: 14, filter: 'blur(2px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.22, ease: 'power3.out' }, 0.52);
+            tl.fromTo(heroDescRef.current, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.18, ease: 'power3.out' }, 0.42);
           }
           if (heroCtaRef.current) {
-            tl.fromTo(heroCtaRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.22, ease: 'back.out(1.4)' }, 0.60);
+            tl.fromTo(heroCtaRef.current, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.20, ease: 'back.out(1.4)' }, 0.46);
           }
 
-          // Reveal Navigation Bar smoothly
+          // Reveal Navigation Bar smoothly (explicit y: 0% to avoid pixel offset cache)
           const nav = document.getElementById('master-nav');
           if (nav) {
-            tl.fromTo(nav, { yPercent: -100, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.22, ease: 'power2.out' }, 0.42);
+            gsap.set(nav, { y: '-100%', yPercent: 0, opacity: 0 });
+            tl.fromTo(
+              nav,
+              { y: '-100%', yPercent: 0, opacity: 0 },
+              { y: '0%', yPercent: 0, opacity: 1, duration: 0.20, ease: 'power2.out' },
+              0.34
+            );
           }
         });
 
@@ -174,8 +188,16 @@ export function HeroSection() {
                 if (self.progress > 0.40) document.body.classList.remove('intro-active');
                 else document.body.classList.add('intro-active');
               },
-              onLeave: () => document.body.classList.remove('intro-active'),
-              onLeaveBack: () => document.body.classList.add('intro-active'),
+              onLeave: () => {
+                document.body.classList.remove('intro-active');
+                const nav = document.getElementById('master-nav');
+                if (nav) gsap.set(nav, { y: '0%', yPercent: 0, opacity: 1 });
+              },
+              onLeaveBack: () => {
+                document.body.classList.add('intro-active');
+                const nav = document.getElementById('master-nav');
+                if (nav) gsap.set(nav, { y: '-100%', yPercent: 0, opacity: 0 });
+              },
             },
           });
 
@@ -194,22 +216,28 @@ export function HeroSection() {
             tl.fromTo(bgOverlayRef.current, { opacity: 0.2 }, { opacity: 1, duration: 0.55 }, 0.12);
           }
 
-          if (heroWrapperRef.current) tl.to(heroWrapperRef.current, { opacity: 1, pointerEvents: 'auto', duration: 0.10 }, 0.32);
+          if (heroWrapperRef.current) tl.to(heroWrapperRef.current, { opacity: 1, pointerEvents: 'auto', duration: 0.10 }, 0.26);
 
           heroLinesRef.current.filter(Boolean).forEach((el, i) => {
             const inner = el?.querySelector<HTMLSpanElement>('.hero-line-inner');
             if (!inner) return;
-            tl.fromTo(inner, { y: '100%', opacity: 0 }, { y: '0%', opacity: 1, duration: 0.25, ease: 'power3.out' }, 0.35 + i * 0.06);
+            tl.fromTo(inner, { y: '100%', opacity: 0 }, { y: '0%', opacity: 1, duration: 0.22, ease: 'power3.out' }, 0.30 + i * 0.05);
           });
 
-          if (heroLabelRef.current) tl.fromTo(heroLabelRef.current, { opacity: 0, x: -15 }, { opacity: 1, x: 0, duration: 0.20 }, 0.44);
-          if (heroLineRef.current) tl.fromTo(heroLineRef.current, { scaleX: 0 }, { scaleX: 1, duration: 0.20 }, 0.46);
-          if (heroDescRef.current) tl.fromTo(heroDescRef.current, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.20 }, 0.48);
-          if (heroCtaRef.current) tl.fromTo(heroCtaRef.current, { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.20 }, 0.54);
+          if (heroLabelRef.current) tl.fromTo(heroLabelRef.current, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.16 }, 0.36);
+          if (heroLineRef.current) tl.fromTo(heroLineRef.current, { scaleX: 0 }, { scaleX: 1, duration: 0.16 }, 0.38);
+          if (heroDescRef.current) tl.fromTo(heroDescRef.current, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.16 }, 0.40);
+          if (heroCtaRef.current) tl.fromTo(heroCtaRef.current, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.18 }, 0.44);
 
           const nav = document.getElementById('master-nav');
           if (nav) {
-            tl.fromTo(nav, { yPercent: -100, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.20 }, 0.38);
+            gsap.set(nav, { y: '-100%', yPercent: 0, opacity: 0 });
+            tl.fromTo(
+              nav,
+              { y: '-100%', yPercent: 0, opacity: 0 },
+              { y: '0%', yPercent: 0, opacity: 1, duration: 0.18, ease: 'power2.out' },
+              0.32
+            );
           }
         });
       }, sectionRef.current);
@@ -220,6 +248,10 @@ export function HeroSection() {
     return () => {
       lenisInstance?.destroy();
       ctx?.revert();
+      const nav = document.getElementById('master-nav');
+      if (nav) {
+        gsap.set(nav, { clearProps: 'all' });
+      }
     };
   }, []);
 

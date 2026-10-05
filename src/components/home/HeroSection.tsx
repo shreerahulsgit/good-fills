@@ -61,6 +61,12 @@ export function HeroSection() {
       if (!wrapperRef.current || !sectionRef.current || !bgCardRef.current || !bgImgRef.current) return;
 
       ctx = gsap.context(() => {
+        // Ensure splash elements are explicitly at 100% on start
+        if (logoRef.current) gsap.set(logoRef.current, { opacity: 1, y: 0, scale: 1 });
+        if (taglineRef.current) gsap.set(taglineRef.current, { opacity: 1, y: 0 });
+        if (scrollHintRef.current) gsap.set(scrollHintRef.current, { opacity: 1, scale: 1 });
+        if (heroWrapperRef.current) gsap.set(heroWrapperRef.current, { opacity: 0, pointerEvents: 'none' });
+
         const mm = gsap.matchMedia();
 
         // ── DESKTOP TIMELINE (min-width: 768px) ──
@@ -77,6 +83,14 @@ export function HeroSection() {
                 } else {
                   document.body.classList.add('intro-active');
                 }
+
+                // Guarantee splash elements stay 100% visible at the top
+                if (self.progress <= 0.02) {
+                  if (logoRef.current) gsap.set(logoRef.current, { opacity: 1, y: 0, scale: 1 });
+                  if (taglineRef.current) gsap.set(taglineRef.current, { opacity: 1, y: 0 });
+                  if (scrollHintRef.current) gsap.set(scrollHintRef.current, { opacity: 1, scale: 1 });
+                  if (heroWrapperRef.current) gsap.set(heroWrapperRef.current, { opacity: 0, pointerEvents: 'none' });
+                }
               },
               onLeave: () => {
                 document.body.classList.remove('intro-active');
@@ -87,19 +101,38 @@ export function HeroSection() {
                 document.body.classList.add('intro-active');
                 const nav = document.getElementById('master-nav');
                 if (nav) gsap.set(nav, { y: '-100%', yPercent: 0, opacity: 0 });
+                if (logoRef.current) gsap.set(logoRef.current, { opacity: 1, y: 0, scale: 1 });
+                if (taglineRef.current) gsap.set(taglineRef.current, { opacity: 1, y: 0 });
+                if (scrollHintRef.current) gsap.set(scrollHintRef.current, { opacity: 1, scale: 1 });
+                if (heroWrapperRef.current) gsap.set(heroWrapperRef.current, { opacity: 0, pointerEvents: 'none' });
               },
             },
           });
 
-          // STEP 1: Dissolve initial splash elements
+          // STEP 1: Dissolve initial splash elements smoothly with card expansion
           if (logoRef.current) {
-            tl.to(logoRef.current, { opacity: 0, y: -35, scale: 0.96, filter: 'blur(6px)', duration: 0.25, ease: 'sine.out' }, 0);
+            tl.fromTo(
+              logoRef.current,
+              { opacity: 1, y: 0, scale: 1 },
+              { opacity: 0, y: -28, scale: 0.96, duration: 0.22, ease: 'sine.out' },
+              0.14
+            );
           }
           if (taglineRef.current) {
-            tl.to(taglineRef.current, { opacity: 0, y: -20, filter: 'blur(4px)', duration: 0.25, ease: 'sine.out' }, 0);
+            tl.fromTo(
+              taglineRef.current,
+              { opacity: 1, y: 0 },
+              { opacity: 0, y: -16, duration: 0.20, ease: 'sine.out' },
+              0.16
+            );
           }
           if (scrollHintRef.current) {
-            tl.to(scrollHintRef.current, { opacity: 0, scale: 0.85, duration: 0.15, ease: 'sine.out' }, 0);
+            tl.fromTo(
+              scrollHintRef.current,
+              { opacity: 1, scale: 1 },
+              { opacity: 0, scale: 0.85, duration: 0.16, ease: 'sine.out' },
+              0.08
+            );
           }
 
           // STEP 2: Card expansion to full viewport bleed
@@ -136,7 +169,12 @@ export function HeroSection() {
 
           // STEP 3: Hero content unmasking (crisp, zero blur)
           if (heroWrapperRef.current) {
-            tl.to(heroWrapperRef.current, { opacity: 1, pointerEvents: 'auto', duration: 0.10 }, 0.28);
+            tl.fromTo(
+              heroWrapperRef.current,
+              { opacity: 0, pointerEvents: 'none' },
+              { opacity: 1, pointerEvents: 'auto', duration: 0.10 },
+              0.28
+            );
           }
 
           heroLinesRef.current.filter(Boolean).forEach((el, i) => {
@@ -187,6 +225,13 @@ export function HeroSection() {
               onUpdate: (self) => {
                 if (self.progress > 0.40) document.body.classList.remove('intro-active');
                 else document.body.classList.add('intro-active');
+
+                if (self.progress <= 0.02) {
+                  if (logoRef.current) gsap.set(logoRef.current, { opacity: 1, y: 0, scale: 1 });
+                  if (taglineRef.current) gsap.set(taglineRef.current, { opacity: 1, y: 0 });
+                  if (scrollHintRef.current) gsap.set(scrollHintRef.current, { opacity: 1, scale: 1 });
+                  if (heroWrapperRef.current) gsap.set(heroWrapperRef.current, { opacity: 0, pointerEvents: 'none' });
+                }
               },
               onLeave: () => {
                 document.body.classList.remove('intro-active');
@@ -197,13 +242,38 @@ export function HeroSection() {
                 document.body.classList.add('intro-active');
                 const nav = document.getElementById('master-nav');
                 if (nav) gsap.set(nav, { y: '-100%', yPercent: 0, opacity: 0 });
+                if (logoRef.current) gsap.set(logoRef.current, { opacity: 1, y: 0, scale: 1 });
+                if (taglineRef.current) gsap.set(taglineRef.current, { opacity: 1, y: 0 });
+                if (scrollHintRef.current) gsap.set(scrollHintRef.current, { opacity: 1, scale: 1 });
+                if (heroWrapperRef.current) gsap.set(heroWrapperRef.current, { opacity: 0, pointerEvents: 'none' });
               },
             },
           });
 
-          if (logoRef.current) tl.to(logoRef.current, { opacity: 0, y: -20, scale: 0.94, filter: 'blur(4px)', duration: 0.22 }, 0);
-          if (taglineRef.current) tl.to(taglineRef.current, { opacity: 0, y: 15, filter: 'blur(3px)', duration: 0.20 }, 0);
-          if (scrollHintRef.current) tl.to(scrollHintRef.current, { opacity: 0, scale: 0.85, duration: 0.15 }, 0);
+          if (logoRef.current) {
+            tl.fromTo(
+              logoRef.current,
+              { opacity: 1, y: 0, scale: 1 },
+              { opacity: 0, y: -18, scale: 0.95, duration: 0.20, ease: 'sine.out' },
+              0.12
+            );
+          }
+          if (taglineRef.current) {
+            tl.fromTo(
+              taglineRef.current,
+              { opacity: 1, y: 0 },
+              { opacity: 0, y: -12, duration: 0.18, ease: 'sine.out' },
+              0.14
+            );
+          }
+          if (scrollHintRef.current) {
+            tl.fromTo(
+              scrollHintRef.current,
+              { opacity: 1, scale: 1 },
+              { opacity: 0, scale: 0.85, duration: 0.14, ease: 'sine.out' },
+              0.06
+            );
+          }
 
           tl.fromTo(
             bgCardRef.current,
@@ -216,7 +286,14 @@ export function HeroSection() {
             tl.fromTo(bgOverlayRef.current, { opacity: 0.2 }, { opacity: 1, duration: 0.55 }, 0.12);
           }
 
-          if (heroWrapperRef.current) tl.to(heroWrapperRef.current, { opacity: 1, pointerEvents: 'auto', duration: 0.10 }, 0.26);
+          if (heroWrapperRef.current) {
+            tl.fromTo(
+              heroWrapperRef.current,
+              { opacity: 0, pointerEvents: 'none' },
+              { opacity: 1, pointerEvents: 'auto', duration: 0.10 },
+              0.26
+            );
+          }
 
           heroLinesRef.current.filter(Boolean).forEach((el, i) => {
             const inner = el?.querySelector<HTMLSpanElement>('.hero-line-inner');
@@ -259,12 +336,17 @@ export function HeroSection() {
     <div ref={wrapperRef} className="hero-scroll-track">
       <div ref={sectionRef} className="hero-sticky-viewport">
         {/* Layer 1: Splash Brand Logo & Tagline (Scroll 0% to 50%) */}
-        <div ref={logoRef} className="hero-splash-layer">
-          <img
-            src="/logo.png"
-            alt="Good Fills Homemade Products"
-            className="hero-splash-logo"
-          />
+        <div className="hero-splash-layer">
+          <div ref={logoRef} className="hero-splash-logo-wrap">
+            <img
+              src="/logo.png"
+              alt="Good Fills Homemade Products"
+              className="hero-splash-logo"
+              loading="eager"
+              fetchPriority="high"
+              decoding="sync"
+            />
+          </div>
           <span ref={taglineRef} className="hero-splash-tagline">
             Traditional Care, Prepared with Intention
           </span>

@@ -329,6 +329,11 @@ button {
   text-align: center;
 }
 
+.hero-splash-logo-wrap {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
 .hero-splash-logo {
   height: clamp(52px, 7vw, 76px);
   width: auto;
@@ -345,6 +350,7 @@ button {
   text-transform: uppercase;
   color: var(--accent-terracotta);
   margin-top: 14px;
+  will-change: transform, opacity;
 }
 
 /* Layer 2: Expanding Image Card */
@@ -352,10 +358,23 @@ button {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
+  width: clamp(280px, 30vw, 420px);
+  height: clamp(260px, 38vh, 440px);
+  bottom: clamp(1.5rem, 3.5vh, 3rem);
+  border-radius: 24px;
   overflow: hidden;
   z-index: 15;
   transform-origin: center bottom;
   will-change: width, height, bottom, border-radius, transform;
+}
+
+@media (max-width: 767px) {
+  .hero-expanding-card {
+    width: clamp(220px, 76vw, 320px);
+    height: clamp(200px, 32vh, 320px);
+    bottom: clamp(1.5rem, 5vh, 3rem);
+    border-radius: 18px;
+  }
 }
 
 .hero-card-img {

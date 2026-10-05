@@ -2479,10 +2479,8 @@
    PRODUCTS / CREATIONS MANAGEMENT CONSOLE
    ========================================================================== */
 .creationsContainer {
-  padding: 24px 32px 60px;
+  padding: 32px 32px 60px;
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
   box-sizing: border-box;
 }
 
@@ -2683,7 +2681,7 @@
 /* CREATIONS GRID */
 .creationsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 18px;
 }
 

@@ -22,6 +22,7 @@ interface PolicyLayoutProps {
 export function PolicyLayout({
   title,
   subtitle,
+  activePolicy,
   children,
 }: PolicyLayoutProps) {
 
@@ -36,12 +37,12 @@ export function PolicyLayout({
         </div>
 
         {/* 4. MAIN ARTICLE CONTENT */}
-        <article className={styles.policyArticle}>
+        <article className={`${styles.policyArticle} ${activePolicy === 'shipping' ? styles.shippingPolicyArticle : ''}`}>
           {children}
         </article>
 
         {/* 5. ATELIER CONCIERGE HELP CARD */}
-        <section className={styles.supportCard}>
+        {activePolicy !== 'shipping' && <section className={styles.supportCard}>
           <div className={styles.supportLeft}>
             <div className={styles.supportEyebrow}>
               <ShieldCheck size={13} />
@@ -69,7 +70,7 @@ export function PolicyLayout({
               <ArrowRight size={13} />
             </Link>
           </div>
-        </section>
+        </section>}
       </div>
     </div>
   );

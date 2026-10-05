@@ -77,7 +77,7 @@ const KITCHEN_FAQS: FaqItem[] = [
 
 const CATEGORIES = [
   'Infant Nutrition & Weaning',
-  'Order Status & DTDC Courier',
+  'Order Tracking',
   'Custom Milling Request',
   'General Inquiry',
 ];

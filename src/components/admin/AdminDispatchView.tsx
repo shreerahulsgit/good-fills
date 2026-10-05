@@ -1305,7 +1305,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
         <div className={styles.adminTopBarMobile}>
           <div className={styles.brandWrap}>
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img src="/logo.png" alt="Good Fills" style={{ height: '32px', width: 'auto', display: 'block' }} />
+              <img src="/logo.png" alt="Good Fills" style={{ height: '42px', width: 'auto', display: 'block' }} />
             </Link>
             <span className={styles.badgeAdmin}>Dispatch Console</span>
           </div>
@@ -1388,7 +1388,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
           {/* Logo / Brand Header */}
           <div className={styles.sidebarBrand}>
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <img src="/logo.png" alt="Good Fills" style={{ height: '32px', width: 'auto' }} />
+              <img src="/logo.png" alt="Good Fills" style={{ height: '42px', width: 'auto' }} />
             </Link>
             <button
               type="button"

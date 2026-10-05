@@ -251,16 +251,6 @@ export function SiteFooter() {
                         Contact Atelier
                       </Link>
                     </li>
-                    <li>
-                      <a
-                        href="https://wa.me/919742068899"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="footer-nav-link"
-                      >
-                        WhatsApp Concierge
-                      </a>
-                    </li>
                   </ul>
                 </div>
 

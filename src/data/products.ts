@@ -13,7 +13,7 @@ export const CATEGORIES: CategoryInfo[] = [
     id: 'nutrition-wellness',
     name: 'Nutrition & Wellness',
     tagline: 'Whole-food proteins, heritage millets, and time-honored botanical infusions.',
-    description: 'Pure kitchen nutrition made without preservatives, synthetics, or artificial additives.',
+    description: 'Pure kitchen nutrition made without preservatives, synthetics, or artificial additives for everyday nourishment.',
     image: CATEGORY_ASSETS['nutrition-wellness']
   },
   {

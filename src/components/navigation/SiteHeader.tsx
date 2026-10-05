@@ -201,7 +201,7 @@ export function SiteHeader() {
                     href="/shipping-policy#international"
                     className={styles.announcementLink}
                   >
-                    Order &rarr;
+                    Learn more &amp; order &rarr;
                   </Link>
                 </span>
               </div>
@@ -474,7 +474,7 @@ export function SiteHeader() {
                 className={styles.signInBtn}
                 aria-label="My Account"
               >
-                <User size={15} />
+                <User size={16} />
                 <span>Account</span>
               </Link>
             )}
@@ -486,7 +486,7 @@ export function SiteHeader() {
               className={styles.mobileUserBtn}
             >
               {currentUser ? (
-                <span className={styles.patronAvatar} style={{ width: 24, height: 24, fontSize: '0.68rem' }}>
+                <span className={styles.patronAvatar} style={{ width: 16, height: 16, fontSize: '0.68rem' }}>
                   {getInitials(currentUser.name)}
                 </span>
               ) : (

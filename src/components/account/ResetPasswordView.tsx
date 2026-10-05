@@ -107,10 +107,6 @@ export function ResetPasswordView() {
         {/* Top Eyebrow */}
         <div className={styles.brandEyebrow}>
           <span>Good Fills Atelier · Security</span>
-          <Link href="/account" className={styles.brandLink}>
-            <ArrowLeft size={12} />
-            <span>Back to Sign In</span>
-          </Link>
         </div>
 
         {/* STATE 1: CHECKING TOKEN */}

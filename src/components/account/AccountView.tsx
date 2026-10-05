@@ -617,7 +617,7 @@ export function AccountView() {
             </div>
             <h1 className={styles.loginTitle}>Customer Sign In</h1>
             <p className={styles.loginDesc}>
-              Sign in to track live orders, inspect receipts, and manage saved delivery addresses.
+              Sign in to track orders, view receipts, and manage addresses.
             </p>
           </div>
 

@@ -374,6 +374,7 @@
   align-items: center;
   gap: 6px;
   padding: 7px 14px;
+  line-height: 1.415;
   border: 1px solid var(--border-medium);
   border-radius: 0px;
   color: var(--text-primary);
@@ -397,6 +398,7 @@
   align-items: center;
   gap: 8px;
   padding: 5px 12px;
+  line-height: 1;
   background-color: transparent;
   border: 1px solid var(--border-medium);
   border-radius: 0px;
@@ -415,8 +417,8 @@
 }
 
 .patronAvatar {
-  width: 26px;
-  height: 26px;
+  width: 23px;
+  height: 23px;
   background-color: var(--accent-terracotta);
   color: var(--text-light);
   display: inline-flex;

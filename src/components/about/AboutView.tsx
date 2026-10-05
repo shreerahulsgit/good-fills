@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -118,6 +118,7 @@ const INGREDIENTS = [
 export function AboutView() {
   const [activeRitualIndex, setActiveRitualIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const ritualsSectionRef = useRef<HTMLElement>(null);
 
   const nextRitual = useCallback(() => {
     setActiveRitualIndex((prev) => (prev + 1) % RITUALS.length);
@@ -127,13 +128,26 @@ export function AboutView() {
     setActiveRitualIndex((prev) => (prev - 1 + RITUALS.length) % RITUALS.length);
   }, []);
 
-  // Auto-advance spotlight every 7.5s, paused when hovering
+  // Start auto-advance only after the ritual section becomes visible.
   useEffect(() => {
-    if (isPaused) return;
-    const timer = setInterval(() => {
-      nextRitual();
-    }, 7500);
-    return () => clearInterval(timer);
+    const section = ritualsSectionRef.current;
+    if (!section || isPaused) return;
+
+    let timer: ReturnType<typeof setInterval> | undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !timer) {
+          timer = setInterval(nextRitual, 7500);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    observer.observe(section);
+    return () => {
+      observer.disconnect();
+      if (timer) clearInterval(timer);
+    };
   }, [isPaused, nextRitual]);
 
   const activeRitual = RITUALS[activeRitualIndex];
@@ -281,6 +295,7 @@ export function AboutView() {
           SECTION 3: THE 4 TRADITIONAL STEPS
           ======================================================== */}
       <section
+        ref={ritualsSectionRef}
         className={styles.ritualsSection}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
@@ -293,23 +308,6 @@ export function AboutView() {
               Real nourishment comes from care, patience, and traditional wisdom. Every Good Fills product
               goes through these four simple, time-tested steps:
             </p>
-          </div>
-
-          {/* Interactive Stage Tabs */}
-          <div className={styles.ritualTabsBar}>
-            {RITUALS.map((ritual, idx) => (
-              <button
-                key={ritual.id}
-                type="button"
-                onClick={() => setActiveRitualIndex(idx)}
-                className={`${styles.ritualTabBtn} ${
-                  activeRitualIndex === idx ? styles.ritualTabBtnActive : ''
-                }`}
-              >
-                <span className={styles.ritualTabNum}>0{idx + 1}</span>
-                <span>{ritual.tabLabel.replace(/^\d+\s*/, '')}</span>
-              </button>
-            ))}
           </div>
 
           {/* Interactive Featured Spotlight Card */}

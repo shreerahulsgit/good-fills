@@ -6,23 +6,26 @@
 
 .trackContainer {
   width: 100%;
-  min-height: 100vh;
   background-color: var(--bg-canvas);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  padding-bottom: var(--space-20);
 }
 
 /* 1. TOP LOGISTICS CONTROL BAR */
 .controlBar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
   width: 100%;
   background-color: var(--bg-dark);
   color: var(--text-light);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 10px 0;
+  padding: 8px 0;
 }
 
 .controlBarInner {
@@ -82,7 +85,7 @@
 .consoleHero {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--space-10) var(--space-6) var(--space-8);
+  padding: var(--space-8) var(--space-6) var(--space-8);
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -269,7 +272,7 @@
 /* 3. MAIN DASHBOARD CONTENT AREA */
 .dashboardGrid {
   max-width: var(--max-width);
-  margin: var(--space-8) auto 0;
+  margin: var(--space-8) auto;
   padding: 0 var(--space-6);
   display: grid;
   grid-template-columns: 1fr;
@@ -953,9 +956,10 @@
 .awaitingConsole {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-medium);
-  padding: var(--space-12) var(--space-8);
+  padding: var(--space-10) var(--space-8);
   text-align: center;
   margin-top: var(--space-6);
+  margin-bottom: var(--space-6);
   border-radius: 0;
 }
 
@@ -1068,7 +1072,7 @@
 
 @media (max-width: 640px) {
   .trackContainer {
-    padding-bottom: var(--space-12);
+    padding-bottom: calc(var(--space-12) + 82px);
   }
 
   .consoleHero {

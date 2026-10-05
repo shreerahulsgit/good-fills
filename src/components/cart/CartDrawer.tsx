@@ -83,7 +83,7 @@ export function CartDrawer() {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             <ShoppingBag size={20} style={{ color: 'var(--accent-terracotta)' }} />
-            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>
+            <h3 style={{ fontSize: '1.15rem', margin: 0 }}>
               Your Bag ({totalItems})
             </h3>
           </div>
@@ -110,7 +110,7 @@ export function CartDrawer() {
               padding: 'var(--space-3) var(--space-6)',
               backgroundColor: 'var(--bg-subtle)',
               borderBottom: '1px solid var(--border-hairline)',
-              fontSize: '0.82rem',
+              fontSize: '0.8rem',
               color: 'var(--text-secondary)',
               display: 'flex',
               alignItems: 'center',
@@ -166,7 +166,7 @@ export function CartDrawer() {
                 <ShoppingBag size={28} />
               </div>
               <h4 style={{ marginBottom: 'var(--space-2)' }}>Your bag is empty</h4>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', maxWidth: '280px', marginBottom: 'var(--space-6)' }}>
+              <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', maxWidth: '280px', marginBottom: 'var(--space-6)' }}>
                 Our homemade products are prepared fresh to order. Explore our offerings to get started.
               </p>
               <Link 
@@ -207,7 +207,7 @@ export function CartDrawer() {
                       <Link 
                         href={`/product/${item.product.slug}`} 
                         onClick={closeCart}
-                        style={{ fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-primary)' }}
+                        style={{ fontWeight: 500, fontSize: '0.92rem', color: 'var(--text-primary)' }}
                       >
                         {item.product.name}
                       </Link>
@@ -222,7 +222,7 @@ export function CartDrawer() {
                       </button>
                     </div>
 
-                    <div style={{ display: 'flex', gap: 'var(--space-2)', fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    <div style={{ display: 'flex', gap: 'var(--space-2)', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
                       <span>Pack: {item.product.packSize}</span>
                       <span>•</span>
                       <span>{formatCurrency(item.product.price)} each</span>
@@ -247,7 +247,7 @@ export function CartDrawer() {
                       >
                         <Minus size={13} />
                       </button>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 600, padding: '0 8px', minWidth: '24px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 600, padding: '0 8px', minWidth: '24px', textAlign: 'center' }}>
                         {item.quantity}
                       </span>
                       <button 
@@ -259,7 +259,7 @@ export function CartDrawer() {
                       </button>
                     </div>
 
-                    <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                    <strong style={{ fontSize: '0.92rem', color: 'var(--text-primary)' }}>
                       {formatCurrency(item.product.price * item.quantity)}
                     </strong>
                   </div>
@@ -278,7 +278,7 @@ export function CartDrawer() {
               backgroundColor: 'var(--bg-cream)'
             }}
           >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginBottom: 'var(--space-4)', fontSize: '0.92rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginBottom: 'var(--space-4)', fontSize: '0.9rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>Product Subtotal</span>
                 <span>{formatCurrency(subtotal)}</span>
@@ -290,7 +290,7 @@ export function CartDrawer() {
                 </div>
                 <strong style={{ color: 'var(--accent-terracotta)' }}>{formatCurrency(shipping.shippingCost)}</strong>
               </div>
-              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '-2px' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '-2px' }}>
                 Delivery outside India?{' '}
                 <a
                   href={`https://wa.me/919742068899?text=${encodeURIComponent(
@@ -310,7 +310,7 @@ export function CartDrawer() {
                 </a>
               </div>
               <div className="hairline-divider" style={{ margin: 'var(--space-2) 0' }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: 600 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.05rem', fontWeight: 600 }}>
                 <span>Total Amount</span>
                 <span>{formatCurrency(grandTotal)}</span>
               </div>

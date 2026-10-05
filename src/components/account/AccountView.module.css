@@ -2,11 +2,10 @@
 /* Strictly square-cut architectural aesthetics (0px border-radius) */
 
 .accountContainer {
-  min-height: 100vh;
   background-color: var(--bg-canvas);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  padding-bottom: var(--space-20);
+  padding-bottom: var(--space-16);
 }
 
 /* TOP BREADCRUMB STRIP */
@@ -71,7 +70,7 @@
 
 /* OTP LOGIN SCREEN */
 .loginContainer {
-  max-width: 460px;
+  max-width: 500px;
   margin: var(--space-16) auto;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-medium);
@@ -123,7 +122,7 @@
   background-color: #ffffff;
   color: var(--text-primary);
   border: 1px solid var(--border-medium);
-  padding: 14px 18px;
+  padding: 12px 18px;
   font-family: var(--font-sans);
   font-size: 0.95rem;
   font-weight: 600;

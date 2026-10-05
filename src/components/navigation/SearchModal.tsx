@@ -124,7 +124,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               border: 'none',
               outline: 'none',
               fontFamily: 'var(--font-sans)',
-              fontSize: '1.1rem',
+              fontSize: '1rem',
               color: 'var(--text-primary)',
               background: 'transparent'
             }}
@@ -168,7 +168,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       onClick={() => setQuery(tag)}
                       style={{
                         padding: '6px 14px',
-                        fontSize: '0.88rem',
+                        fontSize: '0.82rem',
                         backgroundColor: 'var(--bg-subtle)',
                         border: '1px solid var(--border-hairline)',
                         borderRadius: 'var(--radius-full)',
@@ -208,7 +208,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         backgroundColor: 'var(--bg-canvas)',
                         borderRadius: 'var(--radius-xs)',
                         border: '1px solid var(--border-hairline)',
-                        fontSize: '0.92rem',
+                        fontSize: '0.88rem',
                         fontWeight: 500
                       }}
                     >
@@ -250,7 +250,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                        <h4 style={{ fontSize: '1.05rem', margin: 0 }}>{prod.name}</h4>
+                        <h4 style={{ fontSize: '1rem', margin: 0 }}>{prod.name}</h4>
                         <span className="badge" style={{ fontSize: '0.7rem' }}>{prod.packSize}</span>
                         {prod.availability && prod.availability !== 'available' && (
                           <span style={{
@@ -268,7 +268,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           </span>
                         )}
                       </div>
-                      <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: '2px 0 0' }}>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: '2px 0 0' }}>
                         {prod.shortDescription}
                       </p>
                     </div>
@@ -283,10 +283,10 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: 'var(--space-8) var(--space-4)' }}>
-              <p style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: 'var(--space-2)' }}>
+              <p style={{ fontSize: '1rem', color: 'var(--text-primary)', marginBottom: 'var(--space-2)' }}>
                 No homemade products matching &ldquo;{query}&rdquo;
               </p>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: 'var(--space-6)' }}>
+              <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', marginBottom: 'var(--space-6)' }}>
                 Try searching for ingredients like &ldquo;ragi&rdquo;, &ldquo;turmeric&rdquo;, or &ldquo;coffee&rdquo;, or explore our 4 core categories.
               </p>
               <Link

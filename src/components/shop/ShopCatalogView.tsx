@@ -47,7 +47,7 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
 
   // Revalidate live products from server API
   useEffect(() => {
-    fetch('/api/products')
+    fetch('/api/products', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.products && Array.isArray(data.products) && data.products.length > 0) {
@@ -467,7 +467,7 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
               <Truck size={18} strokeWidth={1.8} />
             </div>
             <div>
-              <h4 className="shop-trust-title">DTDC Pan-India</h4>
+              <h4 className="shop-trust-title">Reliable Pan-India</h4>
               <p className="shop-trust-desc">Transparent weight rates (₹100/500g) with live consignment SMS tracking.</p>
             </div>
           </div>

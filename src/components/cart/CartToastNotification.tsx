@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/lib/cart-context';
 import styles from './CartToastNotification.module.css';
 
 export function CartToastNotification() {
+  const pathname = usePathname();
   const { lastAddedItem, dismissToast, openCart, subtotal, totalItems } = useCart();
   const [timerKey, setTimerKey] = useState(0);
 
@@ -21,6 +23,8 @@ export function CartToastNotification() {
 
     return () => clearTimeout(timer);
   }, [lastAddedItem, dismissToast]);
+
+  if (pathname === '/checkout') return null;
 
   return (
     <div className={styles.toastPortal}>

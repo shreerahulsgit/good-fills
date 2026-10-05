@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import { getAllServerProducts } from '@/lib/server-products';
 import { ShopCatalogView } from '@/components/shop/ShopCatalogView';
+import { ProductCategory } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Shop All Handcrafted Creations — Good Fills',
   description:
-    'Browse our complete catalog of homemade food, nutrition, skincare, and bath products crafted to order in Bengaluru. 100% natural, DTDC delivery across India.',
+    'Browse our complete catalog of homemade food, nutrition, skincare, and bath products crafted to order in Bengaluru. 100% natural, fast doorstep delivery across India.',
   openGraph: {
     title: 'Shop All Handcrafted Creations — Good Fills',
     description:
@@ -15,12 +16,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ShopPage() {
+interface ShopPageProps {
+  searchParams?: {
+    category?: string;
+  };
+}
+
+export default function ShopPage({ searchParams }: ShopPageProps) {
   const products = getAllServerProducts();
+  const category = (searchParams?.category as ProductCategory) || 'all';
 
   return (
     <main>
-      <ShopCatalogView initialCategory="all" initialProducts={products} />
+      <ShopCatalogView initialCategory={category} initialProducts={products} />
     </main>
   );
 }

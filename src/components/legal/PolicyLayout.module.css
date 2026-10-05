@@ -381,3 +381,84 @@
   border-color: var(--text-light);
   background-color: rgba(255, 255, 255, 0.08);
 }
+
+/* SECTION SWITCHER & JUMP NAVIGATION */
+.sectionSwitcher {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.sectionPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  padding: 10px 18px;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.sectionPill:hover {
+  border-color: var(--accent-terracotta);
+  background-color: var(--bg-cream);
+  color: var(--accent-terracotta);
+}
+
+.sectionDividerBlock {
+  margin: 48px 0 36px 0;
+  padding-top: 36px;
+  border-top: 2px dashed var(--border-medium);
+}
+
+.sectionBadgeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.sectionBadge {
+  background-color: #faf3ec;
+  border: 1px solid rgba(151, 65, 29, 0.25);
+  color: var(--accent-terracotta);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+}
+
+.intlSupportCard {
+  background-color: #2b2522;
+  color: #faf8f5;
+  padding: 28px 32px;
+  margin: 32px 0 16px 0;
+  border: 1px solid #443b37;
+}
+
+.intlSupportTitle {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  color: #faf8f5;
+  margin: 0 0 6px 0;
+}
+
+.intlSupportText {
+  font-size: 0.9rem;
+  color: #d1c8c0;
+  line-height: 1.55;
+  margin: 0 0 20px 0 !important;
+}
+
+.intlActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}

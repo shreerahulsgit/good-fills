@@ -3,12 +3,12 @@ import { Suspense } from 'react';
 import { TrackView } from '@/components/track/TrackView';
 
 export const metadata: Metadata = {
-  title: 'Live Order Tracking • Good Fills DTDC Pan-India Express',
+  title: 'Live Order Tracking • Good Fills Express Delivery',
   description:
-    'Track your freshly stone-milled sprouted porridge and organic flour consignments in real time. Kitchen preparation milestones and DTDC courier tracking.',
+    'Track your freshly stone-milled sprouted porridge and organic flour consignments in real time. Kitchen preparation milestones and live tracking updates.',
 };
 
-export default function TrackPage() {
+export default function TrackOrderPage() {
   return (
     <Suspense
       fallback={
@@ -26,7 +26,7 @@ export default function TrackPage() {
             textTransform: 'uppercase',
           }}
         >
-          Connecting to DTDC Telemetry Gateway...
+          Connecting to Order Telemetry Gateway...
         </div>
       }
     >

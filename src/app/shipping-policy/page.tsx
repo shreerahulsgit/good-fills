@@ -3,9 +3,9 @@ import { PolicyLayout } from '@/components/legal/PolicyLayout';
 import { ShippingPolicyContent } from '@/components/legal/ShippingPolicyContent';
 
 export const metadata: Metadata = {
-  title: 'Shipping & Delivery Policy • Good Fills Bengaluru Atelier',
+  title: 'Shipping Policy & International Delivery • Good Fills Bengaluru Atelier',
   description:
-    'Learn about our fresh made-to-order kitchen dispatch, DTDC Domestic Express logistics, weight-based courier rates, and pan-India doorstep delivery timelines.',
+    'Learn about our fresh made-to-order kitchen dispatch, domestic express logistics, pan-India delivery timelines, and worldwide air cargo services.',
 };
 
 export default function ShippingPolicyPage() {
@@ -13,7 +13,7 @@ export default function ShippingPolicyPage() {
     <PolicyLayout
       activePolicy="shipping"
       title="Shipping &amp; <em>Delivery Policy</em>"
-      subtitle="Freshly roasted, sprouted, and stone-milled in Bengaluru within 24–48 hours of order confirmation. Delivered across India via DTDC Express."
+      subtitle="Freshly roasted, sprouted, and stone-milled in Bengaluru within 24–48 hours. Fast, tracked delivery across India and worldwide."
       lastUpdated="October 2026"
     >
       <ShippingPolicyContent />

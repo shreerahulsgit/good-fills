@@ -754,7 +754,7 @@ export function AccountView() {
 
           <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px dashed var(--border-hairline)', textAlign: 'center' }}>
             <Link
-              href="/track"
+              href="/track-order"
               style={{
                 fontSize: '0.82rem',
                 fontWeight: 600,
@@ -984,7 +984,7 @@ export function AccountView() {
 
                             {/* Actions Group */}
                             <div className={styles.orderActionsRow}>
-                              <Link href={`/track?id=${order.id}`} className={styles.trackActionBtn}>
+                              <Link href={`/track-order?id=${order.id}`} className={styles.trackActionBtn}>
                                 <Truck size={14} /> Track Live Delivery ↗
                               </Link>
 
@@ -1084,7 +1084,7 @@ export function AccountView() {
                     placeholder="e.g. 98765 43210"
                   />
                   <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                    Used by DTDC courier delivery personnel for doorstep delivery coordination.
+                    Used by delivery personnel for doorstep delivery coordination.
                   </span>
                 </div>
 
@@ -1329,7 +1329,7 @@ export function AccountView() {
                     </div>
                   </div>
                   <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-hairline)', paddingTop: '10px' }}>
-                    Cold-press batches are milled fresh and dispatched via DTDC Express with trackable consignments.
+                    Cold-press batches are milled fresh and dispatched with fast, trackable doorstep delivery.
                   </div>
                 </div>
               </div>

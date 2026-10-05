@@ -81,7 +81,7 @@ const INITIAL_REVIEWS: Review[] = [
     productName: 'Baby Cereal Mix',
     rating: 4,
     title: 'Very wholesome, took 2 days for baby to adjust',
-    comment: 'Because there is no added sugar or synthetic vanilla, babies need 2-3 spoonfuls to get used to the authentic earthy grain taste. Once she did, she loves it. Fast DTDC delivery.',
+    comment: 'Because there is no added sugar or synthetic vanilla, babies need 2-3 spoonfuls to get used to the authentic earthy grain taste. Once she did, she loves it. Fast, tracked delivery.',
     authorName: 'Divya Sundaram',
     location: 'Chennai, Tamil Nadu',
     childAge: '8 Months',
@@ -467,6 +467,7 @@ const INITIAL_REVIEWS: Review[] = [
 
 let reviewsCache: Map<string, Review> = new Map();
 let isInitialized = false;
+let lastReviewsMtime = 0;
 
 function ensureDataDirs() {
   if (!fs.existsSync(PRIMARY_DATA_DIR)) {
@@ -481,8 +482,29 @@ function ensureDataDirs() {
   }
 }
 
-function initReviewsStore() {
-  if (isInitialized && reviewsCache.size > 0) return;
+function initReviewsStore(force = false) {
+  ensureDataDirs();
+
+  let shouldReload = force || !isInitialized;
+
+  if (!shouldReload) {
+    try {
+      if (fs.existsSync(PRIMARY_REVIEWS_FILE)) {
+        const stat = fs.statSync(PRIMARY_REVIEWS_FILE);
+        if (stat.mtimeMs > lastReviewsMtime) {
+          shouldReload = true;
+        }
+      } else if (fs.existsSync(TMP_REVIEWS_FILE)) {
+        const stat = fs.statSync(TMP_REVIEWS_FILE);
+        if (stat.mtimeMs > lastReviewsMtime) {
+          shouldReload = true;
+        }
+      }
+    } catch {}
+  }
+
+  if (!shouldReload && reviewsCache.size > 0) return;
+  isInitialized = true;
 
   reviewsCache.clear();
 
@@ -490,6 +512,8 @@ function initReviewsStore() {
   let loaded = false;
   try {
     if (fs.existsSync(PRIMARY_REVIEWS_FILE)) {
+      const stat = fs.statSync(PRIMARY_REVIEWS_FILE);
+      lastReviewsMtime = stat.mtimeMs;
       const data = JSON.parse(fs.readFileSync(PRIMARY_REVIEWS_FILE, 'utf8'));
       if (Array.isArray(data) && data.length > 0) {
         data.forEach((r: Review) => reviewsCache.set(r.id, r));
@@ -502,6 +526,8 @@ function initReviewsStore() {
   if (!loaded) {
     try {
       if (fs.existsSync(TMP_REVIEWS_FILE)) {
+        const stat = fs.statSync(TMP_REVIEWS_FILE);
+        lastReviewsMtime = stat.mtimeMs;
         const data = JSON.parse(fs.readFileSync(TMP_REVIEWS_FILE, 'utf8'));
         if (Array.isArray(data) && data.length > 0) {
           data.forEach((r: Review) => reviewsCache.set(r.id, r));
@@ -516,8 +542,6 @@ function initReviewsStore() {
     INITIAL_REVIEWS.forEach((r) => reviewsCache.set(r.id, r));
     persistReviews();
   }
-
-  isInitialized = true;
 }
 
 function persistReviews() {
@@ -528,10 +552,16 @@ function persistReviews() {
 
   try {
     fs.writeFileSync(PRIMARY_REVIEWS_FILE, serialized, 'utf8');
+    const stat = fs.statSync(PRIMARY_REVIEWS_FILE);
+    lastReviewsMtime = stat.mtimeMs;
   } catch {}
 
   try {
     fs.writeFileSync(TMP_REVIEWS_FILE, serialized, 'utf8');
+    const stat = fs.statSync(TMP_REVIEWS_FILE);
+    if (!lastReviewsMtime) {
+      lastReviewsMtime = stat.mtimeMs;
+    }
   } catch {}
 }
 

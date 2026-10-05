@@ -16,7 +16,9 @@ export async function GET(req: NextRequest) {
         { success: true, reviews },
         {
           headers: {
-            'Cache-Control': 'no-store, no-cache, must-revalidate',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            Pragma: 'no-cache',
+            Expires: '0',
           },
         }
       );
@@ -28,7 +30,9 @@ export async function GET(req: NextRequest) {
         { success: true, summary },
         {
           headers: {
-            'Cache-Control': 'no-store, no-cache, must-revalidate',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            Pragma: 'no-cache',
+            Expires: '0',
           },
         }
       );
@@ -39,7 +43,9 @@ export async function GET(req: NextRequest) {
       { success: true, reviews },
       {
         headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
         },
       }
     );

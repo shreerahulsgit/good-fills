@@ -26,19 +26,43 @@ function ensureDataDirs() {
   }
 }
 
-export function initProductStore() {
-  if (isInitialized) return;
-  isInitialized = true;
+let lastLoadedMtime = 0;
+
+export function initProductStore(force = false) {
   ensureDataDirs();
+
+  let shouldReload = force || !isInitialized;
+
+  if (!shouldReload) {
+    try {
+      if (fs.existsSync(PRIMARY_PRODUCTS_FILE)) {
+        const stat = fs.statSync(PRIMARY_PRODUCTS_FILE);
+        if (stat.mtimeMs > lastLoadedMtime) {
+          shouldReload = true;
+        }
+      } else if (fs.existsSync(TMP_PRODUCTS_FILE)) {
+        const stat = fs.statSync(TMP_PRODUCTS_FILE);
+        if (stat.mtimeMs > lastLoadedMtime) {
+          shouldReload = true;
+        }
+      }
+    } catch {}
+  }
+
+  if (!shouldReload) return;
+  isInitialized = true;
 
   let loaded = false;
 
   // 1. Try loading from primary disk
   try {
     if (fs.existsSync(PRIMARY_PRODUCTS_FILE)) {
+      const stat = fs.statSync(PRIMARY_PRODUCTS_FILE);
+      lastLoadedMtime = stat.mtimeMs;
       const content = fs.readFileSync(PRIMARY_PRODUCTS_FILE, 'utf8');
       const data = JSON.parse(content);
       if (Array.isArray(data) && data.length > 0) {
+        productsCache.clear();
         data.forEach((p: Product) => productsCache.set(p.id, p));
         loaded = true;
       }
@@ -51,9 +75,12 @@ export function initProductStore() {
   if (!loaded) {
     try {
       if (fs.existsSync(TMP_PRODUCTS_FILE)) {
+        const stat = fs.statSync(TMP_PRODUCTS_FILE);
+        lastLoadedMtime = stat.mtimeMs;
         const content = fs.readFileSync(TMP_PRODUCTS_FILE, 'utf8');
         const data = JSON.parse(content);
         if (Array.isArray(data) && data.length > 0) {
+          productsCache.clear();
           data.forEach((p: Product) => productsCache.set(p.id, p));
           loaded = true;
         }
@@ -65,6 +92,7 @@ export function initProductStore() {
 
   // 3. Fallback: Seed with default catalog from src/data/products.ts
   if (!loaded || productsCache.size === 0) {
+    productsCache.clear();
     PRODUCTS.forEach((p) => productsCache.set(p.id, { ...p }));
     persistProducts();
   }
@@ -76,6 +104,8 @@ function persistProducts() {
   try {
     ensureDataDirs();
     fs.writeFileSync(PRIMARY_PRODUCTS_FILE, serialized, 'utf8');
+    const stat = fs.statSync(PRIMARY_PRODUCTS_FILE);
+    lastLoadedMtime = stat.mtimeMs;
   } catch (err) {
     console.error('Error writing products to primary disk:', err);
   }
@@ -83,6 +113,10 @@ function persistProducts() {
   try {
     ensureDataDirs();
     fs.writeFileSync(TMP_PRODUCTS_FILE, serialized, 'utf8');
+    const stat = fs.statSync(TMP_PRODUCTS_FILE);
+    if (!lastLoadedMtime) {
+      lastLoadedMtime = stat.mtimeMs;
+    }
   } catch (err) {
     console.error('Error writing products to tmp disk:', err);
   }

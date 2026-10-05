@@ -31,7 +31,7 @@ export function generateMetadata({ params }: ProductPageProps): Metadata {
 
   return {
     title: `${product.name} (${product.packSize}) — Good Fills Atelier`,
-    description: `${product.shortDescription} Handmade to order in Bengaluru, India. 100% natural traditional care. DTDC express delivery.`,
+    description: `${product.shortDescription} Handmade to order in Bengaluru, India. 100% natural traditional care. Fast, tracked delivery across India.`,
     openGraph: {
       title: `${product.name} — Handcrafted by Good Fills`,
       description: product.shortDescription,

@@ -21,7 +21,7 @@ const STEPS: StepItem[] = [
     navLabel: 'Order Placed',
     title: 'Your Order Awakens the Atelier',
     description:
-      'Instant UPI verification immediately triggers our Bengaluru kitchen. We calculate exact DTDC shipping by weight directly at checkout, ensuring complete pricing transparency with strictly zero stockpiling or pre-packed warehouse inventory.',
+      'Instant UPI verification immediately triggers our Bengaluru kitchen. We calculate exact shipping by weight directly at checkout, ensuring complete pricing transparency with strictly zero stockpiling or pre-packed warehouse inventory.',
     metric: 'Instant',
     metricLabel: 'Batch Scheduled',
   },
@@ -48,15 +48,15 @@ const STEPS: StepItem[] = [
     navLabel: 'Express Dispatch',
     title: 'Direct Pan-India Doorstep Courier',
     description:
-      'Freshly sealed parcels are handed over directly to DTDC express couriers for Pan-India doorstep delivery within 2 to 4 business days. Real-time consignment tracking numbers are sent straight to your phone via SMS and WhatsApp the moment your package departs.',
+      'Freshly sealed parcels are dispatched via express couriers for fast, tracked doorstep delivery across India within 2 to 4 business days. Real-time tracking numbers are sent straight to your phone via SMS and WhatsApp the moment your package departs.',
     metric: '2–4 Days',
     metricLabel: 'Doorstep Delivery',
   },
 ];
 
 export function ProcessTimeline() {
+  // Always begin and stay at Step 1 (Order Placed) until the user navigates
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
 
   const nextStep = useCallback(() => {
     setActiveIndex((prev) => (prev + 1) % STEPS.length);
@@ -66,14 +66,35 @@ export function ProcessTimeline() {
     setActiveIndex((prev) => (prev - 1 + STEPS.length) % STEPS.length);
   }, []);
 
-  // Subtle auto-advance every 7 seconds, paused on hover
+  // Listen for navigation to #process (from footer or direct link)
   useEffect(() => {
-    if (isPaused) return;
-    const timer = setInterval(() => {
-      nextStep();
-    }, 7000);
-    return () => clearInterval(timer);
-  }, [isPaused, nextStep]);
+    const handleScrollToProcess = () => {
+      setActiveIndex(0); // Reset firmly to Step 1
+      if (typeof window !== 'undefined' && window.location.hash === '#process') {
+        const el = document.getElementById('process');
+        if (el) {
+          const headerOffset = 110;
+          const elementPosition = el.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({
+            top: elementPosition - headerOffset,
+            behavior: 'smooth',
+          });
+        }
+      }
+    };
+
+    if (typeof window !== 'undefined' && window.location.hash === '#process') {
+      const timer = setTimeout(handleScrollToProcess, 150);
+      return () => clearTimeout(timer);
+    }
+
+    window.addEventListener('hashchange', handleScrollToProcess);
+    window.addEventListener('goodfills:reset-process', handleScrollToProcess);
+    return () => {
+      window.removeEventListener('hashchange', handleScrollToProcess);
+      window.removeEventListener('goodfills:reset-process', handleScrollToProcess);
+    };
+  }, []);
 
   const current = STEPS[activeIndex];
 
@@ -81,8 +102,6 @@ export function ProcessTimeline() {
     <section
       className="process-section"
       id="process"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
     >
       <div className="container">
         {/* Section Header */}

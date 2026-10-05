@@ -24,7 +24,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       document.body.style.overflow = 'hidden';
 
       // Fetch live products catalog on open
-      fetch('/api/products')
+      fetch('/api/products', { cache: 'no-store' })
         .then((res) => res.json())
         .then((data) => {
           if (data.products && Array.isArray(data.products) && data.products.length > 0) {
@@ -228,7 +228,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 {results.map(prod => (
                   <Link
                     key={prod.id}
-                    href={`/products/${prod.slug}`}
+                    href={`/product/${prod.slug}`}
                     onClick={onClose}
                     style={{
                       display: 'flex',

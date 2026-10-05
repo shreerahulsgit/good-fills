@@ -17,14 +17,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.85,
     }));
 
-  // Public category filter URLs
+  // Public category URLs
   const categoryUrls: MetadataRoute.Sitemap = [
     'baby-kids',
     'nutrition-wellness',
     'skin-bath',
     'pantry-beverages',
   ].map((cat) => ({
-    url: `${baseUrl}/shop?category=${cat}`,
+    url: `${baseUrl}/shop/${cat}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,
@@ -45,25 +45,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.95,
     },
     {
-      url: `${baseUrl}/about`,
+      url: `${baseUrl}/our-story`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/contact`,
+      url: `${baseUrl}/contact-us`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/track`,
+      url: `${baseUrl}/track-order`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/international-delivery`,
+      url: `${baseUrl}/account`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.5,
@@ -72,16 +72,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/shipping-policy`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.4,
+      priority: 0.6,
     },
     {
-      url: `${baseUrl}/privacy`,
+      url: `${baseUrl}/privacy-policy`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.4,
     },
     {
-      url: `${baseUrl}/terms`,
+      url: `${baseUrl}/terms-of-service`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.4,

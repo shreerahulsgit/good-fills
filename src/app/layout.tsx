@@ -7,7 +7,7 @@ import { Preloader } from '@/components/common/Preloader';
 
 export const metadata: Metadata = {
   title: 'Good Fills — Homemade Traditional Care, Prepared with Care',
-  description: 'Artisanal homemade food, nutrition, skincare and bath products prepared with care and made to order in Bengaluru, India. Fast DTDC delivery across India.',
+  description: 'Artisanal homemade food, nutrition, skincare and bath products prepared with care and made to order in Bengaluru, India. Fast, reliable delivery across India.',
   keywords: [
     'Good Fills',
     'homemade products Bengaluru',

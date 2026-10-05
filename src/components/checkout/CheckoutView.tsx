@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldCheck,
   Truck,
@@ -13,13 +14,16 @@ import {
   ShoppingBag,
   ExternalLink,
   Lock,
-  CheckCircle,
-  XCircle,
   MapPin,
   Plus,
+  Minus,
+  Trash2,
+  X,
+  Check,
   CheckCircle2,
   Building2,
 } from 'lucide-react';
+import { PRODUCTS, CATEGORIES } from '@/data/products';
 import { useCart } from '@/lib/cart-context';
 import { useCustomerAuth } from '@/lib/customer-auth-context';
 import { formatCurrency } from '@/lib/shipping';
@@ -61,12 +65,19 @@ export function CheckoutView() {
     shipping,
     grandTotal,
     totalWeightGrams,
+    updateQuantity,
+    removeItem,
+    addItem,
     clearCart
   } = useCart();
 
   const { currentUser, updateUser } = useCustomerAuth();
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
   const [saveAddressToAccount, setSaveAddressToAccount] = useState<boolean>(true);
+  const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
+  const [isAddProductsOpen, setIsAddProductsOpen] = useState(false);
+  const [quickAddCategory, setQuickAddCategory] = useState<string>('all');
+  const [addedNoticeId, setAddedNoticeId] = useState<string | null>(null);
 
   // Form State
   const [formData, setFormData] = useState<ShippingAddress>({
@@ -80,6 +91,40 @@ export function CheckoutView() {
     pincode: '',
     country: 'India',
   });
+
+  // Restore draft from sessionStorage if present (preserves inputs if customer browses store)
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('good_fills_checkout_draft_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.formData && !currentUser) {
+          setFormData((prev) => ({ ...prev, ...parsed.formData }));
+        }
+        if (parsed.activeStep && (parsed.activeStep === 1 || parsed.activeStep === 2 || parsed.activeStep === 3)) {
+          setActiveStep(parsed.activeStep);
+        }
+      }
+    } catch (e) {
+      console.error('Error loading checkout draft', e);
+    }
+  }, [currentUser]);
+
+  // Persist draft to sessionStorage whenever formData or activeStep changes
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        'good_fills_checkout_draft_v1',
+        JSON.stringify({ formData, activeStep })
+      );
+    } catch (e) {
+      console.error('Error persisting checkout draft', e);
+    }
+  }, [formData, activeStep]);
+
+  const filteredQuickAddProducts = quickAddCategory === 'all'
+    ? PRODUCTS
+    : PRODUCTS.filter((p) => p.category === quickAddCategory);
 
   // Auto-prefill customer details & default address when authenticated user is present
   useEffect(() => {
@@ -201,7 +246,7 @@ export function CheckoutView() {
       msg += `\n`;
     }
 
-    msg += `Please share the DTDC International courier quote and payment link. Thank you!`;
+    msg += `Please share the international shipping quote and payment link. Thank you!`;
     return `https://wa.me/91${atelierPhone}?text=${encodeURIComponent(msg)}`;
   };
 
@@ -228,7 +273,7 @@ export function CheckoutView() {
 
     const cleanPhone = formData.phone.replace(/\D/g, '');
     if (!cleanPhone || cleanPhone.length < 10) {
-      newErrors.phone = 'Valid 10-digit mobile number required for DTDC SMS';
+      newErrors.phone = 'Valid 10-digit mobile number required for delivery & tracking SMS';
     }
 
     if (!formData.email.trim() || !formData.email.includes('@')) {
@@ -252,10 +297,49 @@ export function CheckoutView() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleProceedToStep2 = () => {
+    if (!validateForm()) {
+      const firstErrorKey = Object.keys(errors)[0] || 'fullName';
+      const el = document.getElementById(firstErrorKey);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    setActiveStep(2);
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+  };
+
+  const handleStepClick = (targetStep: 1 | 2 | 3) => {
+    if (targetStep === activeStep) return;
+    if (targetStep === 1) {
+      setActiveStep(1);
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+      return;
+    }
+    if (!validateForm()) {
+      setActiveStep(1);
+      const firstErrorKey = Object.keys(errors)[0] || 'fullName';
+      const el = document.getElementById(firstErrorKey);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    setActiveStep(targetStep);
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+  };
+
+  const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === 'Enter' && (e.target as HTMLElement).tagName === 'INPUT') {
+      if (activeStep === 1) {
+        e.preventDefault();
+        handleProceedToStep2();
+      }
+    }
+  };
+
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
+      setActiveStep(1);
       const firstErrorKey = Object.keys(errors)[0] || 'fullName';
       const el = document.getElementById(firstErrorKey);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -431,6 +515,9 @@ export function CheckoutView() {
             if (verifyData.order) {
               saveOrder(verifyData.order);
             }
+            try {
+              sessionStorage.removeItem('good_fills_checkout_draft_v1');
+            } catch (e) {}
             clearCart();
             router.push(`/order-confirmation/${verifyData.orderId}`);
           } catch (err: any) {
@@ -458,97 +545,7 @@ export function CheckoutView() {
     }
   };
 
-  /**
-   * Development-only sandbox simulator helper (Requirement 19).
-   * Enables immediate simulation of payment success or failure on desktop without
-   * being blocked by Razorpay test QR code scanning limitations or NPCI VPA phase-out.
-   */
-  const handleSimulatePayment = async (shouldSucceed: boolean) => {
-    if (!validateForm()) {
-      const firstErrorKey = Object.keys(errors)[0] || 'fullName';
-      const el = document.getElementById(firstErrorKey);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
 
-    setPaymentError(null);
-    setIsSubmitting(true);
-    setIsVerifying(true);
-    setVerifyStatus('Atelier Sandbox: Creating Server-Authoritative Order...');
-
-    // Optionally save new address in customer profile
-    await maybeSaveNewAddress();
-
-    try {
-      // 1. Authoritative order creation via server pricing engine
-      const res = await fetch('/api/razorpay/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: items.map((item) => ({
-            productId: item.product.id,
-            quantity: item.quantity,
-          })),
-          customer: {
-            fullName: formData.fullName.trim(),
-            phone: formData.phone.trim(),
-            email: formData.email.trim(),
-          },
-          shippingAddress: {
-            ...formData,
-            fullName: formData.fullName.trim(),
-            phone: formData.phone.trim(),
-            email: formData.email.trim(),
-          },
-        }),
-      });
-
-      const orderData = await res.json();
-      if (!res.ok || !orderData.success) {
-        throw new Error(orderData.error || 'Payment could not be completed. Please try again.');
-      }
-
-      if (!shouldSucceed) {
-        // Enforce Requirement 15: Exact retry copy
-        setVerifyStatus('Simulating Payment Decline / Abandonment...');
-        await new Promise((r) => setTimeout(r, 600));
-        setPaymentError('Payment could not be completed. Please try again.');
-        setIsSubmitting(false);
-        setIsVerifying(false);
-        return;
-      }
-
-      // Enforce Requirement 16: Verification & transition to Paid / Confirmed
-      setVerifyStatus('Atelier Sandbox: Authorizing Simulated UPI Payment...');
-      await new Promise((r) => setTimeout(r, 750));
-
-      const verifyRes = await fetch('/api/razorpay/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          razorpay_order_id: orderData.razorpayOrderId,
-          razorpay_payment_id: `pay_test_${Date.now()}`,
-          isMock: true,
-        }),
-      });
-
-      const verifyData = await verifyRes.json();
-      if (!verifyRes.ok || !verifyData.verified) {
-        throw new Error(verifyData.error || 'Payment could not be completed. Please try again.');
-      }
-
-      if (verifyData.order) {
-        saveOrder(verifyData.order);
-      }
-      clearCart();
-      router.push(`/order-confirmation/${orderData.internalOrderId}`);
-    } catch (err: any) {
-      console.error('Simulation error:', err);
-      setPaymentError(err.message || 'Payment could not be completed. Please try again.');
-      setIsSubmitting(false);
-      setIsVerifying(false);
-    }
-  };
 
   // If cart is empty and not submitting
   if (items.length === 0 && !isSubmitting) {
@@ -602,23 +599,87 @@ export function CheckoutView() {
           <span className={styles.pageEyebrow}>ATELIER COMMERCE · ORDER CHECKOUT</span>
           <h1 className={styles.pageTitle}>Review &amp; Place Your Order</h1>
           <p className={styles.pageSubtitle}>
-            Every batch is prepared fresh to order in our Bengaluru home kitchen. Dispatched safely via DTDC express domestic courier.
+            Every batch is prepared fresh to order in our Bengaluru home kitchen. Dispatched safely via tracked express courier.
           </p>
         </div>
 
-        <form onSubmit={handleSubmitOrder} className={styles.checkoutGrid}>
+        <form onSubmit={handleSubmitOrder} onKeyDown={handleFormKeyDown} className={styles.checkoutGrid}>
           {/* Left Column: Form Steps */}
           <div className={styles.formColumn}>
-            {/* Step 1: Customer Contact & Delivery Address */}
-            <div className={styles.sectionCard}>
-              <div className={styles.sectionHeader}>
-                <div className={styles.stepTagRow}>
-                  <span className={styles.stepBadge}>STEP 01</span>
-                  <span className={styles.stepTagLine} />
+            {/* Interactive Step-by-Step Stepper Navigation */}
+            <div className={styles.checkoutStepper} role="tablist" aria-label="Checkout Progress">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeStep === 1}
+                onClick={() => handleStepClick(1)}
+                className={`${styles.stepperTab} ${activeStep === 1 ? styles.stepperTabActive : ''} ${activeStep > 1 ? styles.stepperTabCompleted : ''}`}
+              >
+                <div className={styles.stepperBadge}>
+                  {activeStep > 1 ? <CheckCircle2 size={16} /> : '01'}
                 </div>
+                <div className={styles.stepperMeta}>
+                  <span className={styles.stepperStepNum}>Step 01</span>
+                  <span className={styles.stepperStepTitle}>Delivery Address</span>
+                </div>
+              </button>
+
+              <div className={`${styles.stepperConnector} ${activeStep > 1 ? styles.stepperConnectorActive : ''}`} />
+
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeStep === 2}
+                onClick={() => handleStepClick(2)}
+                className={`${styles.stepperTab} ${activeStep === 2 ? styles.stepperTabActive : ''} ${activeStep > 2 ? styles.stepperTabCompleted : ''} ${activeStep < 2 ? styles.stepperTabDisabled : ''}`}
+              >
+                <div className={styles.stepperBadge}>
+                  {activeStep > 2 ? <CheckCircle2 size={16} /> : '02'}
+                </div>
+                <div className={styles.stepperMeta}>
+                  <span className={styles.stepperStepNum}>Step 02</span>
+                  <span className={styles.stepperStepTitle}>Courier Method</span>
+                </div>
+              </button>
+
+              <div className={`${styles.stepperConnector} ${activeStep > 2 ? styles.stepperConnectorActive : ''}`} />
+
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeStep === 3}
+                onClick={() => handleStepClick(3)}
+                className={`${styles.stepperTab} ${activeStep === 3 ? styles.stepperTabActive : ''} ${activeStep < 3 ? styles.stepperTabDisabled : ''}`}
+              >
+                <div className={styles.stepperBadge}>
+                  03
+                </div>
+                <div className={styles.stepperMeta}>
+                  <span className={styles.stepperStepNum}>Step 03</span>
+                  <span className={styles.stepperStepTitle}>Payment</span>
+                </div>
+              </button>
+            </div>
+
+            <AnimatePresence mode="wait">
+              {/* Step 1: Customer Contact & Delivery Address */}
+              {activeStep === 1 && (
+                <motion.div
+                  key="checkout-step-1"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className={styles.sectionCard}
+                >
+                  <div className={styles.sectionHeader}>
+                    <div className={styles.stepTagRow}>
+                      <span className={styles.stepBadge}>STEP 01 OF 03</span>
+                      <span className={styles.stepTagLine} />
+                    </div>
                 <h2 className={styles.sectionTitle}>Where should we deliver your order?</h2>
                 <p className={styles.sectionSubtitle}>
-                  Enter your doorstep address for direct DTDC consignment updates
+                  Enter your doorstep address for direct delivery &amp; tracking updates
                 </p>
               </div>
 
@@ -729,7 +790,7 @@ export function CheckoutView() {
                     required
                   />
                   <span className={styles.inputHelp}>
-                    Required for DTDC consignment SMS tracking updates.
+                    Required for delivery SMS &amp; tracking updates.
                   </span>
                   {errors.phone && <span className={styles.errorText}>{errors.phone}</span>}
                 </div>
@@ -927,46 +988,187 @@ export function CheckoutView() {
                   <ExternalLink size={12} />
                 </a>
               </div>
-            </div>
 
-            {/* Step 2: Delivery Courier Method */}
-            <div className={styles.sectionCard}>
-              <div className={styles.sectionHeader}>
-                <div className={styles.stepTagRow}>
-                  <span className={styles.stepBadge}>STEP 02</span>
-                  <span className={styles.stepTagLine} />
+              {/* Step 1 Continue Button */}
+              <div className={styles.stepBtnRow}>
+                <button
+                  type="button"
+                  onClick={handleProceedToStep2}
+                  className={styles.nextStepBtn}
+                >
+                  <span>Continue to Shipping Method</span>
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 2: Delivery Courier Method */}
+          {activeStep === 2 && (
+            <motion.div
+              key="checkout-step-2"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Step 1 Recap */}
+              <div className={styles.stepSummaryRecap}>
+                <div className={styles.recapLeft}>
+                  <div className={styles.recapIconBox}>
+                    <MapPin size={16} />
+                  </div>
+                  <div className={styles.recapInfo}>
+                    <div className={styles.recapHeader}>
+                      <span className={styles.recapLabel}>Delivering To</span>
+                      <span className={styles.recapName}>{formData.fullName} • +91 {formData.phone}</span>
+                    </div>
+                    <p className={styles.recapText}>
+                      {formData.addressLine1}{formData.addressLine2 ? `, ${formData.addressLine2}` : ''}, {formData.city}, {formData.state} – {formData.pincode}
+                    </p>
+                  </div>
                 </div>
-                <h2 className={styles.sectionTitle}>DTDC Express Domestic Courier</h2>
-                <p className={styles.sectionSubtitle}>
-                  Calculated strictly by net product weight ({totalWeightGrams}g)
-                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveStep(1);
+                    window.scrollTo({ top: 120, behavior: 'smooth' });
+                  }}
+                  className={styles.recapEditBtn}
+                >
+                  Change
+                </button>
               </div>
 
-              <div className={styles.deliveryOptionCard}>
-                <div className={styles.deliveryIconBox}>
-                  <Truck size={20} strokeWidth={2} />
-                </div>
-                <div className={styles.deliveryMeta}>
-                  <div className={styles.deliveryHeaderRow}>
-                    <h3 className={styles.deliveryTitle}>DTDC Express Doorstep Delivery</h3>
-                    <span className={styles.deliveryBadge}>
-                      {formatCurrency(shipping.shippingCost)}
-                    </span>
+              <div className={styles.sectionCard}>
+                <div className={styles.sectionHeader}>
+                  <div className={styles.stepTagRow}>
+                    <span className={styles.stepBadge}>STEP 02 OF 03</span>
+                    <span className={styles.stepTagLine} />
                   </div>
-                  <p className={styles.deliveryDesc}>
-                    Estimated delivery in <strong>2–4 business days</strong> following fresh kitchen preparation. Consignment tracking SMS sent directly to your phone upon courier dispatch.
+                  <h2 className={styles.sectionTitle}>Tracked Express Courier</h2>
+                  <p className={styles.sectionSubtitle}>
+                    Calculated strictly by net product weight ({totalWeightGrams}g)
                   </p>
                 </div>
-              </div>
-            </div>
 
-            {/* Step 3: Secure UPI Payment powered by Razorpay */}
-            <div className={styles.sectionCard}>
-              <div className={styles.sectionHeader}>
-                <div className={styles.stepTagRow}>
-                  <span className={styles.stepBadge}>STEP 03</span>
-                  <span className={styles.stepTagLine} />
+                <div className={styles.deliveryOptionCard}>
+                  <div className={styles.deliveryIconBox}>
+                    <Truck size={20} strokeWidth={2} />
+                  </div>
+                  <div className={styles.deliveryMeta}>
+                    <div className={styles.deliveryHeaderRow}>
+                      <h3 className={styles.deliveryTitle}>Express Doorstep Delivery</h3>
+                      <span className={styles.deliveryBadge}>
+                        {formatCurrency(shipping.shippingCost)}
+                      </span>
+                    </div>
+                    <p className={styles.deliveryDesc}>
+                      Estimated delivery in <strong>2–4 business days</strong> following fresh kitchen preparation. Consignment tracking SMS sent directly to your phone upon courier dispatch.
+                    </p>
+                  </div>
                 </div>
+
+                {/* Step 2 Action Buttons */}
+                <div className={styles.stepBtnRow}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveStep(1);
+                      window.scrollTo({ top: 120, behavior: 'smooth' });
+                    }}
+                    className={styles.backStepBtn}
+                  >
+                    <ArrowLeft size={16} />
+                    <span>Back to Address</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveStep(3);
+                      window.scrollTo({ top: 120, behavior: 'smooth' });
+                    }}
+                    className={styles.nextStepBtn}
+                  >
+                    <span>Continue to Payment</span>
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 3: Secure UPI Payment powered by Razorpay */}
+          {activeStep === 3 && (
+            <motion.div
+              key="checkout-step-3"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Step 1 Recap */}
+              <div className={styles.stepSummaryRecap}>
+                <div className={styles.recapLeft}>
+                  <div className={styles.recapIconBox}>
+                    <MapPin size={16} />
+                  </div>
+                  <div className={styles.recapInfo}>
+                    <div className={styles.recapHeader}>
+                      <span className={styles.recapLabel}>Delivery Destination</span>
+                      <span className={styles.recapName}>{formData.fullName} • +91 {formData.phone}</span>
+                    </div>
+                    <p className={styles.recapText}>
+                      {formData.addressLine1}{formData.addressLine2 ? `, ${formData.addressLine2}` : ''}, {formData.city}, {formData.state} – {formData.pincode}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveStep(1);
+                    window.scrollTo({ top: 120, behavior: 'smooth' });
+                  }}
+                  className={styles.recapEditBtn}
+                >
+                  Change
+                </button>
+              </div>
+
+              {/* Step 2 Recap */}
+              <div className={styles.stepSummaryRecap}>
+                <div className={styles.recapLeft}>
+                  <div className={styles.recapIconBox}>
+                    <Truck size={16} />
+                  </div>
+                  <div className={styles.recapInfo}>
+                    <div className={styles.recapHeader}>
+                      <span className={styles.recapLabel}>Shipping Courier</span>
+                      <span className={styles.recapName}>Express Doorstep Courier</span>
+                    </div>
+                    <p className={styles.recapText}>
+                      {totalWeightGrams}g package weight • {formatCurrency(shipping.shippingCost)} • Estimated delivery in 2–4 business days
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveStep(2);
+                    window.scrollTo({ top: 120, behavior: 'smooth' });
+                  }}
+                  className={styles.recapEditBtn}
+                >
+                  Change
+                </button>
+              </div>
+
+              <div className={styles.sectionCard}>
+                <div className={styles.sectionHeader}>
+                  <div className={styles.stepTagRow}>
+                    <span className={styles.stepBadge}>STEP 03 OF 03</span>
+                    <span className={styles.stepTagLine} />
+                  </div>
                 <h2 className={styles.sectionTitle}>Pay with UPI or Bank Transfer</h2>
                 <p className={styles.sectionSubtitle}>
                   Secure payment powered by Razorpay. Encrypted &amp; verified instantly.
@@ -1019,39 +1221,6 @@ export function CheckoutView() {
                     Clicking <strong>Pay via UPI / Netbanking</strong> opens the secure Razorpay modal. You can scan an instant dynamic UPI QR code, choose your mobile UPI app, or select direct Net Banking across SBI, HDFC, ICICI, Axis, and all major Indian banks.
                   </p>
                 </div>
-
-                {/* Development Sandbox Indicator & Immediate Desktop Test Controls */}
-                {process.env.NODE_ENV !== 'production' && (
-                  <div className={styles.sandboxNotice}>
-                    <div className={styles.sandboxTitle}>
-                      <ShieldCheck size={15} />
-                      <span>Atelier Development Sandbox Controls (Active on Localhost)</span>
-                    </div>
-                    <div>
-                      In Razorpay sandbox test mode, dynamic QR codes cannot be scanned by real mobile banking apps, and NPCI phased out manual UPI ID entry in 2026. Use these test buttons to verify confirmed and declined order states:
-                    </div>
-                    <div className={styles.sandboxActions}>
-                      <button
-                        type="button"
-                        onClick={() => handleSimulatePayment(true)}
-                        disabled={isSubmitting}
-                        className={styles.simSuccessBtn}
-                      >
-                        <CheckCircle size={14} />
-                        <span>Success (Simulate Confirmed Order)</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleSimulatePayment(false)}
-                        disabled={isSubmitting}
-                        className={styles.simFailureBtn}
-                      >
-                        <XCircle size={14} />
-                        <span>Failure (Simulate Declined Payment)</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Payment Error Callout */}
@@ -1084,13 +1253,26 @@ export function CheckoutView() {
                     <span>Pay {formatCurrency(grandTotal)} via UPI / Netbanking</span>
                     <ArrowRight size={17} />
                   </button>
+                  <div style={{ marginTop: '14px', textAlign: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveStep(2);
+                        window.scrollTo({ top: 120, behavior: 'smooth' });
+                      }}
+                      className={styles.backStepTextBtn}
+                    >
+                      <ArrowLeft size={14} />
+                      <span>Back to Courier &amp; Shipping</span>
+                    </button>
+                  </div>
                   <p className={styles.legalDisclaimer}>
                     By confirming payment, you agree to our{' '}
-                    <Link href="/terms" target="_blank" className={styles.legalLink}>
+                    <Link href="/terms-of-service" target="_blank" className={styles.legalLink}>
                       Terms
                     </Link>
                     ,{' '}
-                    <Link href="/privacy" target="_blank" className={styles.legalLink}>
+                    <Link href="/privacy-policy" target="_blank" className={styles.legalLink}>
                       Privacy
                     </Link>
                     , and acknowledge our made-to-order{' '}
@@ -1102,7 +1284,10 @@ export function CheckoutView() {
                 </>
               )}
             </div>
-          </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
 
           {/* Right Column: Bespoke Atelier Summary Ledger */}
           <aside className={styles.summaryColumn}>
@@ -1117,7 +1302,7 @@ export function CheckoutView() {
                 </span>
               </div>
 
-              {/* Items List */}
+              {/* Items List with Inline Stepper & Removal */}
               <div className={styles.itemsList}>
                 {items.map((item) => (
                   <div key={item.product.id} className={styles.itemRow}>
@@ -1130,7 +1315,36 @@ export function CheckoutView() {
                       <h4 className={styles.itemName}>{item.product.name}</h4>
                       <div className={styles.itemMetaRow}>
                         <span className={styles.itemPackTag}>{item.product.packSize}</span>
-                        <span className={styles.itemQty}>× {item.quantity}</span>
+                        {/* Inline Quantity Stepper */}
+                        <div className={styles.itemQtyStepper}>
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                            className={styles.qtyStepperBtn}
+                            aria-label={`Decrease quantity of ${item.product.name}`}
+                          >
+                            <Minus size={11} />
+                          </button>
+                          <span className={styles.itemQtyVal}>{item.quantity}</span>
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                            className={styles.qtyStepperBtn}
+                            aria-label={`Increase quantity of ${item.product.name}`}
+                          >
+                            <Plus size={11} />
+                          </button>
+                        </div>
+                        {/* Remove item button */}
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.product.id)}
+                          className={styles.itemRemoveBtn}
+                          aria-label={`Remove ${item.product.name} from order`}
+                          title="Remove item"
+                        >
+                          <Trash2 size={12} />
+                        </button>
                       </div>
                     </div>
                     <span className={styles.itemPrice}>
@@ -1138,6 +1352,22 @@ export function CheckoutView() {
                     </span>
                   </div>
                 ))}
+              </div>
+
+              {/* Add More Products Quick Trigger */}
+              <div className={styles.addMoreRow}>
+                <button
+                  type="button"
+                  onClick={() => setIsAddProductsOpen(true)}
+                  className={styles.addMoreBtn}
+                >
+                  <Plus size={13} />
+                  <span>Add More Products</span>
+                </button>
+                <Link href="/shop" className={styles.browseStoreLink}>
+                  <span>Browse Store</span>
+                  <ArrowRight size={12} />
+                </Link>
               </div>
 
               {/* Cost Breakdown */}
@@ -1149,7 +1379,7 @@ export function CheckoutView() {
 
                 <div className={styles.costRow}>
                   <div>
-                    <span>DTDC Domestic Courier</span>
+                    <span>Express Domestic Courier</span>
                     <span className={styles.shippingSlabNote}>
                       {totalWeightGrams}g net ({shipping.slabDescription})
                     </span>
@@ -1182,7 +1412,7 @@ export function CheckoutView() {
                 </div>
                 <div className={styles.trustPillItem}>
                   <span className={styles.trustPillDot} />
-                  <span>Doorstep delivery in 2–4 business days via DTDC</span>
+                  <span>Fast doorstep delivery in 2–4 business days</span>
                 </div>
                 <div className={styles.trustPillItem}>
                   <span className={styles.trustPillDot} />
@@ -1193,6 +1423,152 @@ export function CheckoutView() {
           </aside>
         </form>
       </div>
+
+      {/* Quick-Add Catalog Modal for Checkout */}
+      <AnimatePresence>
+        {isAddProductsOpen && (
+          <div
+            className={styles.quickAddModalOverlay}
+            onClick={() => setIsAddProductsOpen(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Add products to your order"
+          >
+            <motion.div
+              className={styles.quickAddModalCard}
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.96, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 10 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {/* Header */}
+              <div className={styles.quickAddHeader}>
+                <div>
+                  <div className={styles.quickAddBadge}>ATELIER PANTRY</div>
+                  <h3 className={styles.quickAddTitle}>Add Products to Your Order</h3>
+                  <p className={styles.quickAddSubtitle}>
+                    Select any handcrafted blend to include in this delivery
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddProductsOpen(false)}
+                  className={styles.quickAddCloseBtn}
+                  aria-label="Close add products modal"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Category Filter Pills */}
+              <div className={styles.quickAddCategoryFilter}>
+                <button
+                  type="button"
+                  onClick={() => setQuickAddCategory('all')}
+                  className={`${styles.filterPill} ${quickAddCategory === 'all' ? styles.filterPillActive : ''}`}
+                >
+                  All Blends ({PRODUCTS.length})
+                </button>
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setQuickAddCategory(cat.id)}
+                    className={`${styles.filterPill} ${quickAddCategory === cat.id ? styles.filterPillActive : ''}`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Product List */}
+              <div className={styles.quickAddProductList}>
+                {filteredQuickAddProducts.map((prod) => {
+                  const inCartItem = items.find((i) => i.product.id === prod.id);
+                  const inCartQty = inCartItem ? inCartItem.quantity : 0;
+                  return (
+                    <div key={prod.id} className={styles.quickAddProductCard}>
+                      <img
+                        src={prod.images.primary}
+                        alt={prod.name}
+                        className={styles.quickAddThumb}
+                      />
+                      <div className={styles.quickAddInfo}>
+                        <h4 className={styles.quickAddName}>{prod.name}</h4>
+                        <div className={styles.quickAddMeta}>
+                          <span>{prod.packSize}</span>
+                          <span>•</span>
+                          <span>{prod.productWeightGrams}g</span>
+                        </div>
+                        <div className={styles.quickAddPrice}>
+                          {formatCurrency(prod.price)}
+                        </div>
+                      </div>
+
+                      <div className={styles.quickAddAction}>
+                        {inCartQty > 0 ? (
+                          <div className={styles.quickAddInCartRow}>
+                            <div className={styles.quickAddMiniStepper}>
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(prod.id, inCartQty - 1)}
+                                className={styles.miniStepperBtn}
+                                aria-label={`Decrease quantity of ${prod.name}`}
+                              >
+                                <Minus size={11} />
+                              </button>
+                              <span className={styles.miniStepperVal}>{inCartQty}</span>
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(prod.id, inCartQty + 1)}
+                                className={styles.miniStepperBtn}
+                                aria-label={`Increase quantity of ${prod.name}`}
+                              >
+                                <Plus size={11} />
+                              </button>
+                            </div>
+                            <span className={styles.inBagBadge}>In Bag</span>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              addItem(prod, 1);
+                              setAddedNoticeId(prod.id);
+                              setTimeout(() => setAddedNoticeId(null), 1200);
+                            }}
+                            className={styles.quickAddBtn}
+                          >
+                            <Plus size={13} />
+                            <span>Add</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Footer */}
+              <div className={styles.quickAddFooter}>
+                <div className={styles.quickAddTotalPreview}>
+                  <span>Total in Basket: <strong>{items.reduce((s, i) => s + i.quantity, 0)} items</strong></span>
+                  <span className={styles.quickAddGrandTotal}>{formatCurrency(grandTotal)}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddProductsOpen(false)}
+                  className={styles.quickAddDoneBtn}
+                >
+                  <span>Done Reviewing</span>
+                  <Check size={16} />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -45,6 +45,7 @@ import {
   Trash2,
   Star,
   Flame,
+  RefreshCw,
 } from 'lucide-react';
 import { Order, OrderStatus, ShipmentStatus, PaymentStatus, Product, ProductCategory, ProductAvailability } from '@/types';
 import { PRODUCTS } from '@/data/products';
@@ -93,7 +94,7 @@ export const getUnifiedStatusLabel = (
     case 'Processing':
       return 'Prepared & Packed';
     case 'Shipped':
-      return 'In Transit (DTDC)';
+      return 'In Transit';
     case 'Out for Delivery':
       return 'Out for Delivery';
     case 'Delivered':
@@ -125,7 +126,7 @@ const getNextStatusConfig = (current: UnifiedStatus): {
     case 'Processing':
       return {
         nextStatus: 'Shipped',
-        label: 'Dispatch DTDC 🚚',
+        label: 'Dispatch Order 🚚',
         shortLabel: 'Dispatch 🚚',
         icon: '🚚',
         colorScheme: 'blue',
@@ -154,7 +155,11 @@ const getNextStatusConfig = (current: UnifiedStatus): {
   }
 };
 
-export function AdminDispatchView() {
+export interface AdminDispatchViewProps {
+  initialTab?: SidebarTab;
+}
+
+export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchViewProps) {
   const [pin, setPin] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -162,9 +167,53 @@ export function AdminDispatchView() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
-  // Navigation: Sidebar Tab
-  const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTab>('dashboard');
+  // Navigation: Sidebar Tab with direct URL endpoint synchronization
+  const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTab>(initialTab);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveSidebarTab(initialTab);
+      if (initialTab === 'products') {
+        fetchProducts();
+      }
+    }
+  }, [initialTab]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname.replace(/\/$/, '');
+        const segments = path.split('/');
+        const last = segments[segments.length - 1];
+        const validTabs: SidebarTab[] = ['dashboard', 'orders', 'kitchen', 'products', 'reviews', 'inquiries'];
+        if (validTabs.includes(last as SidebarTab)) {
+          setActiveSidebarTab(last as SidebarTab);
+          if (last === 'products') {
+            fetchProducts();
+          }
+        } else if (last === 'console') {
+          setActiveSidebarTab('dashboard');
+        }
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const handleTabChange = (tab: SidebarTab) => {
+    setActiveSidebarTab(tab);
+    setIsMobileDrawerOpen(false);
+    if (tab === 'products') {
+      fetchProducts();
+    }
+    if (typeof window !== 'undefined') {
+      const targetUrl = tab === 'dashboard' ? '/console/dashboard' : `/console/${tab}`;
+      if (window.location.pathname !== targetUrl) {
+        window.history.pushState(null, '', targetUrl);
+      }
+    }
+  };
   
   // Orders View Sub-options
   const [manifestLayout, setManifestLayout] = useState<ManifestLayout>('table');
@@ -244,13 +293,19 @@ export function AdminDispatchView() {
   // Toast feedback state
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
+  const showToast = useCallback((message: string, type: 'success' | 'info' | 'error' = 'success') => {
     const id = `${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3200);
-  };
+  }, []);
+
+  const handleNavigateToOrderFromReview = useCallback((orderId: string) => {
+    handleTabChange('orders');
+    setActiveDateTab('all');
+    setSearchTerm(orderId);
+  }, []);
 
   // Close status popover when clicking outside
   useEffect(() => {
@@ -401,12 +456,13 @@ export function AdminDispatchView() {
     setIsLoadingProducts(true);
     const activePin = adminPin || pin || (typeof window !== 'undefined' ? sessionStorage.getItem('goodfills_admin_pin') || '' : '');
     try {
-      const res = await fetch('/api/admin/products', {
+      const res = await fetch(`/api/admin/products?t=${Date.now()}`, {
         headers: { 'x-admin-pin': activePin },
+        cache: 'no-store',
       });
       const data = await res.json();
-      if (res.ok && data.success) {
-        setProducts(data.products || []);
+      if (res.ok && data.success && Array.isArray(data.products)) {
+        setProducts(data.products);
       }
     } catch (err) {
       console.error('Fetch products error:', err);
@@ -416,12 +472,12 @@ export function AdminDispatchView() {
   };
 
   const handleToggleAvailability = async (productId: string, newAvailability: ProductAvailability) => {
+    const activePin = pin || (typeof window !== 'undefined' ? sessionStorage.getItem('goodfills_admin_pin') || '' : '');
     setProducts((prev) =>
       prev.map((p) => (p.id === productId ? { ...p, availability: newAvailability } : p))
     );
 
     try {
-      const activePin = pin || sessionStorage.getItem('goodfills_admin_pin') || '';
       const res = await fetch('/api/admin/products/update', {
         method: 'POST',
         headers: {
@@ -435,13 +491,16 @@ export function AdminDispatchView() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
+        if (data.product) {
+          setProducts((prev) => prev.map((p) => (p.id === productId ? data.product : p)));
+        }
         showToast(`Stock updated: ${newAvailability}`, 'success');
       } else {
         throw new Error(data.error || 'Failed to update stock');
       }
     } catch (err: any) {
       showToast(err.message || 'Error updating stock', 'error');
-      fetchProducts();
+      fetchProducts(activePin);
     }
   };
 
@@ -449,6 +508,7 @@ export function AdminDispatchView() {
     const nextFeatured = !currentFeatured;
     const target = products.find((p) => p.id === productId);
     const prodName = target?.name || 'Creation';
+    const activePin = pin || (typeof window !== 'undefined' ? sessionStorage.getItem('goodfills_admin_pin') || '' : '');
 
     const updatedProducts = products.map((p) =>
       p.id === productId ? { ...p, featured: nextFeatured } : p
@@ -456,7 +516,6 @@ export function AdminDispatchView() {
     setProducts(updatedProducts);
 
     try {
-      const activePin = pin || sessionStorage.getItem('goodfills_admin_pin') || '';
       const res = await fetch('/api/admin/products/update', {
         method: 'POST',
         headers: {
@@ -470,6 +529,9 @@ export function AdminDispatchView() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
+        if (data.product) {
+          setProducts((prev) => prev.map((p) => (p.id === productId ? data.product : p)));
+        }
         const count = updatedProducts.filter((p) => p.featured).length;
         if (nextFeatured) {
           showToast(`★ "${prodName}" pinned to Homepage! (${count} creations now featured)`, 'success');
@@ -481,7 +543,7 @@ export function AdminDispatchView() {
       }
     } catch (err: any) {
       showToast(err.message || 'Error updating featured state', 'error');
-      fetchProducts();
+      fetchProducts(activePin);
     }
   };
 
@@ -534,7 +596,7 @@ export function AdminDispatchView() {
       return;
     }
     if (formWeightGrams <= 0 || isNaN(formWeightGrams)) {
-      showToast('Gross weight in grams is required for DTDC calculations', 'error');
+      showToast('Gross weight in grams is required for shipping calculations', 'error');
       return;
     }
 
@@ -587,7 +649,12 @@ export function AdminDispatchView() {
         if (res.ok && data.success) {
           showToast(`Updated "${formName.trim()}" successfully!`, 'success');
           setIsProductModalOpen(false);
-          fetchProducts();
+          if (data.product) {
+            setProducts((prev) =>
+              prev.map((p) => (p.id === editingProductId ? data.product : p))
+            );
+          }
+          fetchProducts(activePin);
         } else {
           throw new Error(data.error || 'Failed to update product');
         }
@@ -625,7 +692,10 @@ export function AdminDispatchView() {
         if (res.ok && data.success) {
           showToast(`Created creation "${formName.trim()}"!`, 'success');
           setIsProductModalOpen(false);
-          fetchProducts();
+          if (data.product) {
+            setProducts((prev) => [data.product, ...prev]);
+          }
+          fetchProducts(activePin);
         } else {
           throw new Error(data.error || 'Failed to create product');
         }
@@ -654,8 +724,10 @@ export function AdminDispatchView() {
       const data = await res.json();
       if (res.ok && data.success) {
         showToast(`Removed "${productToDelete.name}" from catalog`, 'success');
+        const deletedId = productToDelete.id;
+        setProducts((prev) => prev.filter((p) => p.id !== deletedId));
         setProductToDelete(null);
-        fetchProducts();
+        fetchProducts(activePin);
       } else {
         throw new Error(data.error || 'Failed to delete product');
       }
@@ -667,12 +739,12 @@ export function AdminDispatchView() {
   };
 
   const getDtdcTierLabel = (grams: number) => {
-    if (grams <= 500) return '0–500g (₹100 DTDC)';
-    if (grams <= 1000) return '501g–1kg (₹200 DTDC)';
-    if (grams <= 2000) return '1.01–2kg (₹400 DTDC)';
-    if (grams <= 3000) return '2.01–3kg (₹600 DTDC)';
+    if (grams <= 500) return '0–500g (₹100)';
+    if (grams <= 1000) return '501g–1kg (₹200)';
+    if (grams <= 2000) return '1.01–2kg (₹400)';
+    if (grams <= 3000) return '2.01–3kg (₹600)';
     const extraKg = Math.ceil((grams - 3000) / 1000);
-    return `>3kg (₹${600 + extraKg * 200} DTDC)`;
+    return `>3kg (₹${600 + extraKg * 200})`;
   };
 
   const getAvailabilityClass = (avail: ProductAvailability) => {
@@ -825,7 +897,7 @@ export function AdminDispatchView() {
         ...prev,
         [orderId]: { ...prev[orderId], justSaved: true },
       }));
-      showToast(`DTDC Consignment for #${orderId} verified & up to date`, 'info');
+      showToast(`Consignment for #${orderId} verified & up to date`, 'info');
       setTimeout(() => {
         setEditStates((prev) => ({
           ...prev,
@@ -869,7 +941,7 @@ export function AdminDispatchView() {
           ...prev,
           [orderId]: { ...prev[orderId], isSaving: false, justSaved: true },
         }));
-        showToast(`DTDC AWB saved for #${orderId}`, 'success');
+        showToast(`AWB tracking saved for #${orderId}`, 'success');
         setTimeout(() => {
           setEditStates((prev) => ({
             ...prev,
@@ -911,11 +983,11 @@ export function AdminDispatchView() {
 
     let message = `Hello ${firstName}! `;
     if (status === 'Confirmed') {
-      message += `Your Good Fills freshly milled order #${order.id} is confirmed. Our kitchen is roasting and stone-milling your ingredients fresh! Track live: https://goodfills.in/track?id=${order.id}`;
+      message += `Your Good Fills freshly milled order #${order.id} is confirmed. Our kitchen is roasting and stone-milling your ingredients fresh! Track live: https://goodfills.in/track-order?id=${order.id}`;
     } else if (status === 'Processing') {
-      message += `Your Good Fills order #${order.id} has been freshly milled, sealed warm, and packed for dispatch! Track live: https://goodfills.in/track?id=${order.id}`;
+      message += `Your Good Fills order #${order.id} has been freshly milled, sealed warm, and packed for dispatch! Track live: https://goodfills.in/track-order?id=${order.id}`;
     } else if (status === 'Shipped') {
-      message += `Your Good Fills order #${order.id} has been dispatched via DTDC Express${order.trackingNumber ? ` (AWB: ${order.trackingNumber})` : ''}. Track live here: https://goodfills.in/track?id=${order.id}`;
+      message += `Your Good Fills order #${order.id} has been dispatched via DTDC Express${order.trackingNumber ? ` (AWB: ${order.trackingNumber})` : ''}. Track live here: https://goodfills.in/track-order?id=${order.id}`;
     } else if (status === 'Delivered') {
       message += `Your Good Fills freshly prepared order #${order.id} has been delivered. Enjoy the pure traditional freshness! Feel free to WhatsApp us anytime for recipes.`;
     } else {
@@ -1088,7 +1160,8 @@ export function AdminDispatchView() {
 
     // If top products has fewer than 4, fill in catalog products
     if (topProducts.length < 4) {
-      PRODUCTS.forEach((p) => {
+      const catalogSource = products.length > 0 ? products : PRODUCTS;
+      catalogSource.forEach((p) => {
         if (!productCounts[p.id]) {
           topProducts.push({
             id: p.id,
@@ -1191,7 +1264,7 @@ export function AdminDispatchView() {
       'Total (INR)',
       'Payment Status',
       'Order Status',
-      'DTDC AWB',
+      'AWB / Tracking Number',
     ];
 
     const rows = processedOrders.map((o) => [
@@ -1248,7 +1321,7 @@ export function AdminDispatchView() {
             </div>
             <h2 className={styles.loginTitle}>Kitchen Dispatch Login</h2>
             <p className={styles.loginSubtitle}>
-              Enter the 4-digit manager PIN to access the Good Fills executive dashboard, order fulfillment, and DTDC consignments.
+              Enter the 4-digit manager PIN to access the Good Fills executive dashboard, order fulfillment, and consignments.
             </p>
 
             <form onSubmit={handleUnlock}>
@@ -1332,10 +1405,7 @@ export function AdminDispatchView() {
             <button
               type="button"
               className={`${styles.navItem} ${activeSidebarTab === 'dashboard' ? styles.navItemActive : ''}`}
-              onClick={() => {
-                setActiveSidebarTab('dashboard');
-                setIsMobileDrawerOpen(false);
-              }}
+              onClick={() => handleTabChange('dashboard')}
             >
               <Grid size={18} />
               <span>Dashboard</span>
@@ -1345,10 +1415,7 @@ export function AdminDispatchView() {
             <button
               type="button"
               className={`${styles.navItem} ${activeSidebarTab === 'orders' ? styles.navItemActive : ''}`}
-              onClick={() => {
-                setActiveSidebarTab('orders');
-                setIsMobileDrawerOpen(false);
-              }}
+              onClick={() => handleTabChange('orders')}
             >
               <ListOrdered size={18} />
               <span>Orders</span>
@@ -1359,10 +1426,7 @@ export function AdminDispatchView() {
             <button
               type="button"
               className={`${styles.navItem} ${activeSidebarTab === 'kitchen' ? styles.navItemActive : ''}`}
-              onClick={() => {
-                setActiveSidebarTab('kitchen');
-                setIsMobileDrawerOpen(false);
-              }}
+              onClick={() => handleTabChange('kitchen')}
               title="Daily kitchen cooking, roasting, and milling planner"
             >
               <Flame size={18} />
@@ -1378,10 +1442,7 @@ export function AdminDispatchView() {
             <button
               type="button"
               className={`${styles.navItem} ${activeSidebarTab === 'products' ? styles.navItemActive : ''}`}
-              onClick={() => {
-                setActiveSidebarTab('products');
-                setIsMobileDrawerOpen(false);
-              }}
+              onClick={() => handleTabChange('products')}
             >
               <ShoppingBag size={18} />
               <span>Products</span>
@@ -1392,10 +1453,7 @@ export function AdminDispatchView() {
             <button
               type="button"
               className={`${styles.navItem} ${activeSidebarTab === 'reviews' ? styles.navItemActive : ''}`}
-              onClick={() => {
-                setActiveSidebarTab('reviews');
-                setIsMobileDrawerOpen(false);
-              }}
+              onClick={() => handleTabChange('reviews')}
               title="Customer feedback, ratings, and testimonial moderation"
             >
               <Star size={18} />
@@ -1406,10 +1464,7 @@ export function AdminDispatchView() {
             <button
               type="button"
               className={`${styles.navItem} ${activeSidebarTab === 'inquiries' ? styles.navItemActive : ''}`}
-              onClick={() => {
-                setActiveSidebarTab('inquiries');
-                setIsMobileDrawerOpen(false);
-              }}
+              onClick={() => handleTabChange('inquiries')}
             >
               <MessageCircle size={18} />
               <span>Inquiries</span>
@@ -1425,7 +1480,7 @@ export function AdminDispatchView() {
               <Store size={15} />
               <span>Live Store ↗</span>
             </Link>
-            <Link href="/track" target="_blank" className={styles.footerLink}>
+            <Link href="/track-order" target="_blank" className={styles.footerLink}>
               <Eye size={15} />
               <span>Tracking Portal ↗</span>
             </Link>
@@ -1491,7 +1546,7 @@ export function AdminDispatchView() {
           <button
             type="button"
             className={`${styles.mobileTabBtn} ${activeSidebarTab === 'dashboard' ? styles.mobileTabBtnActive : ''}`}
-            onClick={() => setActiveSidebarTab('dashboard')}
+            onClick={() => handleTabChange('dashboard')}
           >
             <Grid size={14} />
             <span>Overview</span>
@@ -1499,7 +1554,7 @@ export function AdminDispatchView() {
           <button
             type="button"
             className={`${styles.mobileTabBtn} ${activeSidebarTab === 'orders' ? styles.mobileTabBtnActive : ''}`}
-            onClick={() => setActiveSidebarTab('orders')}
+            onClick={() => handleTabChange('orders')}
           >
             <ListOrdered size={14} />
             <span>Orders ({orders.length})</span>
@@ -1507,7 +1562,7 @@ export function AdminDispatchView() {
           <button
             type="button"
             className={`${styles.mobileTabBtn} ${activeSidebarTab === 'kitchen' ? styles.mobileTabBtnActive : ''}`}
-            onClick={() => setActiveSidebarTab('kitchen')}
+            onClick={() => handleTabChange('kitchen')}
           >
             <Flame size={14} />
             <span>Kitchen ({pendingKitchenBatchCount})</span>
@@ -1515,7 +1570,7 @@ export function AdminDispatchView() {
           <button
             type="button"
             className={`${styles.mobileTabBtn} ${activeSidebarTab === 'products' ? styles.mobileTabBtnActive : ''}`}
-            onClick={() => setActiveSidebarTab('products')}
+            onClick={() => handleTabChange('products')}
           >
             <ShoppingBag size={14} />
             <span>Products ({products.length})</span>
@@ -1523,7 +1578,7 @@ export function AdminDispatchView() {
           <button
             type="button"
             className={`${styles.mobileTabBtn} ${activeSidebarTab === 'reviews' ? styles.mobileTabBtnActive : ''}`}
-            onClick={() => setActiveSidebarTab('reviews')}
+            onClick={() => handleTabChange('reviews')}
           >
             <Star size={14} />
             <span>Reviews</span>
@@ -1531,7 +1586,7 @@ export function AdminDispatchView() {
           <button
             type="button"
             className={`${styles.mobileTabBtn} ${activeSidebarTab === 'inquiries' ? styles.mobileTabBtnActive : ''}`}
-            onClick={() => setActiveSidebarTab('inquiries')}
+            onClick={() => handleTabChange('inquiries')}
           >
             <MessageCircle size={14} />
             <span>Inquiries ({inquiries.length})</span>
@@ -1572,7 +1627,7 @@ export function AdminDispatchView() {
               <div
                 className={styles.statCardRef}
                 onClick={() => {
-                  setActiveSidebarTab('orders');
+                  handleTabChange('orders');
                   setActiveDateTab('all');
                 }}
                 role="button"
@@ -1591,7 +1646,7 @@ export function AdminDispatchView() {
               <div
                 className={styles.statCardRef}
                 onClick={() => {
-                  setActiveSidebarTab('orders');
+                  handleTabChange('orders');
                   setActiveDateTab('all');
                 }}
                 role="button"
@@ -1610,7 +1665,7 @@ export function AdminDispatchView() {
               <div
                 className={styles.statCardRef}
                 onClick={() => {
-                  setActiveSidebarTab('orders');
+                  handleTabChange('orders');
                   setActiveDateTab('all');
                 }}
                 role="button"
@@ -1629,7 +1684,7 @@ export function AdminDispatchView() {
               <div
                 className={styles.statCardRef}
                 onClick={() => {
-                  setActiveSidebarTab('orders');
+                  handleTabChange('orders');
                   setActiveDateTab('all');
                 }}
                 role="button"
@@ -1639,7 +1694,7 @@ export function AdminDispatchView() {
                   <Truck size={20} color="#2980B9" />
                 </div>
                 <div className={styles.statContent}>
-                  <span className={styles.statTitleRef}>DTDC In Transit</span>
+                  <span className={styles.statTitleRef}>In Transit</span>
                   <div className={styles.statNumberRef}>{analyticsData.shippedCount} orders</div>
                 </div>
               </div>
@@ -1658,7 +1713,7 @@ export function AdminDispatchView() {
                     </div>
                     <div className={styles.legendItem}>
                       <span className={styles.dotBlue} />
-                      <span>DTDC Dispatched</span>
+                      <span>Dispatched</span>
                     </div>
                   </div>
                 </div>
@@ -1821,7 +1876,7 @@ export function AdminDispatchView() {
                   <div className={styles.chartTitle}>Recent Orders</div>
                   <button
                     type="button"
-                    onClick={() => setActiveSidebarTab('orders')}
+                    onClick={() => handleTabChange('orders')}
                     className={styles.viewAllBtnSmall}
                   >
                     View All ➔
@@ -1872,7 +1927,7 @@ export function AdminDispatchView() {
 
                 <button
                   type="button"
-                  onClick={() => setActiveSidebarTab('orders')}
+                  onClick={() => handleTabChange('orders')}
                   className={styles.viewAllOrdersBlockBtn}
                 >
                   <span>Go to Full Orders Manifest ({orders.length})</span>
@@ -2063,7 +2118,7 @@ export function AdminDispatchView() {
               <div>
                 <h1 className={styles.overviewTitle}>Orders &amp; Dispatch Manifest</h1>
                 <p className={styles.overviewDateText}>
-                  {orders.length} total orders recorded • DTDC Pan-India Courier Hub
+                  {orders.length} total orders recorded • Pan-India Courier Dispatch
                 </p>
               </div>
 
@@ -2135,7 +2190,7 @@ export function AdminDispatchView() {
                     <option value="all">All Statuses</option>
                     <option value="Confirmed">Confirmed</option>
                     <option value="Processing">Packed</option>
-                    <option value="Shipped">In Transit (DTDC)</option>
+                    <option value="Shipped">In Transit</option>
                     <option value="Delivered">Delivered</option>
                   </select>
 
@@ -2195,7 +2250,7 @@ export function AdminDispatchView() {
                         <th>Amount</th>
                         <th>Live Status</th>
                         <th style={{ minWidth: '170px' }}>1-Click Next Action</th>
-                        <th style={{ minWidth: '140px' }}>DTDC Consignment</th>
+                        <th style={{ minWidth: '140px' }}>Consignment / AWB</th>
                         <th style={{ textAlign: 'right' }}>Actions</th>
                       </tr>
                     </thead>
@@ -2327,7 +2382,7 @@ export function AdminDispatchView() {
                                       className={styles.statusOptionBtn}
                                       onClick={() => handleQuickAdvance(o.id, 'Shipped')}
                                     >
-                                      <span>In Transit (DTDC)</span>
+                                      <span>In Transit</span>
                                     </button>
                                     <button
                                       type="button"
@@ -2420,7 +2475,7 @@ export function AdminDispatchView() {
                                   onClick={() => handleAwbSave(o.id, edit.trackingNumber)}
                                   disabled={edit.isSaving}
                                   className={`${styles.awbSaveBtn} ${edit.justSaved ? styles.awbSaveBtnSaved : ''}`}
-                                  title="Save DTDC Consignment Number"
+                                  title="Save Consignment Number"
                                 >
                                   {edit.justSaved ? (
                                     <>
@@ -2458,7 +2513,7 @@ export function AdminDispatchView() {
                                 </a>
 
                                 <Link
-                                  href={`/track?id=${o.id}`}
+                                  href={`/track-order?id=${o.id}`}
                                   target="_blank"
                                   className={styles.actionIconBtn}
                                   title="Live Tracking Page"
@@ -2626,7 +2681,7 @@ export function AdminDispatchView() {
                                 <input
                                   type="text"
                                   className={`${styles.mobileAwbInput} ${edit.justSaved ? styles.awbSavedPulse : ''}`}
-                                  placeholder="DTDC Consignment No."
+                                  placeholder="Consignment / AWB No."
                                   value={edit.trackingNumber}
                                   onChange={(e) =>
                                     setEditStates((prev) => ({
@@ -2649,7 +2704,7 @@ export function AdminDispatchView() {
                                 onClick={() => handleAwbSave(o.id, edit.trackingNumber)}
                                 disabled={edit.isSaving}
                                 className={`${styles.mobileAwbSaveBtn} ${edit.justSaved ? styles.awbSaveBtnSaved : ''}`}
-                                title="Save DTDC Consignment"
+                                title="Save Consignment"
                               >
                                 {edit.justSaved ? (
                                   <>
@@ -2688,7 +2743,7 @@ export function AdminDispatchView() {
                               </Link>
 
                               <Link
-                                href={`/track?id=${o.id}`}
+                                href={`/track-order?id=${o.id}`}
                                 target="_blank"
                                 className={styles.mobileTrackBtn}
                                 title="Live Customer Track"
@@ -2743,7 +2798,7 @@ export function AdminDispatchView() {
                 >
                   <span>{isLoadingInquiries ? 'Refreshing...' : 'Refresh ↻'}</span>
                 </button>
-                <Link href="/contact" target="_blank" className={styles.exportBtn}>
+                <Link href="/contact-us" target="_blank" className={styles.exportBtn}>
                   <ExternalLink size={13} />
                   <span>Open Contact Page ↗</span>
                 </Link>
@@ -2807,7 +2862,7 @@ export function AdminDispatchView() {
                           <button
                             type="button"
                             onClick={() => {
-                              setActiveSidebarTab('orders');
+                              handleTabChange('orders');
                               setActiveDateTab('all');
                               setSearchTerm(inq.orderId || '');
                             }}
@@ -2964,18 +3019,31 @@ export function AdminDispatchView() {
                 </button>
               </div>
 
-              <button
-                type="button"
-                onClick={handleOpenCreateProduct}
-                className={styles.addCreationBtn}
-              >
-                <Plus size={15} />
-                <span>Add Creation</span>
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => fetchProducts()}
+                  disabled={isLoadingProducts}
+                  className={styles.refreshCreationBtn}
+                  title="Force refresh catalog from server"
+                >
+                  <RefreshCw size={13} className={isLoadingProducts ? styles.spinningIcon : ''} />
+                  <span>{isLoadingProducts ? 'Refreshing...' : 'Refresh'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleOpenCreateProduct}
+                  className={styles.addCreationBtn}
+                >
+                  <Plus size={15} />
+                  <span>Add Creation</span>
+                </button>
+              </div>
             </div>
 
             {/* Loading / Empty States */}
-            {isLoadingProducts ? (
+            {isLoadingProducts && products.length === 0 ? (
               <div style={{ padding: '60px 20px', textAlign: 'center', color: '#6B7280' }}>
                 <div className={styles.spinner} style={{ margin: '0 auto 12px' }} />
                 <p style={{ margin: 0, fontSize: '0.88rem' }}>Loading Good Fills creations catalog...</p>
@@ -3041,7 +3109,7 @@ export function AdminDispatchView() {
                               <span>PINNED TO HOME</span>
                             </span>
                           )}
-                          <span className={styles.creationWeightBadge} title="Product weight used for DTDC Courier Tier">
+                          <span className={styles.creationWeightBadge} title="Product weight used for Courier Tier">
                             <Scale size={11} />
                             <span>{p.productWeightGrams || 250}g • {dtdcLabel}</span>
                           </span>
@@ -3094,11 +3162,7 @@ export function AdminDispatchView() {
         {activeSidebarTab === 'reviews' && (
           <AdminReviewsModerationView
             showToast={showToast}
-            onNavigateToOrder={(orderId) => {
-              setActiveSidebarTab('orders');
-              setActiveDateTab('all');
-              setSearchTerm(orderId);
-            }}
+            onNavigateToOrder={handleNavigateToOrderFromReview}
           />
         )}
       </div>
@@ -3249,7 +3313,7 @@ export function AdminDispatchView() {
                       onChange={(e) => setFormWeightGrams(Number(e.target.value))}
                       className={styles.formInput}
                     />
-                    <span className={styles.formHelper}>Critical: used for DTDC Courier Tariff</span>
+                    <span className={styles.formHelper}>Critical: used for Courier Shipping Tariff</span>
                   </div>
                 </div>
 

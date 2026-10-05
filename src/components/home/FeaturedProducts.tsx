@@ -109,7 +109,7 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
             transition={{ duration: 0.8, ease: luxuryEase }}
           >
             <span className="eyebrow">Signature Creations</span>
-            <h2 className="featured-title">Handcrafted in Small Batches.</h2>
+            <h2 className="featured-title">Our Most Cherished Home Recipes.</h2>
           </motion.div>
 
           <motion.div
@@ -184,7 +184,7 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
                   <div className="product-info">
                     <div className="product-meta-row">
                       <span className="product-category-label">
-                        {product.category.replace('-', ' ')}
+                        {product.category.replace('-', ' & ')}
                       </span>
                       <span className="product-rating-pill" title="Verified Customer Rating">
                         <Star size={10} fill="currentColor" className="star-icon-pill" />

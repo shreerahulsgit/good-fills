@@ -100,19 +100,24 @@ export function InvoiceDocumentView({ orderId, initialOrder }: InvoiceDocumentVi
     );
   }
 
-  const invoiceNumber = formatInvoiceNumber(order.id);
-  const formattedDate = new Date(order.createdAt).toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-  const formattedTime = new Date(order.createdAt).toLocaleTimeString('en-IN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  });
+  const invoiceNumber = formatInvoiceNumber(order?.id || orderId || 'Order');
+  const dateObj = order?.createdAt ? new Date(order.createdAt) : new Date();
+  const formattedDate = !isNaN(dateObj.getTime())
+    ? dateObj.toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    : 'Recent';
+  const formattedTime = !isNaN(dateObj.getTime())
+    ? dateObj.toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      })
+    : '';
 
-  const totalWords = numberToIndianRupeeWords(order.total);
+  const totalWords = numberToIndianRupeeWords(order?.total || 0);
 
   return (
     <div className={styles.pageCanvas}>
@@ -124,7 +129,7 @@ export function InvoiceDocumentView({ orderId, initialOrder }: InvoiceDocumentVi
             if (typeof window !== 'undefined' && window.history.length > 1) {
               window.history.back();
             } else {
-              window.location.href = `/order-confirmation/${encodeURIComponent(order.id)}`;
+              window.location.href = `/order-confirmation/${encodeURIComponent(order?.id || orderId)}`;
             }
           }}
           className={styles.backBtn}
@@ -144,127 +149,153 @@ export function InvoiceDocumentView({ orderId, initialOrder }: InvoiceDocumentVi
         <div className={styles.invoiceHeader}>
           <div className={styles.brandCol}>
             <img src="/logo.png" alt="Good Fills" className={styles.brandLogo} />
-            <div className={styles.brandTagline}>{ATELIER_INFO.tagline}</div>
-            <div className={styles.atelierAddress}>
-              {ATELIER_INFO.address}
-              <br />
-              WhatsApp: {ATELIER_INFO.phone} • Email: {ATELIER_INFO.email}
-              <br />
-              <span style={{ fontSize: '0.74rem', color: '#15803d', fontWeight: 600 }}>
-                {ATELIER_INFO.fssaiNumber}
-              </span>
+            <div className={styles.atelierDetails}>
+              <span className={styles.atelierEntity}>{ATELIER_INFO.legalEntity}</span>
+              <span className={styles.atelierDivider}>•</span>
+              <span>{ATELIER_INFO.location}</span>
+            </div>
+            <div className={styles.atelierContact}>
+              WhatsApp: {ATELIER_INFO.phone} &nbsp;|&nbsp; {ATELIER_INFO.email}
+            </div>
+            <div className={styles.atelierFssai}>
+              FSSAI Lic. No. 21224180000411 &nbsp;•&nbsp; Bengaluru Atelier
             </div>
           </div>
 
           <div className={styles.metaCol}>
-            <h1 className={styles.invoiceTitle}>Tax Invoice</h1>
+            <div className={styles.invoiceTitleWrap}>
+              <h1 className={styles.invoiceTitle}>TAX INVOICE</h1>
+              {order.paymentStatus === 'Paid' && (
+                <span className={styles.statusPillPaid}>PAID</span>
+              )}
+            </div>
             <div className={styles.invoiceNumber}>{invoiceNumber}</div>
-            <div className={styles.metaRow}>
-              <strong>Order Ref:</strong> {order.id}
-            </div>
-            <div className={styles.metaRow}>
-              <strong>Date:</strong> {formattedDate} at {formattedTime}
-            </div>
-            {order.razorpayPaymentId && (
+            <div className={styles.metaDetails}>
               <div className={styles.metaRow}>
-                <strong>Payment Ref:</strong> {order.razorpayPaymentId}
+                <span className={styles.metaLabel}>Order Ref:</span>
+                <span className={styles.metaValue}>{order.id}</span>
               </div>
-            )}
-            {order.paymentStatus === 'Paid' && (
-              <span className={styles.statusPillPaid}>Payment Verified • Paid</span>
-            )}
+              <div className={styles.metaRow}>
+                <span className={styles.metaLabel}>Date:</span>
+                <span className={styles.metaValue}>
+                  {formattedDate}{formattedTime ? ` • ${formattedTime}` : ''}
+                </span>
+              </div>
+              {order.razorpayPaymentId && (
+                <div className={styles.metaRow}>
+                  <span className={styles.metaLabel}>Payment Ref:</span>
+                  <span className={styles.metaValue}>{order.razorpayPaymentId}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Customer & Shipping Party Details */}
         <div className={styles.partySection}>
           <div className={styles.partyBox}>
-            <div className={styles.partyLabel}>Billed To:</div>
-            <div className={styles.partyName}>{order.customerName}</div>
+            <div className={styles.partyLabel}>Billed To</div>
+            <div className={styles.partyName}>
+              {order.customerName || order.shippingAddress?.fullName || 'Valued Patron'}
+            </div>
             <div className={styles.partyText}>
-              Phone: {order.customerPhone}
-              <br />
-              Email: {order.customerEmail}
+              {order.customerPhone || order.shippingAddress?.phone ? (
+                <div>Phone: {order.customerPhone || order.shippingAddress?.phone}</div>
+              ) : null}
+              {order.customerEmail || order.shippingAddress?.email ? (
+                <div>Email: {order.customerEmail || order.shippingAddress?.email}</div>
+              ) : null}
             </div>
           </div>
 
           <div className={styles.partyBox}>
-            <div className={styles.partyLabel}>Shipped To (DTDC Express):</div>
-            <div className={styles.partyName}>{order.shippingAddress.fullName}</div>
+            <div className={styles.partyLabel}>Shipped To (DTDC Express)</div>
+            <div className={styles.partyName}>
+              {order.shippingAddress?.fullName || order.customerName || 'Valued Patron'}
+            </div>
             <div className={styles.partyText}>
-              {order.shippingAddress.addressLine1}
-              {order.shippingAddress.addressLine2 ? `, ${order.shippingAddress.addressLine2}` : ''}
-              <br />
-              {order.shippingAddress.city}, {order.shippingAddress.state} – {order.shippingAddress.pincode}
-              <br />
-              Phone: {order.shippingAddress.phone}
+              <div>{order.shippingAddress?.addressLine1 || 'Bengaluru Made to Order Atelier'}</div>
+              {order.shippingAddress?.addressLine2 && <div>{order.shippingAddress.addressLine2}</div>}
+              <div>
+                {order.shippingAddress?.city || 'Bengaluru'}, {order.shippingAddress?.state || 'Karnataka'} – {order.shippingAddress?.pincode || '560001'}
+              </div>
+              {order.shippingAddress?.phone && (
+                <div>Contact: {order.shippingAddress.phone}</div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Items Table */}
-        <table className={styles.itemsTable}>
-          <thead>
-            <tr>
-              <th className={styles.itemColDesc}>Item Description</th>
-              <th className={styles.itemColQty}>Qty</th>
-              <th className={styles.itemColRate}>Rate</th>
-              <th className={styles.itemColAmount}>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {order.items.map((item, idx) => (
-              <tr key={item.product.id || idx}>
-                <td className={styles.itemColDesc}>
-                  <div className={styles.itemName}>{item.product.name}</div>
-                  <div className={styles.itemSub}>
-                    Pack Size: {item.product.packSize} • {item.product.productWeightGrams}g Net • Handcrafted in Bengaluru
-                  </div>
-                </td>
-                <td className={styles.itemColQty}>{item.quantity}</td>
-                <td className={styles.itemColRate}>{formatCurrency(item.product.price)}</td>
-                <td className={styles.itemColAmount}>
-                  {formatCurrency(item.product.price * item.quantity)}
-                </td>
+        <div className={styles.tableWrapper}>
+          <table className={styles.itemsTable}>
+            <thead>
+              <tr>
+                <th className={styles.itemColDesc}>Item</th>
+                <th className={styles.itemColQty}>Qty</th>
+                <th className={styles.itemColRate}>Rate</th>
+                <th className={styles.itemColAmount}>Amount</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {(order.items || []).map((item, idx) => {
+                const packText = item?.product?.packSize || '';
+                const weightText = item?.product?.productWeightGrams ? `${item.product.productWeightGrams}g` : '';
+                const metaString = [packText, weightText].filter(Boolean).join(' • ');
+
+                return (
+                  <tr key={item?.product?.id || idx}>
+                    <td className={styles.itemColDesc}>
+                      <div className={styles.itemName}>{item?.product?.name || 'Handcrafted Blend'}</div>
+                      {metaString && (
+                        <div className={styles.itemSub}>{metaString}</div>
+                      )}
+                    </td>
+                    <td className={styles.itemColQty}>{item?.quantity || 1}</td>
+                    <td className={styles.itemColRate}>{formatCurrency(item?.product?.price || 0)}</td>
+                    <td className={styles.itemColAmount}>
+                      {formatCurrency((item?.product?.price || 0) * (item?.quantity || 1))}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
         {/* Financial Summary & QR Block */}
         <div className={styles.summarySection}>
-          <div className={styles.wordsBox}>
-            <div className={styles.wordsLabel}>Amount Chargeable (in words):</div>
+          <div className={styles.wordsCol}>
+            <div className={styles.wordsLabel}>Amount in Words</div>
             <div className={styles.wordsText}>{totalWords}</div>
 
-            {/* Tracking QR Code */}
+            {/* Subtle, compact tracking badge */}
             {qrCodeDataUrl && (
-              <div className={styles.qrContainer}>
+              <div className={styles.qrBadge}>
                 <img src={qrCodeDataUrl} alt="Consignment Tracking QR" className={styles.qrImage} />
-                <div>
-                  <div className={styles.qrTextTitle}>Scan to Track Consignment</div>
-                  <div className={styles.qrTextDesc}>
-                    Point your camera to check live DTDC preparation & dispatch status for order{' '}
-                    <strong>{order.id}</strong>.
-                  </div>
+                <div className={styles.qrMeta}>
+                  <div className={styles.qrTitle}>Track Consignment</div>
+                  <div className={styles.qrSub}>Scan for live DTDC status</div>
                 </div>
               </div>
             )}
           </div>
 
-          <div>
+          <div className={styles.calcCol}>
             <div className={styles.calcTable}>
               <div className={styles.calcRow}>
-                <span>Product Subtotal:</span>
-                <span>{formatCurrency(order.subtotal)}</span>
+                <span className={styles.calcLabel}>Subtotal:</span>
+                <span className={styles.calcValue}>{formatCurrency(order.subtotal)}</span>
               </div>
               <div className={styles.calcRow}>
-                <span>DTDC Domestic Express Courier:</span>
-                <span>{order.shippingCost > 0 ? formatCurrency(order.shippingCost) : 'Free (₹0)'}</span>
+                <span className={styles.calcLabel}>Shipping (DTDC Express):</span>
+                <span className={styles.calcValue}>
+                  {order.shippingCost > 0 ? formatCurrency(order.shippingCost) : 'Free'}
+                </span>
               </div>
               <div className={styles.calcRow}>
-                <span>Taxes & Kitchen Packing:</span>
-                <span>Included</span>
+                <span className={styles.calcLabel}>Taxes (GST):</span>
+                <span className={styles.calcValue}>Included</span>
               </div>
               <div className={styles.calcRowTotal}>
                 <span>Total Amount:</span>
@@ -274,23 +305,20 @@ export function InvoiceDocumentView({ orderId, initialOrder }: InvoiceDocumentVi
           </div>
         </div>
 
-        {/* Footer: Guarantee & Alankrutha Sunil Signature */}
+        {/* Footer: Clean Notes & Alankrutha Sunil Signature */}
         <div className={styles.bottomSection}>
-          <div className={styles.termsCol}>
-            <div className={styles.termsHeading}>Atelier Guarantee & Care Notes:</div>
-            • 100% natural, freshly made to order in our Bengaluru home kitchen.
-            <br />
-            • Sealed in airtight food-grade barrier pouches for 6-month natural freshness.
-            <br />
-            • Dispatched via DTDC Express Domestic Courier with live tracking SMS updates.
-            <br />
-            • For assistance or reorders: WhatsApp +91 97420 68899.
+          <div className={styles.noteCol}>
+            <div className={styles.thankYouNote}>Thank you for choosing Good Fills!</div>
+            <div className={styles.legalNotice}>
+              Computer-generated tax invoice issued by Good Fills Artisanal Kitchen.
+              <br />
+              For assistance: {ATELIER_INFO.phone} &nbsp;|&nbsp; {ATELIER_INFO.email}
+            </div>
           </div>
 
           {/* Authorized Signature Block */}
           <div className={styles.signatureCol}>
             <div className={styles.signatureWrap}>
-              {/* Artisanal Calligraphic Signature Stroke */}
               <svg
                 viewBox="0 0 240 60"
                 className={styles.signatureSvg}
@@ -300,7 +328,7 @@ export function InvoiceDocumentView({ orderId, initialOrder }: InvoiceDocumentVi
                 <path
                   d="M15 45 C 35 15, 60 10, 85 30 C 110 50, 130 15, 160 25 C 185 32, 210 20, 230 18"
                   stroke="#97411d"
-                  strokeWidth="2.5"
+                  strokeWidth="2.4"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -320,8 +348,7 @@ export function InvoiceDocumentView({ orderId, initialOrder }: InvoiceDocumentVi
             </div>
             <div className={styles.signatureLine}></div>
             <div className={styles.signatoryName}>{ATELIER_INFO.founderName}</div>
-            <div className={styles.signatoryTitle}>{ATELIER_INFO.founderTitle}</div>
-            <div className={styles.atelierBadge}>Good Fills • Bengaluru</div>
+            <div className={styles.signatoryTitle}>Authorized Signatory • {ATELIER_INFO.brandName}</div>
           </div>
         </div>
       </div>

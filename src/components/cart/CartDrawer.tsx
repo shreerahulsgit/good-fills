@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { useCart } from '@/lib/cart-context';
 import { formatCurrency } from '@/lib/shipping';
 import { X, Trash2, Plus, Minus, ArrowRight, ShoppingBag, ShieldCheck, Truck } from 'lucide-react';
 import Link from 'next/link';
 
 export function CartDrawer() {
+  const pathname = usePathname();
   const { 
     isCartOpen, 
     closeCart, 
@@ -20,8 +22,15 @@ export function CartDrawer() {
     totalItems
   } = useCart();
 
+  // Automatically close cart if user lands on checkout page
   useEffect(() => {
-    if (isCartOpen) {
+    if (pathname === '/checkout' && isCartOpen) {
+      closeCart();
+    }
+  }, [pathname, isCartOpen, closeCart]);
+
+  useEffect(() => {
+    if (isCartOpen && pathname !== '/checkout') {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
@@ -29,9 +38,9 @@ export function CartDrawer() {
     return () => {
       document.body.style.overflow = 'auto';
     };
-  }, [isCartOpen]);
+  }, [isCartOpen, pathname]);
 
-  if (!isCartOpen) return null;
+  if (!isCartOpen || pathname === '/checkout') return null;
 
   return (
     <div 
@@ -196,7 +205,7 @@ export function CartDrawer() {
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <Link 
-                        href={`/products/${item.product.slug}`} 
+                        href={`/product/${item.product.slug}`} 
                         onClick={closeCart}
                         style={{ fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-primary)' }}
                       >
@@ -276,7 +285,7 @@ export function CartDrawer() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>DTDC Domestic Shipping</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>Tracked Express Shipping</span>
                   <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>({shipping.slabDescription})</span>
                 </div>
                 <strong style={{ color: 'var(--accent-terracotta)' }}>{formatCurrency(shipping.shippingCost)}</strong>
@@ -287,7 +296,7 @@ export function CartDrawer() {
                   href={`https://wa.me/919742068899?text=${encodeURIComponent(
                     `Hello Good Fills! 🌿\nI would like to place an International Order for delivery outside India.\n\n📦 Cart Items:\n${items
                       .map((i) => `• ${i.quantity}x ${i.product.name} (${i.product.packSize || ''})`)
-                      .join('\n')}\n\nTotal: ₹${subtotal}\nPlease share DTDC International courier rates.`
+                      .join('\n')}\n\nTotal: ₹${subtotal}\nPlease share international courier rates.`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"

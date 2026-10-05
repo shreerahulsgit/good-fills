@@ -80,7 +80,7 @@ export function HeroSection() {
               whileTap={{ scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 400, damping: 20 }}
             >
-              <Link href="/about" className="btn btn-outline hero-minimal-btn">
+              <Link href="/our-story" className="btn btn-outline hero-minimal-btn">
                 <span>Our Story</span>
               </Link>
             </motion.div>

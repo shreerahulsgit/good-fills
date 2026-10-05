@@ -99,9 +99,9 @@ export function numberToIndianRupeeWords(amount: number): string {
  */
 export async function generateTrackingQrCode(orderId: string): Promise<string> {
   try {
-    const url = `https://goodfills.in/track?id=${encodeURIComponent(orderId)}`;
+    const url = `https://goodfills.in/track-order?id=${encodeURIComponent(orderId)}`;
     return await QRCode.toDataURL(url, {
-      width: 140,
+      width: 256,
       margin: 1,
       color: {
         dark: '#2d1810',

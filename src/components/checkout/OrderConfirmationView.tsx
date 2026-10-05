@@ -157,10 +157,10 @@ export function OrderConfirmationView({ orderId }: OrderConfirmationViewProps) {
             </div>
             <div>
               <h4 className={styles.courierTitle}>
-                DTDC Express Doorstep Delivery (2–4 Business Days)
+                Express Doorstep Delivery (2–4 Business Days)
               </h4>
               <p className={styles.courierDesc}>
-                Preparation takes 24–48 hours for soaking, sun-drying &amp; fresh stone-milling. The moment your barrier pouch is sealed and handed over to DTDC, a consignment tracking SMS with a live link will be dispatched to{' '}
+                Preparation takes 24–48 hours for soaking, sun-drying &amp; fresh stone-milling. The moment your barrier pouch is sealed and dispatched, a consignment tracking SMS with a live link will be dispatched to{' '}
                 <strong>{order ? order.customerPhone : 'your mobile number'}</strong>.
               </p>
             </div>
@@ -265,7 +265,7 @@ export function OrderConfirmationView({ orderId }: OrderConfirmationViewProps) {
                   <span>{formatCurrency(order.subtotal)}</span>
                 </div>
                 <div className={styles.summaryRow}>
-                  <span>DTDC Domestic Courier</span>
+                  <span>Express Domestic Courier</span>
                   <span style={{ color: 'var(--accent-terracotta)', fontWeight: 600 }}>
                     {formatCurrency(order.shippingCost)}
                   </span>

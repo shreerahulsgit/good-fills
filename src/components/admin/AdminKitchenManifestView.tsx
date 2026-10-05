@@ -767,7 +767,7 @@ export function AdminKitchenManifestView({
                         )}
                         {isShipped && (
                           <span className={styles.statusPillShipped}>
-                            In Transit (DTDC)
+                            In Transit
                           </span>
                         )}
                         {isDelivered && (
@@ -793,10 +793,10 @@ export function AdminKitchenManifestView({
                             type="button"
                             onClick={() => onQuickAdvance(order.id, 'Shipped')}
                             className={styles.dispatchOrderBtn}
-                            title="Hand over parcel to DTDC courier"
+                            title="Hand over parcel for courier dispatch"
                           >
                             <Truck size={13} />
-                            <span>Dispatch DTDC 🚚</span>
+                            <span>Dispatch Order 🚚</span>
                           </button>
                         )}
                         {(isShipped || isDelivered) && (

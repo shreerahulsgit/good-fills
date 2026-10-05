@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { usePreloader } from '@/lib/preloader-context';
@@ -23,6 +23,7 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
 
   const [isMounted, setIsMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const autoHideTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -54,6 +55,31 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
       }
     }
   }, [isMounted, showPreloader, isLoaded, pathname]);
+
+  // Auto-hide popup after 8 seconds of visibility
+  useEffect(() => {
+    if (isVisible) {
+      autoHideTimerRef.current = setTimeout(() => {
+        handleDismiss();
+      }, 8000);
+
+      return () => {
+        if (autoHideTimerRef.current) clearTimeout(autoHideTimerRef.current);
+      };
+    }
+  }, [isVisible]);
+
+  const handleMouseEnter = () => {
+    if (autoHideTimerRef.current) clearTimeout(autoHideTimerRef.current);
+  };
+
+  const handleMouseLeave = () => {
+    if (isVisible) {
+      autoHideTimerRef.current = setTimeout(() => {
+        handleDismiss();
+      }, 3500);
+    }
+  };
 
   // Sync with prop if explicitly provided
   useEffect(() => {
@@ -93,6 +119,8 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
     <aside
       className={styles.floatingContainer}
       aria-label="International delivery notification"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div className={styles.toastCard}>
         {/* Card Header with Badge & Cross Button */}
@@ -114,9 +142,9 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
         </div>
 
         {/* Content */}
-        <h4 className={styles.title}>Delivering Outside India?</h4>
+        <h4 className={styles.title}>Order for Delivery Outside India</h4>
         <p className={styles.desc}>
-          We ship fresh nutrition, food &amp; skincare worldwide via DTDC with custom weight rates.
+          We ship fresh nutrition, food &amp; skincare worldwide with fast, tracked courier delivery.
         </p>
 
         {/* Actions */}
@@ -144,7 +172,7 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
         {/* Footer Sublink */}
         <div className={styles.footerRow}>
           <Link
-            href="/international-delivery"
+            href="/shipping-policy#international"
             className={styles.guideLink}
             onClick={handleDismiss}
           >

@@ -18,8 +18,8 @@ export default function HomePage() {
     <main>
       <HeroSection />
       <ArtisanalValues />
-      <FeaturedProducts initialProducts={products} />
       <CategoryPortals initialProducts={products} />
+      <FeaturedProducts initialProducts={products} />
       <ProcessTimeline />
       <FeaturedTestimonials initialReviews={reviews} />
     </main>

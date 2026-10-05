@@ -40,7 +40,7 @@ export function CategoryPortals({ initialProducts }: CategoryPortalsProps) {
   const [productsList, setProductsList] = useState<Product[]>(initialProducts || PRODUCTS);
 
   useEffect(() => {
-    fetch('/api/products')
+    fetch('/api/products', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.products && Array.isArray(data.products) && data.products.length > 0) {
@@ -72,7 +72,7 @@ export function CategoryPortals({ initialProducts }: CategoryPortalsProps) {
             transition={{ duration: 0.8, ease: luxuryEase }}
           >
             <span className="eyebrow">Explore by Family</span>
-            <h2 className="portals-title">Carefully Crafted for Every Need.</h2>
+            <h2 className="portals-title">Four Families of Wholesome Care.</h2>
           </motion.div>
 
           <motion.p
@@ -82,7 +82,7 @@ export function CategoryPortals({ initialProducts }: CategoryPortalsProps) {
             transition={{ duration: 0.8, ease: luxuryEase, delay: 0.12 }}
             className="portals-subtitle"
           >
-            {productsList.length} handmade creations organized across four traditional everyday disciplines.
+            From sprouted weaning cereals to raw forest honey — explore our small-batch recipes by daily routine.
           </motion.p>
         </div>
 

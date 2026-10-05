@@ -64,7 +64,7 @@ export function PolicyLayout({
               <span>WhatsApp Concierge</span>
             </a>
 
-            <Link href="/contact" className={styles.contactPageBtn}>
+            <Link href="/contact-us" className={styles.contactPageBtn}>
               <span>Contact Page</span>
               <ArrowRight size={13} />
             </Link>

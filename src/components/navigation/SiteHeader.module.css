@@ -9,12 +9,16 @@
 .announcementBar {
   background-color: #221813;
   color: #FAF9F5;
-  padding: 6px 16px;
+  padding: 7px 40px 7px 24px;
   font-family: var(--font-sans);
   font-size: 0.74rem;
   letter-spacing: 0.02em;
   text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .announcementContainer {
@@ -25,12 +29,25 @@
   justify-content: center;
 }
 
-.announcementText {
+.announcementDesktop {
+  display: inline;
   color: #E2D9D0;
   line-height: 1.4;
 }
 
-.announcementText strong {
+.announcementDesktop strong {
+  color: #FAF9F5;
+  font-weight: 700;
+}
+
+.announcementMobile {
+  display: none;
+  color: #E2D9D0;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.announcementMobile strong {
   color: #FAF9F5;
   font-weight: 700;
 }
@@ -48,10 +65,43 @@
   color: #FFFFFF;
 }
 
+.announcementCloseBtn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #FAF9F5;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
+  line-height: 1;
+}
+
+.announcementCloseBtn:hover {
+  opacity: 1;
+  color: #FFFFFF;
+  transform: translateY(-50%) scale(1.12);
+}
+
+.announcementCloseBtn:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.6);
+  opacity: 1;
+}
+
 @media (max-width: 640px) {
   .announcementBar {
-    padding: 6px 10px;
+    padding: 6px 36px 6px 12px;
     font-size: 0.69rem;
+  }
+
+  .announcementCloseBtn {
+    right: 8px;
   }
 }
 
@@ -111,12 +161,17 @@
 }
 
 /* --------------------------------------------------------------------------
-   Desktop Navigation Links (> 1040px)
+   Desktop Navigation Links (> 1040px) — Centered Navbar
    -------------------------------------------------------------------------- */
 .desktopNav {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
-  gap: var(--space-8);
+  gap: clamp(var(--space-4), 2vw, var(--space-8));
+  z-index: 10;
 }
 
 .navLink {
@@ -517,6 +572,20 @@
   color: var(--text-primary);
 }
 
+.cartBtnDesktopOnCheckout {
+  opacity: 0.85;
+}
+
+.cartBtnDesktopOnCheckout:hover {
+  background-color: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--bg-surface);
+}
+
+.mobileCartBtnOnCheckout {
+  opacity: 0.85;
+}
+
 /* --------------------------------------------------------------------------
    Mobile-Only Action Buttons (STRICTLY HIDDEN on desktop > 1040px)
    -------------------------------------------------------------------------- */
@@ -878,5 +947,18 @@
     width: 36px;
     height: 36px;
     padding: 6px;
+  }
+
+  .announcementDesktop {
+    display: none !important;
+  }
+
+  .announcementMobile {
+    display: inline !important;
+    font-size: 0.72rem;
+  }
+
+  .announcementBar {
+    padding: 6px 36px 6px 14px;
   }
 }

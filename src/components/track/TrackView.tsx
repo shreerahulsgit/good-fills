@@ -83,7 +83,7 @@ export function TrackView() {
     e.preventDefault();
     if (!searchQuery.trim()) return;
     executeTrackingLookup(searchQuery);
-    router.replace(`/track?q=${encodeURIComponent(searchQuery.trim())}`, { scroll: false });
+    router.replace(`/track-order?q=${encodeURIComponent(searchQuery.trim())}`, { scroll: false });
   };
 
   const handleCopyAwb = (awb: string) => {
@@ -105,7 +105,7 @@ export function TrackView() {
         <div className={styles.controlBarInner}>
           <div className={styles.gatewayBadge}>
             <span className={styles.pulseDot} />
-            <span>Live DTDC Express Tracking</span>
+            <span>Live Express Order Tracking</span>
           </div>
           <div className={styles.hubRoute}>
             <span>Dispatch: <span className={styles.hubRouteItem}>Bengaluru Kitchen</span></span>
@@ -279,7 +279,7 @@ export function TrackView() {
                     <span>Official Invoice</span>
                   </Link>
                   <span className={styles.awbBadgeText}>
-                    DTDC AWB: <strong>{activeOrder.courier.awbNumber}</strong>
+                    AWB / Consignment: <strong>{activeOrder.courier.awbNumber}</strong>
                   </span>
                 </div>
               </div>
@@ -303,7 +303,7 @@ export function TrackView() {
                 </div>
 
                 <div className={styles.metricCell}>
-                  <div className={styles.metricLabel}>DTDC Tracking Number</div>
+                  <div className={styles.metricLabel}>Tracking / Consignment No.</div>
                   <div className={styles.metricValue}>
                     <span>{activeOrder.courier.awbNumber}</span>
                     {activeOrder.courier.isAssigned && (
@@ -618,8 +618,8 @@ export function TrackView() {
                   },
                   {
                     step: 'STEP 4',
-                    title: 'DTDC Delivery',
-                    desc: 'Dispatched via DTDC express courier straight to your doorstep with live SMS tracking.',
+                    title: 'Doorstep Delivery',
+                    desc: 'Dispatched via express courier straight to your doorstep with live SMS tracking.',
                   },
                 ].map((item, idx) => (
                   <motion.div 

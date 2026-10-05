@@ -47,7 +47,7 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
   } | null>(null);
 
   useEffect(() => {
-    fetch('/api/products')
+    fetch('/api/products', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.products && Array.isArray(data.products) && data.products.length > 0) {
@@ -167,7 +167,7 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
                 <span className={styles.galleryPillarSub}>Airtight sealed</span>
               </div>
               <div className={styles.galleryPillarItem}>
-                <span className={styles.galleryPillarTitle}>DTDC Doorstep</span>
+                <span className={styles.galleryPillarTitle}>Tracked Delivery</span>
                 <span className={styles.galleryPillarSub}>2–4 business days</span>
               </div>
             </div>
@@ -280,7 +280,7 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
                 </div>
                 <div className={styles.assuranceBody}>
                   <div className={styles.assuranceHeader}>
-                    <h4 className={styles.assuranceTitle}>DTDC Express Doorstep Delivery</h4>
+                    <h4 className={styles.assuranceTitle}>Fast &amp; Tracked Doorstep Delivery</h4>
                     <span className={styles.assuranceBadge}>
                       ₹{shippingInfo.shippingCost} · 2–4 Business Days
                     </span>
@@ -447,7 +447,7 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
               onClick={() => setActiveTab('shipping')}
               className={`${styles.tabButton} ${activeTab === 'shipping' ? styles.isActiveTab : ''}`}
             >
-              <span>DTDC Shipping &amp; Returns</span>
+              <span>Shipping &amp; Returns</span>
               {activeTab === 'shipping' && <span className={styles.activeTabLine} />}
             </button>
           </div>
@@ -554,7 +554,7 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.25, ease: luxuryEase }}
                 >
-                  <h3 className={styles.tabLead}>Pan-India DTDC Express Delivery</h3>
+                  <h3 className={styles.tabLead}>Pan-India Express Delivery</h3>
                   <p className={styles.tabBodyText}>
                     Shipping is calculated strictly by <strong>total product weight</strong> (excluding packaging materials), keeping courier costs transparent and fair across India.
                   </p>
@@ -563,7 +563,7 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
                     <thead>
                       <tr>
                         <th>Product Weight</th>
-                        <th>DTDC Domestic Courier</th>
+                        <th>Tracked Express Courier</th>
                       </tr>
                     </thead>
                     <tbody>

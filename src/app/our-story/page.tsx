@@ -7,6 +7,6 @@ export const metadata: Metadata = {
     'How Good Fills makes fresh homemade baby food, sprouted porridges, and natural bath powders in Bengaluru. Pure traditional soaking, sprouting, and stone grinding.',
 };
 
-export default function AboutPage() {
+export default function OurStoryPage() {
   return <AboutView />;
 }

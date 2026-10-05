@@ -51,7 +51,7 @@ interface FaqItem {
 const KITCHEN_FAQS: FaqItem[] = [
   {
     id: 'faq-1',
-    question: 'Why does Good Fills have a strict No Return policy?',
+    question: 'Why does Good Fills have strict No Return policy?',
     answer:
       'Because every food, infant nutrition, and skincare creation is prepared fresh to order using 100% natural ingredients without artificial preservatives, items cannot be restocked or resold once dispatched. In compliance with FSSAI hygiene standards, all sales are final.',
   },
@@ -59,7 +59,7 @@ const KITCHEN_FAQS: FaqItem[] = [
     id: 'faq-2',
     question: 'What if my parcel arrives damaged or seal tampered?',
     answer:
-      'We offer a 100% Transit Safety Guarantee. If your package arrives crushed, punctured, or leaking, take clear photos or video of the box and courier label, and WhatsApp our concierge (+91 97420 68899) with your Order ID within 24 hours. We will promptly dispatch a free replacement or initiate a refund.',
+      'We offer a 100% Transit Safety Guarantee. If your package arrives crushed, punctured, or leaking, take clear photos or video of the box and courier label, and message our WhatsApp concierge with your Order ID within 24 hours. We will promptly dispatch a free replacement or initiate a refund.',
   },
   {
     id: 'faq-3',
@@ -200,9 +200,10 @@ export function ContactView() {
               whileHover={{ y: -3, scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+              title="Call Good Fills kitchen directly"
             >
               <Phone size={15} />
-              <span>+91 97420 68899</span>
+              <span>Call Kitchen</span>
             </motion.a>
           </motion.div>
         </motion.header>
@@ -473,10 +474,10 @@ export function ContactView() {
                   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                 >
                   <div className={styles.detailIconBox}>
-                    <MessageCircle size={17} />
+                    <Phone size={17} />
                   </div>
                   <div className={styles.detailContent}>
-                    <span className={styles.detailLabel}>WhatsApp Concierge</span>
+                    <span className={styles.detailLabel}>Direct Line &amp; WhatsApp</span>
                     <a
                       href="https://wa.me/919742068899"
                       target="_blank"

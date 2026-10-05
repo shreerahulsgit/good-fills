@@ -42,6 +42,33 @@ export function SiteHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+  const [isAnnouncementDismissed, setIsAnnouncementDismissed] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('gf_announcement_dismissed') === 'true') {
+        setIsAnnouncementDismissed(true);
+        return;
+      }
+    } catch {}
+
+    // Automatically hide international delivery banner after 10 seconds
+    const timer = setTimeout(() => {
+      setIsAnnouncementDismissed(true);
+      try {
+        sessionStorage.setItem('gf_announcement_dismissed', 'true');
+      } catch {}
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleDismissAnnouncement = () => {
+    setIsAnnouncementDismissed(true);
+    try {
+      sessionStorage.setItem('gf_announcement_dismissed', 'true');
+    } catch {}
+  };
 
   const shopDropdownTimerRef = useRef<NodeJS.Timeout | null>(null);
   const accountDropdownRef = useRef<HTMLDivElement>(null);
@@ -99,6 +126,24 @@ export function SiteHeader() {
     }, 150);
   }, []);
 
+  const isCheckoutPage = pathname === '/checkout';
+
+  const handleCartClick = (e: React.MouseEvent) => {
+    if (isCheckoutPage) {
+      e.preventDefault();
+      // On the checkout page, clicking the bag button should not open the overlapping bag drawer.
+      // Instead, smoothly scroll to the order summary ledger on the page.
+      const summaryEl =
+        document.querySelector('[class*="summaryDeck"]') ||
+        document.querySelector('aside');
+      if (summaryEl) {
+        summaryEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      return;
+    }
+    openCart();
+  };
+
   const getInitials = (name?: string) => {
     if (!name) return 'GF';
     return name
@@ -115,7 +160,7 @@ export function SiteHeader() {
     return name.trim().split(/\s+/)[0];
   };
 
-  if (pathname?.startsWith('/admin') || pathname?.includes('/invoice')) {
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/console') || pathname?.includes('/invoice')) {
     return null;
   }
 
@@ -128,19 +173,48 @@ export function SiteHeader() {
         className={`${styles.headerRoot} ${isScrolled ? styles.headerScrolled : ''}`}
       >
         {/* Top Announcement Bar — International Delivery */}
-        <aside className={styles.announcementBar} aria-label="International shipping announcement">
-          <div className={styles.announcementContainer}>
-            <span className={styles.announcementText}>
-              ✈️ <strong>International Delivery Available</strong> — Custom DTDC courier rates for overseas orders.{' '}
-              <Link
-                href="/international-delivery"
-                className={styles.announcementLink}
+        <AnimatePresence>
+          {!isAnnouncementDismissed && (
+            <motion.aside
+              initial={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0, paddingTop: 0, paddingBottom: 0 }}
+              transition={{ duration: 0.45, ease: drawerEase }}
+              style={{ overflow: 'hidden' }}
+              className={styles.announcementBar}
+              aria-label="International shipping announcement"
+            >
+              <div className={styles.announcementContainer}>
+                <span className={styles.announcementDesktop}>
+                  ✈️ <strong>International Delivery Available</strong> — Fast, tracked courier delivery worldwide.{' '}
+                  <Link
+                    href="/shipping-policy#international"
+                    className={styles.announcementLink}
+                  >
+                    Learn more &amp; order &rarr;
+                  </Link>
+                </span>
+                <span className={styles.announcementMobile}>
+                  ✈️ <strong>Worldwide Delivery</strong> —{' '}
+                  <Link
+                    href="/shipping-policy#international"
+                    className={styles.announcementLink}
+                  >
+                    Order &rarr;
+                  </Link>
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleDismissAnnouncement}
+                className={styles.announcementCloseBtn}
+                aria-label="Dismiss announcement"
+                title="Close announcement"
               >
-                Learn more &amp; order &rarr;
-              </Link>
-            </span>
-          </div>
-        </aside>
+                <X size={14} />
+              </button>
+            </motion.aside>
+          )}
+        </AnimatePresence>
 
         <div className={styles.headerContainer}>
           {/* Mobile & Tablet Hamburger Toggle */}
@@ -235,9 +309,9 @@ export function SiteHeader() {
             </div>
 
             <Link
-              href="/track"
+              href="/track-order"
               className={`${styles.navLink} ${
-                pathname.startsWith('/track') ? styles.navLinkActive : ''
+                pathname.startsWith('/track-order') ? styles.navLinkActive : ''
               }`}
             >
               <Truck size={14} style={{ opacity: 0.75 }} />
@@ -245,18 +319,18 @@ export function SiteHeader() {
             </Link>
 
             <Link
-              href="/about"
+              href="/our-story"
               className={`${styles.navLink} ${
-                pathname === '/about' ? styles.navLinkActive : ''
+                pathname === '/our-story' ? styles.navLinkActive : ''
               }`}
             >
               Our Story
             </Link>
 
             <Link
-              href="/contact"
+              href="/contact-us"
               className={`${styles.navLink} ${
-                pathname === '/contact' ? styles.navLinkActive : ''
+                pathname === '/contact-us' ? styles.navLinkActive : ''
               }`}
             >
               Contact
@@ -364,7 +438,7 @@ export function SiteHeader() {
                         </Link>
 
                         <Link
-                          href="/track"
+                          href="/track-order"
                           onClick={() => setIsAccountDropdownOpen(false)}
                           className={styles.patronDropdownItem}
                         >
@@ -396,10 +470,10 @@ export function SiteHeader() {
               <Link
                 href="/account"
                 className={styles.signInBtn}
-                aria-label="Customer account sign in"
+                aria-label="My Account"
               >
                 <User size={15} />
-                <span>Sign In</span>
+                <span>Account</span>
               </Link>
             )}
 
@@ -421,11 +495,20 @@ export function SiteHeader() {
             {/* Desktop ONLY Bag Button (> 1040px) */}
             <button
               type="button"
-              onClick={openCart}
-              aria-label={`View shopping bag with ${totalItems} items`}
+              onClick={handleCartClick}
+              aria-label={
+                isCheckoutPage
+                  ? `Shopping bag with ${totalItems} items (reviewed below in order summary)`
+                  : `View shopping bag with ${totalItems} items`
+              }
+              title={
+                isCheckoutPage
+                  ? 'Your bag items are shown in the order summary on this page'
+                  : `View shopping bag (${totalItems})`
+              }
               className={`${styles.cartBtnDesktop} ${
                 totalItems > 0 ? styles.cartBtnDesktopFilled : ''
-              }`}
+              } ${isCheckoutPage ? styles.cartBtnDesktopOnCheckout : ''}`}
             >
               <ShoppingBag size={16} />
               <span>Bag</span>
@@ -443,9 +526,18 @@ export function SiteHeader() {
             {/* Mobile / Tablet ONLY Bag Button (<= 1040px) */}
             <button
               type="button"
-              onClick={openCart}
-              aria-label={`View shopping bag with ${totalItems} items`}
-              className={styles.mobileCartBtn}
+              onClick={handleCartClick}
+              aria-label={
+                isCheckoutPage
+                  ? `Shopping bag with ${totalItems} items (reviewed below in order summary)`
+                  : `View shopping bag with ${totalItems} items`
+              }
+              title={
+                isCheckoutPage
+                  ? 'Your bag items are shown in the order summary on this page'
+                  : `View shopping bag (${totalItems})`
+              }
+              className={`${styles.mobileCartBtn} ${isCheckoutPage ? styles.mobileCartBtnOnCheckout : ''}`}
             >
               <ShoppingBag size={20} />
               {totalItems > 0 && (
@@ -519,10 +611,10 @@ export function SiteHeader() {
                   </Link>
 
                   <Link
-                    href="/track"
+                    href="/track-order"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`${styles.drawerCleanLink} ${
-                      pathname.startsWith('/track') ? styles.drawerCleanLinkActive : ''
+                      pathname.startsWith('/track-order') ? styles.drawerCleanLinkActive : ''
                     }`}
                   >
                     <span>Track Order</span>
@@ -530,10 +622,10 @@ export function SiteHeader() {
                   </Link>
 
                   <Link
-                    href="/about"
+                    href="/our-story"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`${styles.drawerCleanLink} ${
-                      pathname === '/about' ? styles.drawerCleanLinkActive : ''
+                      pathname === '/our-story' ? styles.drawerCleanLinkActive : ''
                     }`}
                   >
                     <span>Our Story</span>
@@ -541,10 +633,10 @@ export function SiteHeader() {
                   </Link>
 
                   <Link
-                    href="/contact"
+                    href="/contact-us"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`${styles.drawerCleanLink} ${
-                      pathname === '/contact' ? styles.drawerCleanLinkActive : ''
+                      pathname === '/contact-us' ? styles.drawerCleanLinkActive : ''
                     }`}
                   >
                     <span>Contact</span>
@@ -592,7 +684,7 @@ export function SiteHeader() {
                         International Delivery
                       </div>
                       <div className={styles.drawerConciergeSubtitle} style={{ color: 'var(--text-muted)' }}>
-                        Custom DTDC worldwide courier
+                        Fast, tracked worldwide delivery
                       </div>
                     </div>
                   </div>
@@ -621,7 +713,7 @@ export function SiteHeader() {
                     className={styles.drawerSignInLink}
                   >
                     <User size={15} />
-                    <span>Sign In to Account</span>
+                    <span>My Account</span>
                   </Link>
                 )}
 

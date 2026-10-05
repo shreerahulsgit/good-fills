@@ -54,7 +54,7 @@ export default function NotFound() {
             <span>Return to Homepage</span>
           </Link>
 
-          <Link href="/track" className={styles.secondaryBtn}>
+          <Link href="/track-order" className={styles.secondaryBtn}>
             <Truck size={15} />
             <span>Track Order</span>
           </Link>

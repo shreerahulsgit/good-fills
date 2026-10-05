@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     'Terms of service, made-to-order conditions, artisanal food guidelines, allergen disclaimers, and legal jurisdiction for Good Fills.',
 };
 
-export default function TermsPage() {
+export default function TermsOfServicePage() {
   return (
     <PolicyLayout
       activePolicy="terms"

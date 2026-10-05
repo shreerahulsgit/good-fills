@@ -22,8 +22,8 @@ const VALUES = [
   {
     num: '03',
     icon: Truck,
-    title: 'DTDC Express Delivery',
-    description: 'Tracked domestic shipping across India, delivered in 2–4 business days.',
+    title: 'Fast & Tracked Delivery',
+    description: 'Reliable doorstep shipping across India, delivered in 2–4 business days.',
   },
   {
     num: '04',

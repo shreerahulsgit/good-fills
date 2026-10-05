@@ -57,11 +57,11 @@ export function AdminReviewsModerationView({ showToast, onNavigateToOrder }: Adm
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
   // Fetch reviews from admin API
-  const loadReviews = useCallback(async (quiet = false) => {
-    if (!quiet) setIsLoading(true);
+  const loadReviews = useCallback(async (isInitial = false) => {
+    if (isInitial) setIsLoading(true);
     setIsRefreshing(true);
     try {
-      const res = await fetch('/api/admin/reviews');
+      const res = await fetch('/api/admin/reviews', { cache: 'no-store' });
       const data = await res.json();
       if (res.ok && data.success) {
         setReviews(data.reviews || []);
@@ -78,8 +78,8 @@ export function AdminReviewsModerationView({ showToast, onNavigateToOrder }: Adm
   }, [showToast]);
 
   useEffect(() => {
-    loadReviews();
-  }, [loadReviews]);
+    loadReviews(true);
+  }, []); // Run on initial mount only
 
   // Unique products present in the reviews list for filter dropdown
   const uniqueProducts = useMemo(() => {
@@ -156,6 +156,15 @@ export function AdminReviewsModerationView({ showToast, onNavigateToOrder }: Adm
         setReviews((prev) =>
           prev.map((r) => (r.id === reviewId ? { ...r, isFeatured: data.isFeatured } : r))
         );
+        setStats((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            featuredCount: data.isFeatured
+              ? prev.featuredCount + 1
+              : Math.max(0, prev.featuredCount - 1),
+          };
+        });
         showToast(data.message, 'success');
       } else {
         showToast(data.error || 'Failed to update testimonial status.', 'error');
@@ -397,7 +406,7 @@ export function AdminReviewsModerationView({ showToast, onNavigateToOrder }: Adm
           </div>
         </div>
 
-        {isLoading ? (
+        {isLoading && reviews.length === 0 ? (
           <div className={styles.emptyState}>
             <RefreshCw size={28} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 12px', color: 'var(--accent-terracotta)' }} />
             <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>
@@ -586,7 +595,11 @@ export function AdminReviewsModerationView({ showToast, onNavigateToOrder }: Adm
                       {/* Toggle Featured */}
                       <button
                         type="button"
-                        onClick={() => handleToggleFeature(review.id)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleToggleFeature(review.id);
+                        }}
                         className={`${styles.actionBtn} ${review.isFeatured ? styles.actionBtnFeaturedActive : ''}`}
                         title={review.isFeatured ? 'Remove from top testimonials' : 'Highlight as top testimonial'}
                       >
@@ -597,7 +610,9 @@ export function AdminReviewsModerationView({ showToast, onNavigateToOrder }: Adm
                       {/* Reply Button */}
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           if (isReplyOpen) {
                             setActiveReplyReviewId(null);
                             setReplyText('');
@@ -616,7 +631,11 @@ export function AdminReviewsModerationView({ showToast, onNavigateToOrder }: Adm
                       {/* Hide / Unhide */}
                       <button
                         type="button"
-                        onClick={() => handleToggleVisibility(review.id)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleToggleVisibility(review.id);
+                        }}
                         className={styles.actionBtn}
                         title={isHidden ? 'Publish this review' : 'Hide this review from customer view'}
                       >
@@ -627,7 +646,11 @@ export function AdminReviewsModerationView({ showToast, onNavigateToOrder }: Adm
                       {/* Delete */}
                       <button
                         type="button"
-                        onClick={() => handleDeleteReview(review)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDeleteReview(review);
+                        }}
                         className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
                         title="Permanently delete review"
                       >

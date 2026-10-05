@@ -2626,6 +2626,40 @@
   font-weight: 700 !important;
 }
 
+.refreshCreationBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background-color: #FFFFFF;
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.refreshCreationBtn:hover {
+  background-color: var(--bg-canvas);
+  border-color: var(--accent-terracotta);
+  color: var(--accent-terracotta);
+}
+
+.refreshCreationBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinningIcon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .addCreationBtn {
   display: inline-flex;
   align-items: center;

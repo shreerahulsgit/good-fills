@@ -1,9 +1,9 @@
 .pageCanvas {
   min-height: 100vh;
-  background-color: #f7f5f0;
-  padding: 40px 20px 80px 20px;
+  background-color: #f6f4ee;
+  padding: 36px 20px 80px 20px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: #2b2523;
+  color: #25201d;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -11,12 +11,12 @@
 
 /* Actions Header Bar (Visible on screen, hidden on print) */
 .actionsBar {
-  max-width: 820px;
+  max-width: 800px;
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   gap: 16px;
   flex-wrap: wrap;
 }
@@ -25,14 +25,15 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 500;
-  color: #786b66;
+  color: #6a605a;
   text-decoration: none;
   background: #ffffff;
   padding: 8px 16px;
   border-radius: 8px;
-  border: 1px solid #e5dfd7;
+  border: 1px solid #e2dad0;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
@@ -56,29 +57,29 @@
   color: #ffffff;
   border: none;
   border-radius: 8px;
-  padding: 10px 22px;
-  font-size: 0.95rem;
+  padding: 9px 20px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(151, 65, 29, 0.25);
+  box-shadow: 0 3px 12px rgba(151, 65, 29, 0.2);
   transition: all 0.2s ease;
 }
 
 .printBtn:hover {
   background: #803415;
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(151, 65, 29, 0.35);
+  box-shadow: 0 5px 16px rgba(151, 65, 29, 0.3);
 }
 
 /* A4 Printable Sheet Container */
 .invoiceSheet {
-  max-width: 820px;
+  max-width: 800px;
   width: 100%;
   background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
-  border: 1px solid #ebe5dc;
-  padding: 48px 52px;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(45, 24, 16, 0.05);
+  border: 1px solid #e8e2d9;
+  padding: 44px 52px;
   box-sizing: border-box;
 }
 
@@ -87,9 +88,9 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding-bottom: 28px;
-  border-bottom: 2px solid #f0eae1;
-  gap: 24px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #ede7df;
+  gap: 32px;
 }
 
 .brandCol {
@@ -97,127 +98,174 @@
 }
 
 .brandLogo {
-  height: 52px;
+  height: 42px;
   width: auto;
-  max-width: 220px;
+  max-width: 200px;
   object-fit: contain;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   display: block;
 }
 
-.brandTagline {
-  font-size: 0.85rem;
-  color: #97411d;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
+.atelierDetails {
+  font-size: 0.82rem;
+  color: #554d47;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
 }
 
-.atelierAddress {
-  font-size: 0.82rem;
-  color: #6c635d;
-  line-height: 1.45;
+.atelierEntity {
+  font-weight: 600;
+  color: #2b2522;
+}
+
+.atelierDivider {
+  color: #b5aaa0;
+}
+
+.atelierContact {
+  font-size: 0.78rem;
+  color: #726861;
+  margin-bottom: 3px;
+}
+
+.atelierFssai {
+  font-size: 0.74rem;
+  color: #166534;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .metaCol {
   text-align: right;
+  min-width: 220px;
 }
 
-.invoiceTitle {
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: #2b2523;
-  letter-spacing: 0.02em;
-  margin: 0 0 6px 0;
-  text-transform: uppercase;
-}
-
-.invoiceNumber {
-  font-family: monospace;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #97411d;
-  margin-bottom: 8px;
-}
-
-.metaRow {
-  font-size: 0.82rem;
-  color: #6c635d;
+.invoiceTitleWrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
   margin-bottom: 4px;
 }
 
-.statusPillPaid {
-  display: inline-block;
-  background: #dcfce7;
-  color: #15803d;
-  font-weight: 700;
-  font-size: 0.75rem;
-  padding: 3px 10px;
-  border-radius: 20px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  margin-top: 6px;
+.invoiceTitle {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #25201d;
+  letter-spacing: 0.08em;
+  margin: 0;
 }
 
-/* Two-column Customer Details */
+.statusPillPaid {
+  background: #ecfdf3;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+  font-weight: 700;
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+}
+
+.invoiceNumber {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #97411d;
+  margin-bottom: 10px;
+}
+
+.metaDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.metaRow {
+  font-size: 0.8rem;
+  color: #635852;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.metaLabel {
+  color: #8c8077;
+}
+
+.metaValue {
+  font-weight: 600;
+  color: #25201d;
+}
+
+/* Two-column Customer & Shipping Details */
 .partySection {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  padding: 24px 0;
-  border-bottom: 1px solid #f0eae1;
+  gap: 40px;
+  padding: 22px 0;
+  border-bottom: 1px solid #ede7df;
 }
 
 .partyBox {
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   line-height: 1.5;
 }
 
 .partyLabel {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #97411d;
-  margin-bottom: 8px;
+  color: #9c8e85;
+  margin-bottom: 6px;
 }
 
 .partyName {
-  font-size: 1.02rem;
+  font-size: 0.96rem;
   font-weight: 700;
-  color: #2b2523;
-  margin-bottom: 4px;
+  color: #25201d;
+  margin-bottom: 3px;
 }
 
 .partyText {
-  color: #554d48;
+  color: #554d47;
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 /* Items Table */
+.tableWrapper {
+  margin-top: 22px;
+}
+
 .itemsTable {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 24px;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
 }
 
 .itemsTable th {
-  background: #faf7f2;
-  color: #554d48;
-  font-size: 0.74rem;
+  background: #faf8f5;
+  color: #6e625a;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 12px 14px;
-  border-top: 1px solid #ebe5dc;
-  border-bottom: 1px solid #ebe5dc;
+  letter-spacing: 0.07em;
+  padding: 9px 12px;
+  border-top: 1px solid #ede7df;
+  border-bottom: 1px solid #ede7df;
 }
 
 .itemsTable td {
-  padding: 14px;
+  padding: 13px 12px;
   border-bottom: 1px solid #f2ede6;
   color: #38312e;
+  vertical-align: top;
 }
 
 .itemColDesc {
@@ -226,201 +274,219 @@
 
 .itemColQty {
   text-align: center;
-  width: 70px;
+  width: 60px;
 }
 
 .itemColRate {
   text-align: right;
-  width: 110px;
+  width: 100px;
+  font-variant-numeric: tabular-nums;
 }
 
 .itemColAmount {
   text-align: right;
-  width: 120px;
+  width: 110px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .itemName {
-  font-weight: 700;
-  color: #2b2523;
-  margin-bottom: 2px;
+  font-weight: 600;
+  color: #25201d;
 }
 
 .itemSub {
-  font-size: 0.76rem;
-  color: #786b66;
+  font-size: 0.74rem;
+  color: #8c8077;
+  margin-top: 2px;
 }
 
-/* Summary Grid: Words & QR on left, Calculation on right */
+/* Summary Grid: Amount in Words & QR on left, Calculation on right */
 .summarySection {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 32px;
-  padding-top: 24px;
-  border-bottom: 1px solid #f0eae1;
-  padding-bottom: 28px;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 36px;
+  padding-top: 20px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #ede7df;
+  align-items: start;
 }
 
-.wordsBox {
-  font-size: 0.85rem;
+.wordsCol {
+  font-size: 0.84rem;
 }
 
 .wordsLabel {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #786b66;
+  letter-spacing: 0.08em;
+  color: #9c8e85;
   margin-bottom: 4px;
 }
 
 .wordsText {
-  font-weight: 700;
-  color: #2b2523;
+  font-weight: 600;
+  color: #25201d;
   font-style: italic;
-  margin-bottom: 16px;
   line-height: 1.4;
+  font-size: 0.85rem;
 }
 
-.qrContainer {
-  display: flex;
+.qrBadge {
+  display: inline-flex;
   align-items: center;
   gap: 14px;
-  background: #faf7f2;
-  padding: 12px 16px;
+  margin-top: 18px;
+  padding: 10px 14px;
+  background: #faf8f5;
+  border: 1px solid #ede7df;
   border-radius: 8px;
-  border: 1px dashed #dfd7cc;
-  max-width: 320px;
 }
 
 .qrImage {
   width: 72px;
   height: 72px;
   display: block;
-  background: #fff;
+  background: #ffffff;
+  border-radius: 6px;
   padding: 2px;
-  border-radius: 4px;
 }
 
-.qrTextTitle {
-  font-size: 0.78rem;
+.qrMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.qrTitle {
+  font-size: 0.8rem;
   font-weight: 700;
-  color: #2b2523;
-  margin-bottom: 2px;
+  color: #25201d;
 }
 
-.qrTextDesc {
-  font-size: 0.7rem;
+.qrSub {
+  font-size: 0.72rem;
   color: #786b66;
   line-height: 1.35;
 }
 
 /* Calculation Table */
+.calcCol {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .calcTable {
   width: 100%;
-  font-size: 0.88rem;
+  font-size: 0.84rem;
 }
 
 .calcRow {
   display: flex;
   justify-content: space-between;
-  padding: 6px 0;
-  color: #554d48;
+  padding: 4px 0;
+}
+
+.calcLabel {
+  color: #726861;
+}
+
+.calcValue {
+  color: #25201d;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .calcRowTotal {
   display: flex;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: 9px 0 2px 0;
   margin-top: 8px;
-  border-top: 2px solid #2b2523;
+  border-top: 2px solid #25201d;
   font-size: 1.15rem;
   font-weight: 800;
   color: #97411d;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Signature & Seal Block */
+/* Footer: Clean Notes & Signature */
 .bottomSection {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  padding-top: 28px;
-  gap: 24px;
+  padding-top: 24px;
+  gap: 28px;
 }
 
-.termsCol {
+.noteCol {
   flex: 1;
-  font-size: 0.76rem;
-  color: #786b66;
-  line-height: 1.45;
 }
 
-.termsHeading {
-  font-size: 0.72rem;
+.thankYouNote {
+  font-size: 0.9rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #2b2523;
+  color: #25201d;
   margin-bottom: 4px;
+}
+
+.legalNotice {
+  font-size: 0.72rem;
+  color: #8c8077;
+  line-height: 1.45;
 }
 
 .signatureCol {
   text-align: center;
-  width: 240px;
+  width: 200px;
 }
 
 .signatureWrap {
-  margin-bottom: 6px;
+  margin-bottom: 3px;
   position: relative;
   display: inline-block;
 }
 
 .signatureSvg {
-  height: 48px;
+  height: 38px;
   width: auto;
   display: block;
   margin: 0 auto;
 }
 
 .signatureLine {
-  width: 180px;
+  width: 150px;
   height: 1px;
   background: #3a322e;
-  margin: 6px auto;
+  margin: 4px auto;
 }
 
 .signatoryName {
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: #2b2523;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #25201d;
   margin: 0;
 }
 
 .signatoryTitle {
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   color: #97411d;
   font-weight: 600;
-  margin-top: 2px;
-}
-
-.atelierBadge {
-  font-size: 0.68rem;
-  color: #786b66;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   margin-top: 2px;
 }
 
 /* Print Optimization */
 @media print {
   @page {
-    size: A4;
-    margin: 12mm 15mm;
+    size: A4 portrait;
+    margin: 10mm 14mm;
   }
+
 
   .pageCanvas {
     background: #ffffff !important;
     padding: 0 !important;
+    min-height: auto !important;
   }
 
   .actionsBar {

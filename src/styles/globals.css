@@ -296,7 +296,195 @@ button {
 }
 
 /* ========================================================
-   SCROLL-DRIVEN EXPANDING INTRO & HERO SEQUENCE
+   HOME — MINIMAL EDITORIAL HERO (ACTIVE DEFAULT)
+   ======================================================== */
+.hero-minimal-section {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - var(--header-height));
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: var(--space-12) 0;
+}
+
+.hero-bg-layer {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(180deg, rgba(250, 249, 245, 0.82) 0%, rgba(250, 249, 245, 0.55) 45%, rgba(250, 249, 245, 0.15) 80%, transparent 100%),
+    url('/HeroBG.png');
+  background-size: cover;
+  background-position: 80% center;
+  background-repeat: no-repeat;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero-minimal-container {
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-minimal-content {
+  max-width: 660px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 3;
+}
+
+.hero-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(78, 96, 71, 0.08);
+  border: 1px solid rgba(78, 96, 71, 0.16);
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-bottom: var(--space-4);
+  width: fit-content;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent-sage);
+  text-transform: uppercase;
+}
+
+.hero-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+  animation: beaconPulse 2s infinite ease-in-out;
+}
+
+.hero-minimal-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 5.8vw, 4.3rem);
+  font-weight: 400;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+}
+
+.hero-title-line {
+  display: block;
+  white-space: normal;
+}
+
+.hero-minimal-subtitle {
+  font-family: var(--font-sans);
+  font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-10);
+  font-weight: 400;
+  max-width: 540px;
+}
+
+.hero-minimal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.hero-btn-wrapper {
+  width: 100%;
+}
+
+.hero-scroll-indicator {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.hero-scroll-text {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.hero-scroll-line {
+  width: 1px;
+  height: 32px;
+  background: var(--border-medium);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-scroll-line-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 12px;
+  background: var(--accent-terracotta);
+}
+
+/* Tablet & Desktop Enhancement */
+@media (min-width: 768px) {
+  .hero-minimal-section {
+    padding: var(--space-20) 0;
+  }
+
+  .hero-bg-layer {
+    background-image: 
+      linear-gradient(90deg, rgba(250, 249, 245, 0.90) 0%, rgba(250, 249, 245, 0.70) 36%, rgba(250, 249, 245, 0.18) 58%, transparent 78%),
+      url('/HeroBG.png');
+    background-position: center right;
+  }
+
+  .hero-minimal-subtitle {
+    margin-top: var(--space-8);
+    margin-bottom: var(--space-10);
+  }
+
+  .hero-minimal-actions {
+    flex-direction: row;
+    width: auto;
+  }
+
+  .hero-btn-wrapper {
+    width: auto;
+  }
+
+  .hero-minimal-btn {
+    width: auto;
+  }
+}
+
+@media (min-width: 1200px) {
+  .hero-minimal-section {
+    min-height: calc(100vh - var(--header-height));
+  }
+
+  .hero-bg-layer {
+    background-image: 
+      linear-gradient(90deg, rgba(250, 249, 245, 0.92) 0%, rgba(250, 249, 245, 0.65) 36%, rgba(250, 249, 245, 0.12) 55%, transparent 72%),
+      url('/HeroBG.png');
+  }
+}
+
+/* ========================================================
+   SCROLL-DRIVEN EXPANDING INTRO & HERO SEQUENCE (OPTIONAL COMPONENT)
    ======================================================== */
 .hero-scroll-track {
   position: relative;

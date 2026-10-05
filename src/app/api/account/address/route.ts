@@ -25,8 +25,8 @@ export async function POST(request: Request) {
     const updatedUser = manageCustomerAddress(identifier, action, address, addressIndex);
     if (!updatedUser) {
       return NextResponse.json(
-        { error: 'Failed to update address.' },
-        { status: 400 }
+        { error: 'Customer profile not found.' },
+        { status: 404 }
       );
     }
 

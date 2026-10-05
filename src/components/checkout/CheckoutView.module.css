@@ -11,7 +11,7 @@
     radial-gradient(circle at 10% 15%, rgba(229, 205, 185, 0.3) 0%, transparent 45%),
     radial-gradient(circle at 90% 75%, rgba(243, 236, 228, 0.6) 0%, transparent 50%),
     linear-gradient(180deg, var(--bg-canvas) 0%, #F6F1E8 100%);
-  padding: var(--space-8) 0 var(--space-20);
+  padding: var(--space-8) 0 var(--space-16);
 }
 
 /* Minimal Top Brand Bar */
@@ -117,31 +117,30 @@
 
 .pageEyebrow {
   font-family: var(--font-sans);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--accent-terracotta);
   display: block;
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--space-3);
 }
 
 .pageTitle {
   font-family: var(--font-serif);
-  font-size: clamp(2rem, 3.8vw, 2.8rem);
+  font-size: clamp(2.2rem, 4.5vw, 3.6rem);
   font-weight: 400;
   color: var(--text-primary);
-  line-height: 1.15;
-  letter-spacing: -0.015em;
-  margin: 0 0 var(--space-2);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--space-4);
 }
 
 .pageSubtitle {
-  font-family: var(--font-sans);
-  font-size: 0.98rem;
+  font-size: 1.05rem;
   color: var(--text-secondary);
   line-height: 1.6;
-  max-width: 620px;
+  max-width: 720px;
   margin: 0;
 }
 
@@ -1282,7 +1281,7 @@
   border: 1px solid rgba(151, 65, 29, 0.16);
   border-radius: 18px;
   padding: 12px 18px;
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-2);
   box-shadow: 0 4px 18px rgba(34, 24, 19, 0.03);
 }
 
@@ -1295,6 +1294,7 @@
   cursor: pointer;
   padding: 6px 8px;
   border-radius: 12px;
+  min-width: 24%;
   text-align: left;
   transition: all var(--transition-fast);
 }

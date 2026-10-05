@@ -570,32 +570,8 @@ export function CheckoutView() {
   return (
     <div className={styles.checkoutContainer}>
       <div className="container">
-        {/* Minimal Editorial Top Brand Bar */}
-        <div className={styles.topBar}>
-          <Link href="/" className={styles.brandLink}>
-            <span className={styles.brandName}>GOOD FILLS</span>
-            <span className={styles.brandSub}>HOMEMADE · BENGALURU</span>
-          </Link>
-
-          <div className={styles.headerBadges}>
-            <div className={styles.atelierBeacon}>
-              <span className={styles.beaconDot} />
-              <span>Bengaluru Atelier • Made to Order</span>
-            </div>
-
-            <div className={styles.secureNotice}>
-              <ShieldCheck size={14} className={styles.secureIcon} />
-              <span>256-Bit SSL Encrypted Checkout</span>
-            </div>
-          </div>
-        </div>
-
         {/* Page Header Hero */}
         <div className={styles.pageHeader}>
-          <Link href="/shop" className={styles.backLink}>
-            <ArrowLeft size={14} />
-            <span>Return to Catalog</span>
-          </Link>
           <span className={styles.pageEyebrow}>ATELIER COMMERCE · ORDER CHECKOUT</span>
           <h1 className={styles.pageTitle}>Review &amp; Place Your Order</h1>
           <p className={styles.pageSubtitle}>

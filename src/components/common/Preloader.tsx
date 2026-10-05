@@ -22,7 +22,7 @@ export function Preloader() {
   const [isLifting, setIsLifting] = useState(false);
 
   useEffect(() => {
-    if (pathname?.startsWith('/admin') || pathname?.startsWith('/console')) {
+    if (pathname === '/' || pathname?.startsWith('/admin') || pathname?.startsWith('/console')) {
       setIsLoaded(true);
       setShowPreloader(false);
       return;
@@ -82,7 +82,7 @@ export function Preloader() {
     requestAnimationFrame(animateProgress);
   }, [setIsLoaded, setShowPreloader]);
 
-  if (pathname?.startsWith('/admin') || pathname?.startsWith('/console') || !showPreloader) return null;
+  if (pathname === '/' || pathname?.startsWith('/admin') || pathname?.startsWith('/console') || !showPreloader) return null;
 
   return (
     <motion.div

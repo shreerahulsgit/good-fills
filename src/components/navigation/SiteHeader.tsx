@@ -127,6 +127,7 @@ export function SiteHeader() {
   }, []);
 
   const isCheckoutPage = pathname === '/checkout';
+  const isHome = pathname === '/';
 
   const handleCartClick = (e: React.MouseEvent) => {
     if (isCheckoutPage) {
@@ -170,7 +171,8 @@ export function SiteHeader() {
           MAIN STICKY HEADER
           -------------------------------------------------------- */}
       <header
-        className={`${styles.headerRoot} ${isScrolled ? styles.headerScrolled : ''}`}
+        id="master-nav"
+        className={`${styles.headerRoot} ${isScrolled ? styles.headerScrolled : ''} ${isHome ? styles.headerHome : ''}`}
       >
         {/* Top Announcement Bar — International Delivery */}
         <AnimatePresence>

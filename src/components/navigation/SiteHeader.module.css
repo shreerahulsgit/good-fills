@@ -113,8 +113,24 @@
   top: 0;
   z-index: 50;
   background-color: var(--bg-canvas);
-  transition: background-color var(--transition-smooth), border-color var(--transition-smooth), box-shadow var(--transition-smooth);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, background-color var(--transition-smooth), border-color var(--transition-smooth), box-shadow var(--transition-smooth);
   border-bottom: 1px solid transparent;
+}
+
+.headerHome {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  transition: background-color var(--transition-smooth), border-color var(--transition-smooth), box-shadow var(--transition-smooth);
+}
+
+:global(body.intro-active) .headerHome,
+:global(body.intro-active) .headerRoot {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .headerScrolled {

@@ -1316,8 +1316,12 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
 
         <div className={styles.loginCenterCanvas}>
           <div className={styles.loginWrapper}>
-            <div className={styles.lockIconCircle}>
-              <Lock size={26} />
+            <div className={styles.loginLogoWrap}>
+              <img
+                src="/logo.png"
+                alt="Good Fills Homemade Products"
+                className={styles.loginBrandLogo}
+              />
             </div>
             <h2 className={styles.loginTitle}>Kitchen Dispatch Login</h2>
             <p className={styles.loginSubtitle}>
@@ -1350,21 +1354,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
               <button type="submit" className={styles.unlockBtn} disabled={isLoading || !pin.trim()}>
                 {isLoading ? 'Verifying PIN...' : 'Unlock Dispatch Console ➔'}
               </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setPin('2026');
-                  fetchOrders('2026');
-                }}
-                disabled={isLoading}
-                className={styles.quickUnlockBtn}
-              >
-                <Sparkles size={14} /> One-Click Quick Unlock (PIN: 2026)
-              </button>
             </form>
-
-            <p className={styles.pinHint}>Default Manager PIN: <strong>2026</strong></p>
           </div>
         </div>
       </main>

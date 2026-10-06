@@ -85,6 +85,20 @@
   }
 }
 
+.loginLogoWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.loginBrandLogo {
+  height: 56px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
 .lockIconCircle {
   width: 58px;
   height: 58px;

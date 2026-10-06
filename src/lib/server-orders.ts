@@ -6,6 +6,7 @@ import { PRODUCTS } from '@/data/products';
 import { getServerProductById } from '@/lib/server-products';
 import { calculateDomesticShipping } from '@/lib/shipping';
 import { getRazorpayClient, isRazorpayConfigured } from '@/lib/razorpay';
+import { getFirebaseDb, collection, doc, getDocs, setDoc } from '@/lib/firebase-db';
 
 export interface PaymentRecord {
   id: string;
@@ -148,6 +149,44 @@ function persistWebhookEvents() {
   } catch {}
 }
 
+/**
+ * Persists an order to Cloud Firestore asynchronously
+ */
+export async function persistOrderToFirestore(order: Order): Promise<void> {
+  const db = getFirebaseDb();
+  if (!db) return;
+  try {
+    const orderDoc = doc(db, 'orders', order.id);
+    await setDoc(orderDoc, order, { merge: true });
+    console.log(`[Firestore] Order ${order.id} saved to cloud database.`);
+  } catch (err: any) {
+    console.warn(`[Firestore] Could not save order ${order.id} to cloud (local fallback active):`, err.message);
+  }
+}
+
+/**
+ * Syncs orders from Cloud Firestore into cache
+ */
+export async function syncOrdersFromFirestore(): Promise<void> {
+  const db = getFirebaseDb();
+  if (!db) return;
+  try {
+    const ordersCol = collection(db, 'orders');
+    const snapshot = await getDocs(ordersCol);
+    if (!snapshot.empty) {
+      snapshot.forEach((docSnap) => {
+        const ord = docSnap.data() as Order;
+        if (ord && ord.id) {
+          ordersCache.set(ord.id, ord);
+        }
+      });
+      persistOrders();
+    }
+  } catch (err: any) {
+    console.warn('[Firestore] Orders sync warning (running on local cache fallback):', err.message);
+  }
+}
+
 export function clearAllOrders(): void {
   initStore();
   ordersCache.clear();
@@ -274,6 +313,7 @@ export function createPendingOrder({
 
   ordersCache.set(orderId, pendingOrder);
   persistOrders();
+  persistOrderToFirestore(pendingOrder);
 
   return {
     order: pendingOrder,
@@ -460,6 +500,7 @@ export async function resolveOrderFromRazorpay(
 
   ordersCache.set(order.id, order);
   persistOrders();
+  persistOrderToFirestore(order);
   return order;
 }
 
@@ -536,6 +577,7 @@ export function confirmOrderPayment({
 
   ordersCache.set(order.id, order);
   persistOrders();
+  persistOrderToFirestore(order);
 
   // Record payment in payments cache
   const paymentRecord: PaymentRecord = {
@@ -628,6 +670,7 @@ export function getAllServerOrders(): Order[] {
  */
 export async function getAllServerOrdersAsync(): Promise<Order[]> {
   initStore();
+  await syncOrdersFromFirestore();
 
   if (isRazorpayConfigured()) {
     try {
@@ -752,6 +795,7 @@ export function updateOrderAdmin({
 
   ordersCache.set(order.id, order);
   persistOrders();
+  persistOrderToFirestore(order);
 
   // Async sync tracking notes to Razorpay cloud
   if (order.razorpayOrderId && isRazorpayConfigured()) {

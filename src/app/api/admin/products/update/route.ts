@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const updated = updateServerProduct(id, updates);
+    const updated = await updateServerProduct(id, updates);
     return NextResponse.json({ success: true, product: updated });
   } catch (error: any) {
     console.error('Error updating product:', error);

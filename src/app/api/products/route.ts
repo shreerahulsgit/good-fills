@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getAllServerProducts } from '@/lib/server-products';
+import { getAllServerProducts, syncProductsFromFirestore } from '@/lib/server-products';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET() {
   try {
+    await syncProductsFromFirestore();
     const products = getAllServerProducts(true);
     return NextResponse.json(
       { success: true, products },

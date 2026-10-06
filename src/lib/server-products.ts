@@ -3,6 +3,14 @@ import path from 'path';
 import os from 'os';
 import { Product, ProductAvailability } from '@/types';
 import { PRODUCTS } from '@/data/products';
+import { 
+  getFirebaseDb, 
+  collection, 
+  doc, 
+  getDocs, 
+  setDoc, 
+  deleteDoc 
+} from '@/lib/firebase-db';
 
 const PRIMARY_DATA_DIR = path.join(process.cwd(), '.data');
 const PRIMARY_PRODUCTS_FILE = path.join(PRIMARY_DATA_DIR, 'products.json');
@@ -15,6 +23,8 @@ const TMP_DELETED_FILE = path.join(TMP_DATA_DIR, 'deleted-products.json');
 let productsCache: Map<string, Product> = new Map();
 let deletedProductIds: Set<string> = new Set(['prod-live-test']);
 let isInitialized = false;
+let lastFirestoreSync = 0;
+const FIRESTORE_SYNC_COOLDOWN_MS = 5000; // 5s cache cooldown to avoid excessive queries
 
 function loadDeletedIds() {
   try {
@@ -129,29 +139,8 @@ export function initProductStore(force = false) {
     }
   }
 
-  // 3. Auto-sync any newly added catalog items (strictly excluding deleted products)
-  if (loaded) {
-    let hasAdditions = false;
-    PRODUCTS.forEach((defaultProd) => {
-      if (!productsCache.has(defaultProd.id) && !deletedProductIds.has(defaultProd.id)) {
-        productsCache.set(defaultProd.id, { ...defaultProd });
-        hasAdditions = true;
-      }
-    });
-    // Ensure any blacklisted/deleted IDs are purged from disk
-    let purged = false;
-    deletedProductIds.forEach((delId) => {
-      if (productsCache.has(delId)) {
-        productsCache.delete(delId);
-        purged = true;
-      }
-    });
-    if (hasAdditions || purged) {
-      persistProducts();
-    }
-  } else if (productsCache.size === 0) {
-    // 4. Fallback: Seed with default catalog from src/data/products.ts
-    productsCache.clear();
+  // 3. Fallback: Seed with default catalog from src/data/products.ts
+  if (productsCache.size === 0) {
     PRODUCTS.forEach((p) => {
       if (!deletedProductIds.has(p.id)) {
         productsCache.set(p.id, { ...p });
@@ -169,9 +158,7 @@ function persistProducts() {
     fs.writeFileSync(PRIMARY_PRODUCTS_FILE, serialized, 'utf8');
     const stat = fs.statSync(PRIMARY_PRODUCTS_FILE);
     lastLoadedMtime = stat.mtimeMs;
-  } catch (err) {
-    console.error('Error writing products to primary disk:', err);
-  }
+  } catch {}
 
   try {
     ensureDataDirs();
@@ -180,8 +167,65 @@ function persistProducts() {
     if (!lastLoadedMtime) {
       lastLoadedMtime = stat.mtimeMs;
     }
-  } catch (err) {
-    console.error('Error writing products to tmp disk:', err);
+  } catch {}
+}
+
+/**
+ * Sync with Firebase Cloud Firestore
+ * - Pulls latest products across all Vercel instances
+ * - If Firestore products collection is empty, auto-seeds with current catalog
+ * - Falls back smoothly to cache if offline or unconfigured
+ */
+export async function syncProductsFromFirestore(force = false): Promise<Product[]> {
+  initProductStore();
+
+  const now = Date.now();
+  if (!force && (now - lastFirestoreSync) < FIRESTORE_SYNC_COOLDOWN_MS) {
+    return Array.from(productsCache.values());
+  }
+
+  const db = getFirebaseDb();
+  if (!db) {
+    return Array.from(productsCache.values());
+  }
+
+  try {
+    const productsCol = collection(db, 'products');
+    const snapshot = await getDocs(productsCol);
+
+    if (snapshot.empty) {
+      // Auto-seed Firestore from default catalog
+      console.log('[Firestore] Products collection empty. Auto-seeding 14 creations...');
+      const seedPromises = Array.from(productsCache.values()).map(async (prod) => {
+        const prodDoc = doc(db, 'products', prod.id);
+        await setDoc(prodDoc, prod);
+      });
+      await Promise.all(seedPromises);
+      lastFirestoreSync = now;
+      return Array.from(productsCache.values());
+    }
+
+    // Populate productsCache from Firestore documents
+    const cloudProducts: Product[] = [];
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data() as Product;
+      if (data && data.id && !deletedProductIds.has(data.id)) {
+        cloudProducts.push(data);
+      }
+    });
+
+    if (cloudProducts.length > 0) {
+      productsCache.clear();
+      cloudProducts.forEach((p) => productsCache.set(p.id, p));
+      persistProducts();
+    }
+
+    lastFirestoreSync = now;
+    return Array.from(productsCache.values());
+  } catch (err: any) {
+    // If Firestore API not enabled yet or offline, continue with memory cache
+    console.warn('[Firestore] Sync warning (running on local cache fallback):', err.message || err);
+    return Array.from(productsCache.values());
   }
 }
 
@@ -201,7 +245,7 @@ export function getServerProductBySlug(slug: string): Product | null {
   return products.find((p) => p.slug === slug) || null;
 }
 
-export function updateServerProduct(id: string, updates: Partial<Product>): Product {
+export async function updateServerProduct(id: string, updates: Partial<Product>): Promise<Product> {
   initProductStore();
   const existing = productsCache.get(id);
   if (!existing) {
@@ -211,7 +255,7 @@ export function updateServerProduct(id: string, updates: Partial<Product>): Prod
   const updated: Product = {
     ...existing,
     ...updates,
-    id: existing.id, // ID is immutable
+    id: existing.id,
     images: {
       ...existing.images,
       ...(updates.images || {}),
@@ -220,10 +264,23 @@ export function updateServerProduct(id: string, updates: Partial<Product>): Prod
 
   productsCache.set(id, updated);
   persistProducts();
+
+  // Asynchronously sync to Cloud Firestore
+  const db = getFirebaseDb();
+  if (db) {
+    try {
+      const prodDoc = doc(db, 'products', id);
+      await setDoc(prodDoc, updated, { merge: true });
+      console.log(`[Firestore] Successfully saved product updates for: ${id}`);
+    } catch (err: any) {
+      console.error(`[Firestore] Failed to persist product ${id} to cloud:`, err.message);
+    }
+  }
+
   return updated;
 }
 
-export function createServerProduct(data: Partial<Product> & { name: string; category: any; price: number }): Product {
+export async function createServerProduct(data: Partial<Product> & { name: string; category: any; price: number }): Promise<Product> {
   initProductStore();
   
   const id = data.id || `prod-${Date.now().toString().slice(-4)}`;
@@ -259,24 +316,50 @@ export function createServerProduct(data: Partial<Product> & { name: string; cat
 
   productsCache.set(id, newProduct);
   persistProducts();
+
+  // Asynchronously write to Cloud Firestore
+  const db = getFirebaseDb();
+  if (db) {
+    try {
+      const prodDoc = doc(db, 'products', id);
+      await setDoc(prodDoc, newProduct);
+      console.log(`[Firestore] Created new product in cloud: ${id}`);
+    } catch (err: any) {
+      console.error(`[Firestore] Failed to create product ${id} in cloud:`, err.message);
+    }
+  }
+
   return newProduct;
 }
 
-export function deleteServerProduct(id: string): boolean {
+export async function deleteServerProduct(id: string): Promise<boolean> {
   initProductStore();
   deletedProductIds.add(id);
   persistDeletedIds();
 
-  const deleted = productsCache.delete(id);
+  productsCache.delete(id);
   persistProducts();
+
+  // Asynchronously delete from Cloud Firestore
+  const db = getFirebaseDb();
+  if (db) {
+    try {
+      const prodDoc = doc(db, 'products', id);
+      await deleteDoc(prodDoc);
+      console.log(`[Firestore] Deleted product from cloud: ${id}`);
+    } catch (err: any) {
+      console.error(`[Firestore] Failed to delete product ${id} from cloud:`, err.message);
+    }
+  }
+
   return true;
 }
 
-export function toggleServerProductAvailability(id: string, availability: ProductAvailability): Product {
+export async function toggleServerProductAvailability(id: string, availability: ProductAvailability): Promise<Product> {
   return updateServerProduct(id, { availability });
 }
 
-export function toggleServerProductFeatured(id: string): Product {
+export async function toggleServerProductFeatured(id: string): Promise<Product> {
   initProductStore();
   const existing = productsCache.get(id);
   if (!existing) {

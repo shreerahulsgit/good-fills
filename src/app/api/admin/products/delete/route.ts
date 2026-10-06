@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const success = deleteServerProduct(id);
+    const success = await deleteServerProduct(id);
     return NextResponse.json({ success });
   } catch (error: any) {
     console.error('Error deleting product:', error);

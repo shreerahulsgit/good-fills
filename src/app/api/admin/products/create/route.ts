@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const created = createServerProduct(body);
+    const created = await createServerProduct(body);
     return NextResponse.json({ success: true, product: created });
   } catch (error: any) {
     console.error('Error creating product:', error);

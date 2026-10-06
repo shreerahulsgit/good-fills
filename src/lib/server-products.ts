@@ -3,6 +3,7 @@ import path from 'path';
 import os from 'os';
 import { Product, ProductAvailability } from '@/types';
 import { PRODUCTS } from '@/data/products';
+import { PRODUCT_ASSETS } from '@/lib/assets';
 import { 
   getFirebaseDb, 
   collection, 
@@ -68,6 +69,19 @@ function ensureDataDirs() {
 
 let lastLoadedMtime = 0;
 
+function sanitizeProduct(p: Product): Product {
+  const assets = PRODUCT_ASSETS[p.id] || PRODUCT_ASSETS[p.slug];
+  if (assets) {
+    p.images = {
+      primary: assets.primary,
+      packaging: assets.packaging,
+      lifestyle: assets.lifestyle,
+      detail: assets.detail || p.images?.detail || assets.primary,
+    };
+  }
+  return p;
+}
+
 export function initProductStore(force = false) {
   ensureDataDirs();
 
@@ -106,7 +120,7 @@ export function initProductStore(force = false) {
         productsCache.clear();
         data.forEach((p: Product) => {
           if (!deletedProductIds.has(p.id)) {
-            productsCache.set(p.id, p);
+            productsCache.set(p.id, sanitizeProduct(p));
           }
         });
         loaded = true;
@@ -128,7 +142,7 @@ export function initProductStore(force = false) {
           productsCache.clear();
           data.forEach((p: Product) => {
             if (!deletedProductIds.has(p.id)) {
-              productsCache.set(p.id, p);
+              productsCache.set(p.id, sanitizeProduct(p));
             }
           });
           loaded = true;
@@ -216,7 +230,7 @@ export async function syncProductsFromFirestore(force = false): Promise<Product[
 
     if (cloudProducts.length > 0) {
       productsCache.clear();
-      cloudProducts.forEach((p) => productsCache.set(p.id, p));
+      cloudProducts.forEach((p) => productsCache.set(p.id, sanitizeProduct(p)));
       persistProducts();
     }
 

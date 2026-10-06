@@ -1305,17 +1305,19 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
         <div className={styles.adminTopBarMobile}>
           <div className={styles.brandWrap}>
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img src="/logo.png" alt="Good Fills" style={{ height: '42px', width: 'auto', display: 'block' }} />
+              <img src="/logo.png" alt="Good Fills" style={{ height: '40px', width: 'auto', display: 'block' }} />
             </Link>
-            <span className={styles.badgeAdmin}>Dispatch Console</span>
+            <span className={styles.badgeAdmin}>Dispatch Cockpit</span>
           </div>
           <Link href="/" className={styles.viewStoreBtn}>
-            Back to Store <ArrowRight size={13} />
+            <span>Back to Store</span>
+            <ArrowRight size={13} />
           </Link>
         </div>
 
         <div className={styles.loginCenterCanvas}>
           <div className={styles.loginWrapper}>
+            <div className={styles.loginCardAccentLine} />
             <div className={styles.loginLogoWrap}>
               <img
                 src="/logo.png"
@@ -1323,38 +1325,54 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                 className={styles.loginBrandLogo}
               />
             </div>
+            <span className={styles.loginPillBadge}>Atelier Dispatch &amp; Operations</span>
             <h2 className={styles.loginTitle}>Kitchen Dispatch Login</h2>
             <p className={styles.loginSubtitle}>
-              Enter the 4-digit manager PIN to access the Good Fills executive dashboard, order fulfillment, and consignments.
+              Enter manager PIN to access the Good Fills executive dashboard, order fulfillment, and consignments.
             </p>
 
             <form onSubmit={handleUnlock}>
-              <input
-                type="password"
-                className={styles.pinInput}
-                placeholder="••••"
-                maxLength={8}
-                value={pin}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setPin(val);
-                  if (val.trim() === '2026' || val.trim() === 'admin123') {
-                    fetchOrders(val.trim());
-                  }
-                }}
-                autoFocus
-              />
+              <div className={styles.pinInputWrap}>
+                <input
+                  type="password"
+                  className={styles.pinInput}
+                  placeholder="••••"
+                  maxLength={8}
+                  value={pin}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setPin(val);
+                    if (val.trim() === '2026' || val.trim() === 'admin123') {
+                      fetchOrders(val.trim());
+                    }
+                  }}
+                  autoFocus
+                />
+              </div>
 
               {authError && (
-                <p style={{ color: '#d9381e', fontSize: '0.82rem', marginBottom: '16px', fontWeight: 600 }}>
-                  {authError}
-                </p>
+                <div className={styles.loginErrorAlert}>
+                  <AlertCircle size={14} />
+                  <span>{authError}</span>
+                </div>
               )}
 
               <button type="submit" className={styles.unlockBtn} disabled={isLoading || !pin.trim()}>
-                {isLoading ? 'Verifying PIN...' : 'Unlock Dispatch Console ➔'}
+                {isLoading ? (
+                  <span>Verifying PIN...</span>
+                ) : (
+                  <>
+                    <span>Unlock Dispatch Console</span>
+                    <ArrowRight size={15} />
+                  </>
+                )}
               </button>
             </form>
+
+            <div className={styles.loginSecureFooter}>
+              <Lock size={12} />
+              <span>Encrypted Session • Good Fills Atelier Operations</span>
+            </div>
           </div>
         </div>
       </main>

@@ -457,21 +457,21 @@
 }
 
 .stampBox {
-  border: 2px solid #97411d;
+  border: 2px solid #081a4d;
   border-radius: 8px;
   padding: 3px;
   background: #ffffff;
-  box-shadow: 0 1px 4px rgba(151, 65, 29, 0.12);
+  box-shadow: 0 1px 4px rgba(8, 26, 77, 0.14);
 }
 
 .stampInnerBox {
-  border: 1px dashed #97411d;
+  border: 1px dashed #081a4d;
   border-radius: 5px;
   padding: 7px 12px 5px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #fffdfb;
+  background: #f9fbff;
 }
 
 .stampLogoImg {
@@ -486,7 +486,7 @@
 .stampDivider {
   width: 100%;
   height: 1px;
-  background: #97411d;
+  background: #081a4d;
   opacity: 0.6;
   margin: 2px 0 3px;
 }
@@ -495,7 +495,7 @@
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: #97411d;
+  color: #081a4d;
   text-transform: uppercase;
   line-height: 1.2;
 }
@@ -504,7 +504,7 @@
   font-size: 0.55rem;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #97411d;
+  color: #081a4d;
   text-transform: uppercase;
   opacity: 0.85;
   margin-top: 1px;
@@ -513,7 +513,7 @@
 .stampLabel {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #25201d;
+  color: #081a4d;
   margin: 0;
   letter-spacing: 0.02em;
 }

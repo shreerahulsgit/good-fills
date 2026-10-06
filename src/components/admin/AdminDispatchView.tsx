@@ -2247,7 +2247,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                         <th>Order ID &amp; Age</th>
                         <th>Customer &amp; City</th>
                         <th>Items &amp; Weight</th>
-                        <th>Amount</th>
+                        <th style={{ minWidth: '125px' }}>Amount</th>
                         <th>Live Status</th>
                         <th style={{ minWidth: '170px' }}>1-Click Next Action</th>
                         <th style={{ minWidth: '140px' }}>Consignment / AWB</th>
@@ -2320,14 +2320,20 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                             <td>
                               <div className={styles.tableAmountCol}>
                                 <span className={styles.tableTotalVal}>₹{o.total}</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '3px' }}>
+                                <div className={styles.tablePaymentMetaRow}>
                                   <span className={styles.paymentMethodBadge}>
-                                    {o.paymentMethod || 'Razorpay UPI'}
+                                    {o.paymentMethod || 'UPI'}
                                   </span>
                                   {o.paymentStatus === 'Paid' ? (
-                                    <span className={styles.paymentBadgePaid}>Paid ✓</span>
+                                    <span className={styles.paymentBadgePaid}>
+                                      <span>Paid</span>
+                                      <span className={styles.paidCheckIcon}>✓</span>
+                                    </span>
                                   ) : (
-                                    <span className={styles.paymentBadgeUnpaid}>Unpaid ⚠️</span>
+                                    <span className={styles.paymentBadgeUnpaid}>
+                                      <span>Unpaid</span>
+                                      <span>⚠️</span>
+                                    </span>
                                   )}
                                 </div>
                               </div>

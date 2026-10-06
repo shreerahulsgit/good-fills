@@ -1396,24 +1396,40 @@
 .tableAmountCol {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  white-space: nowrap;
 }
 
 .tableTotalVal {
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   color: #111827;
+  line-height: 1.2;
+}
+
+.tablePaymentMetaRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
 }
 
 .paymentMethodBadge {
-  font-size: 0.66rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
   font-weight: 700;
-  background-color: #ECFDF5;
-  color: #065F46;
-  padding: 1px 5px;
-  border: 1px solid #A7F3D0;
-  border-radius: 0;
-  width: fit-content;
+  background-color: #F3F4F6;
+  color: #4B5563;
+  padding: 2px 5px;
+  border: 1px solid #E5E7EB;
+  border-radius: 3px;
+  white-space: nowrap;
+  line-height: 1;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 /* STATUS POPOVER */
@@ -1504,29 +1520,46 @@
 .paymentBadgePaid {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 3px;
   background-color: #ECFDF5;
   color: #047857;
   border: 1px solid #A7F3D0;
-  font-size: 0.66rem;
+  border-radius: 3px;
+  font-size: 0.65rem;
   font-weight: 700;
-  padding: 1px 5px;
+  padding: 2px 6px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  white-space: nowrap;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.paidCheckIcon {
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #059669;
 }
 
 .paymentBadgeUnpaid {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 3px;
   background-color: #FEF2F2;
   color: #DC2626;
   border: 1px solid #FECACA;
-  font-size: 0.66rem;
+  border-radius: 3px;
+  font-size: 0.65rem;
   font-weight: 700;
-  padding: 1px 5px;
+  padding: 2px 6px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  white-space: nowrap;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .unpaidAlertBadgeMobile {

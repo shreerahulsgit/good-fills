@@ -31,24 +31,12 @@
   margin-bottom: var(--space-6);
 }
 
-.heroBrandMark {
-  font-family: var(--font-sans);
-  font-size: clamp(3.5rem, 9.5vw, 8rem);
-  font-weight: 500;
-  line-height: 0.92;
-  letter-spacing: -0.04em;
-  color: var(--text-primary);
-  margin: 0;
-  display: inline-flex;
-  align-items: baseline;
-}
-
-.trademarkSymbol {
-  font-size: 0.32em;
-  font-weight: 400;
-  vertical-align: super;
-  margin-left: 4px;
-  color: var(--text-secondary);
+.heroBrandLogo {
+  height: clamp(60px, 9vw, 105px);
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .heroAsideBox {
@@ -937,9 +925,8 @@
     margin-bottom: var(--space-4);
   }
 
-  .heroBrandMark {
-    font-size: clamp(2.8rem, 12.5vw, 4.2rem);
-    letter-spacing: -0.03em;
+  .heroBrandLogo {
+    height: clamp(44px, 12vw, 68px);
   }
 
   .heroAsideBox {

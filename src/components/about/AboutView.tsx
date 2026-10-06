@@ -162,14 +162,17 @@ export function AboutView() {
         <div className="container">
           {/* Top Brand Title & Editorial Tagline Row (Matching Image 2) */}
           <div className={styles.heroHeaderRow}>
-            <motion.h1
-              className={styles.heroBrandMark}
+            <motion.div
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.75, ease: luxuryEase }}
             >
-              Good Fills<span className={styles.trademarkSymbol}>®</span>
-            </motion.h1>
+              <img
+                src="/logo.png"
+                alt="Good Fills Homemade Products"
+                className={styles.heroBrandLogo}
+              />
+            </motion.div>
 
             <motion.div
               className={styles.heroAsideBox}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { Star, ShieldCheck, ArrowRight, ArrowLeft, Sparkles, Quote } from 'lucide-react';
+import { Star, ShieldCheck, ArrowRight, ArrowLeft, Sparkles, Quote, Maximize2, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Review } from '@/lib/server-reviews';
 import styles from './FeaturedTestimonials.module.css';
@@ -18,6 +18,18 @@ export function FeaturedTestimonials({ initialReviews = [] }: FeaturedTestimonia
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(3);
   const [isPaused, setIsPaused] = useState(false);
+  const [selectedModalImage, setSelectedModalImage] = useState<{ src: string; author: string; title: string } | null>(null);
+
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedModalImage) {
+        setSelectedModalImage(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedModalImage]);
 
   // Touch tracking for mobile swipe gestures
   const touchStartXRef = useRef<number | null>(null);
@@ -329,6 +341,35 @@ export function FeaturedTestimonials({ initialReviews = [] }: FeaturedTestimonia
                       <p className={styles.reviewComment}>{review.comment}</p>
                     </div>
 
+                    {/* Verified Customer Feedback Photo / Note Inside Card */}
+                    {review.testimonialImage && (
+                      <div className={styles.testimonialPhotoWrapper}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedModalImage({
+                            src: review.testimonialImage!,
+                            author: review.authorName,
+                            title: review.title
+                          })}
+                          className={styles.photoThumbnailBtn}
+                          aria-label={`View verified note from ${review.authorName}`}
+                        >
+                          <div className={styles.photoThumbFrame}>
+                            <img
+                              src={review.testimonialImage}
+                              alt={`Verified note from ${review.authorName}`}
+                              className={styles.photoThumbImg}
+                              loading="lazy"
+                            />
+                            <div className={styles.photoZoomOverlay}>
+                              <Maximize2 size={12} />
+                              <span>View Verified Note</span>
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    )}
+
                     {/* Kitchen Note if present */}
                     {review.founderReply && (
                       <div className={styles.founderReplyBox}>
@@ -413,6 +454,46 @@ export function FeaturedTestimonials({ initialReviews = [] }: FeaturedTestimonia
           </div>
         </div>
       </div>
+
+      {/* Lightbox Modal for Full Screenshot Viewing */}
+      {selectedModalImage && (
+        <div
+          className={styles.lightboxOverlay}
+          onClick={() => setSelectedModalImage(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Verified Customer Note"
+        >
+          <div
+            className={styles.lightboxContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.lightboxHeader}>
+              <div className={styles.lightboxTitleRow}>
+                <ShieldCheck size={16} className={styles.lightboxShield} />
+                <span className={styles.lightboxAuthor}>
+                  Verified Patron Feedback · {selectedModalImage.author}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedModalImage(null)}
+                className={styles.lightboxCloseBtn}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className={styles.lightboxImageWrap}>
+              <img
+                src={selectedModalImage.src}
+                alt={`Testimonial from ${selectedModalImage.author}`}
+                className={styles.lightboxImg}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

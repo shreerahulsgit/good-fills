@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   MessageSquare,
   Package,
+  Maximize2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Product } from '@/types';
@@ -38,6 +39,7 @@ export function ProductReviewsSection({ product, initialSummary }: ProductReview
   const [isLoading, setIsLoading] = useState<boolean>(!initialSummary);
   const [activeFilter, setActiveFilter] = useState<'all' | number>('all');
   const [sortBy, setSortBy] = useState<'helpful' | 'newest' | 'rating'>('helpful');
+  const [selectedModalImage, setSelectedModalImage] = useState<{ src: string; author: string } | null>(null);
   
   // Delivered order validation: strictly verify if this customer has a delivered order with this product
   const deliveredOrder = useMemo(() => {
@@ -467,6 +469,34 @@ export function ProductReviewsSection({ product, initialSummary }: ProductReview
                 <h3 className={styles.reviewTitle}>{review.title}</h3>
                 <p className={styles.reviewComment}>{review.comment}</p>
 
+                {/* Verified Customer Feedback Photo / Note Attachment */}
+                {review.testimonialImage && (
+                  <div className={styles.reviewImageAttachment}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedModalImage({
+                        src: review.testimonialImage!,
+                        author: review.authorName,
+                      })}
+                      className={styles.reviewImageBtn}
+                      aria-label={`View verified note from ${review.authorName}`}
+                    >
+                      <div className={styles.reviewImageThumbFrame}>
+                        <img
+                          src={review.testimonialImage}
+                          alt={`Verified note from ${review.authorName}`}
+                          className={styles.reviewImageThumb}
+                          loading="lazy"
+                        />
+                        <div className={styles.reviewImageZoomBadge}>
+                          <Maximize2 size={12} />
+                          <span>View Verified Note</span>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                )}
+
                 {review.founderReply && (
                   <div className={styles.founderReplyBlock}>
                     <div className={styles.founderReplyHeader}>
@@ -715,6 +745,46 @@ export function ProductReviewsSection({ product, initialSummary }: ProductReview
           </div>
         )}
       </AnimatePresence>
+
+      {/* Lightbox Modal for Full Screenshot Viewing */}
+      {selectedModalImage && (
+        <div
+          className={styles.lightboxOverlay}
+          onClick={() => setSelectedModalImage(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Verified Customer Note"
+        >
+          <div
+            className={styles.lightboxContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.lightboxHeader}>
+              <div className={styles.lightboxTitleRow}>
+                <ShieldCheck size={16} className={styles.lightboxShield} />
+                <span className={styles.lightboxAuthor}>
+                  Verified Patron Feedback · {selectedModalImage.author}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedModalImage(null)}
+                className={styles.lightboxCloseBtn}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className={styles.lightboxImageWrap}>
+              <img
+                src={selectedModalImage.src}
+                alt={`Feedback from ${selectedModalImage.author}`}
+                className={styles.lightboxImg}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

@@ -18,6 +18,7 @@ export interface Review {
   createdAt: string;
   isFeatured?: boolean; // Highlighted as top testimonial
   status?: 'published' | 'hidden'; // Moderation status
+  testimonialImage?: string; // Path to verified customer photo / WhatsApp feedback screenshot
   founderReply?: {
     message: string;
     repliedAt: string;
@@ -46,6 +47,92 @@ const TMP_REVIEWS_FILE = path.join(TMP_DATA_DIR, 'reviews.json');
 
 // Authentic, verified foundational parent & patron reviews for all 13 creations
 const INITIAL_REVIEWS: Review[] = [
+  // ==========================================
+  // 5 AUTHENTIC VERIFIED PATRON TESTIMONIALS WITH IMAGES
+  // ==========================================
+  {
+    id: 'rev-featured-deepika',
+    productId: 'prod-10',
+    productName: 'Ubtan Face Pack',
+    rating: 5,
+    title: 'Amazing for the skin, adds smoothness and natural glow',
+    comment: "Thank you for sending me Goodfills products, the ubtan face mask and baby bath - it's amazing for the skin. It adds the smoothness and glow to the skin. Also it has no fragrance or a strong smell which I personally prefer. Thank you",
+    authorName: 'Deepika Subbaiah',
+    location: 'Bengaluru, Karnataka',
+    isVerifiedBuyer: true,
+    helpfulCount: 42,
+    createdAt: '2026-10-01T10:00:00.000Z',
+    isFeatured: true,
+    status: 'published',
+    testimonialImage: '/images/testimonials/Deepika.png',
+  },
+  {
+    id: 'rev-featured-sowmya',
+    productId: 'prod-13',
+    productName: 'Filter Coffee Powder',
+    rating: 5,
+    title: 'Loving the coffee blend! Every sip is a delight',
+    comment: 'Hi Alankrutha, we’re loving the coffee blend! The taste is genuinely authentic, and every sip is a delight. Truly enjoyable. From Good fills ❤️',
+    authorName: 'Sowmya',
+    location: 'Bengaluru, Karnataka',
+    isVerifiedBuyer: true,
+    helpfulCount: 39,
+    createdAt: '2026-10-02T11:30:00.000Z',
+    isFeatured: true,
+    status: 'published',
+    testimonialImage: '/images/testimonials/sowmya.png',
+  },
+  {
+    id: 'rev-featured-preksha',
+    productId: 'prod-05',
+    productName: 'Baby Ragi Sari',
+    rating: 5,
+    title: "My preferred choice for my baby's food since the beginning",
+    comment: "Alankrutha has been my preferred choice for my baby's food since the beginning. She has a special talent for making ragi seri, which my daughter loves. I have tried other brands, but she never liked them as much as Alankrutha's. I am very grateful to Alankrutha for introducing such delicious and nutritious baby foods.",
+    authorName: 'Preksha Rohan',
+    location: 'Bengaluru, Karnataka',
+    childAge: 'Baby Care',
+    isVerifiedBuyer: true,
+    helpfulCount: 56,
+    createdAt: '2026-10-03T09:15:00.000Z',
+    isFeatured: true,
+    status: 'published',
+    testimonialImage: '/images/testimonials/Preksha.png',
+  },
+  {
+    id: 'rev-featured-shambhavi',
+    productId: 'prod-04',
+    productName: 'Kids Nutrition Powder',
+    rating: 5,
+    title: "My son really likes dry fruits powder, it's tasty and healthy",
+    comment: "Hi Alankrutha, Thank you for Goodfills products, my son really likes dry fruits powder, it's tasty and healthy.. I recommend this for other customers also. Thanks again",
+    authorName: 'Shambhavi',
+    location: 'Bengaluru, Karnataka',
+    childAge: 'Active Kids',
+    isVerifiedBuyer: true,
+    helpfulCount: 38,
+    createdAt: '2026-10-04T14:20:00.000Z',
+    isFeatured: true,
+    status: 'published',
+    testimonialImage: '/images/testimonials/Shambhavi.png',
+  },
+  {
+    id: 'rev-featured-nischita',
+    productId: 'prod-10',
+    productName: 'Ubtan Face Pack',
+    rating: 5,
+    title: 'Gives amazing glow and removes sun tan',
+    comment: 'I really loved the Ubtan powder by Goodfills. It really gives you amazing glow to your skin and even removes sun tan. I highly recommend this product to everyone. Thank you Alankrutha ❤️',
+    authorName: 'Nischita Kiran',
+    location: 'Bengaluru, Karnataka',
+    isVerifiedBuyer: true,
+    helpfulCount: 48,
+    createdAt: '2026-10-05T16:00:00.000Z',
+    isFeatured: true,
+    status: 'published',
+    testimonialImage: '/images/testimonials/Nischita.png',
+  },
+
   // 1. Baby Cereal Mix (prod-01 / baby-cereal-mix)
   {
     id: 'rev-01-1',

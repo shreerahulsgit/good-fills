@@ -6,12 +6,42 @@ import { PRODUCTS } from '@/data/products';
 
 const PRIMARY_DATA_DIR = path.join(process.cwd(), '.data');
 const PRIMARY_PRODUCTS_FILE = path.join(PRIMARY_DATA_DIR, 'products.json');
+const PRIMARY_DELETED_FILE = path.join(PRIMARY_DATA_DIR, 'deleted-products.json');
 
 const TMP_DATA_DIR = path.join(os.tmpdir(), 'good-fills-data');
 const TMP_PRODUCTS_FILE = path.join(TMP_DATA_DIR, 'products.json');
+const TMP_DELETED_FILE = path.join(TMP_DATA_DIR, 'deleted-products.json');
 
 let productsCache: Map<string, Product> = new Map();
+let deletedProductIds: Set<string> = new Set(['prod-live-test']);
 let isInitialized = false;
+
+function loadDeletedIds() {
+  try {
+    if (fs.existsSync(PRIMARY_DELETED_FILE)) {
+      const data = JSON.parse(fs.readFileSync(PRIMARY_DELETED_FILE, 'utf8'));
+      if (Array.isArray(data)) data.forEach((id: string) => deletedProductIds.add(id));
+    }
+  } catch {}
+  try {
+    if (fs.existsSync(TMP_DELETED_FILE)) {
+      const data = JSON.parse(fs.readFileSync(TMP_DELETED_FILE, 'utf8'));
+      if (Array.isArray(data)) data.forEach((id: string) => deletedProductIds.add(id));
+    }
+  } catch {}
+}
+
+function persistDeletedIds() {
+  const serialized = JSON.stringify(Array.from(deletedProductIds));
+  try {
+    ensureDataDirs();
+    fs.writeFileSync(PRIMARY_DELETED_FILE, serialized, 'utf8');
+  } catch {}
+  try {
+    ensureDataDirs();
+    fs.writeFileSync(TMP_DELETED_FILE, serialized, 'utf8');
+  } catch {}
+}
 
 function ensureDataDirs() {
   if (!fs.existsSync(PRIMARY_DATA_DIR)) {
@@ -51,6 +81,7 @@ export function initProductStore(force = false) {
 
   if (!shouldReload) return;
   isInitialized = true;
+  loadDeletedIds();
 
   let loaded = false;
 
@@ -63,7 +94,11 @@ export function initProductStore(force = false) {
       const data = JSON.parse(content);
       if (Array.isArray(data) && data.length > 0) {
         productsCache.clear();
-        data.forEach((p: Product) => productsCache.set(p.id, p));
+        data.forEach((p: Product) => {
+          if (!deletedProductIds.has(p.id)) {
+            productsCache.set(p.id, p);
+          }
+        });
         loaded = true;
       }
     }
@@ -81,7 +116,11 @@ export function initProductStore(force = false) {
         const data = JSON.parse(content);
         if (Array.isArray(data) && data.length > 0) {
           productsCache.clear();
-          data.forEach((p: Product) => productsCache.set(p.id, p));
+          data.forEach((p: Product) => {
+            if (!deletedProductIds.has(p.id)) {
+              productsCache.set(p.id, p);
+            }
+          });
           loaded = true;
         }
       }
@@ -90,22 +129,34 @@ export function initProductStore(force = false) {
     }
   }
 
-  // 3. Auto-sync any newly added catalog items (like test items or new additions)
+  // 3. Auto-sync any newly added catalog items (strictly excluding deleted products)
   if (loaded) {
     let hasAdditions = false;
     PRODUCTS.forEach((defaultProd) => {
-      if (!productsCache.has(defaultProd.id)) {
+      if (!productsCache.has(defaultProd.id) && !deletedProductIds.has(defaultProd.id)) {
         productsCache.set(defaultProd.id, { ...defaultProd });
         hasAdditions = true;
       }
     });
-    if (hasAdditions) {
+    // Ensure any blacklisted/deleted IDs are purged from disk
+    let purged = false;
+    deletedProductIds.forEach((delId) => {
+      if (productsCache.has(delId)) {
+        productsCache.delete(delId);
+        purged = true;
+      }
+    });
+    if (hasAdditions || purged) {
       persistProducts();
     }
   } else if (productsCache.size === 0) {
     // 4. Fallback: Seed with default catalog from src/data/products.ts
     productsCache.clear();
-    PRODUCTS.forEach((p) => productsCache.set(p.id, { ...p }));
+    PRODUCTS.forEach((p) => {
+      if (!deletedProductIds.has(p.id)) {
+        productsCache.set(p.id, { ...p });
+      }
+    });
     persistProducts();
   }
 }
@@ -213,14 +264,12 @@ export function createServerProduct(data: Partial<Product> & { name: string; cat
 
 export function deleteServerProduct(id: string): boolean {
   initProductStore();
-  if (!productsCache.has(id)) {
-    return false;
-  }
+  deletedProductIds.add(id);
+  persistDeletedIds();
+
   const deleted = productsCache.delete(id);
-  if (deleted) {
-    persistProducts();
-  }
-  return deleted;
+  persistProducts();
+  return true;
 }
 
 export function toggleServerProductAvailability(id: string, availability: ProductAvailability): Product {

@@ -76,10 +76,7 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
 
   const featuredProducts = useMemo(() => {
     // Show strictly creations that are explicitly marked as featured by admin
-    // Never allow test products to leak onto homepage
-    return productsList.filter(
-      (p) => Boolean(p.featured) && p.id !== 'prod-live-test' && p.price > 1
-    );
+    return productsList.filter((p) => Boolean(p.featured));
   }, [productsList]);
 
   const handleAdd = (e: React.MouseEvent, product: Product) => {
@@ -124,12 +121,13 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
           </motion.div>
         </div>
 
-        {/* 3-Product Grid with Sequential Stagger */}
+        {/* Product Grid with Sequential Stagger */}
         <motion.div
           className="featured-grid"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
+          animate="visible"
           viewport={{ once: true, amount: 0.15 }}
         >
           {featuredProducts.map((product) => {

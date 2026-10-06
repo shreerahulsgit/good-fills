@@ -58,7 +58,7 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
   }, []);
 
   const publicProducts = useMemo(() => {
-    return productsList.filter((p) => p.id !== 'prod-live-test' && p.price > 1);
+    return productsList;
   }, [productsList]);
 
   const categoryTabs = useMemo(() => [

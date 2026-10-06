@@ -50,7 +50,6 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     }
 
     const filtered = productsList.filter(product => {
-      if (product.id === 'prod-live-test' || product.price <= 1) return false;
       const matchName = product.name.toLowerCase().includes(trimmed);
       const matchCategory = product.category.toLowerCase().includes(trimmed);
       const matchDesc = (product.shortDescription || '').toLowerCase().includes(trimmed);

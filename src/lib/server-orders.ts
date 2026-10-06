@@ -384,8 +384,7 @@ export async function resolveOrderFromRazorpay(
   }
 
   if (clientItems.length === 0) {
-    // If amount is ₹1 (100 paise), default to the live test sample
-    clientItems = [{ productId: 'prod-live-test', quantity: 1 }];
+    clientItems = [{ productId: 'prod-01', quantity: 1 }];
   }
 
   let authCart: AuthoritativeCartCalculation;

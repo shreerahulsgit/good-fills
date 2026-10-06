@@ -284,117 +284,137 @@ export function FeaturedTestimonials({ initialReviews = [] }: FeaturedTestimonia
               return (
                 <article
                   key={review.id}
-                  className={`${styles.card} ${review.isFeatured ? styles.cardFeatured : ''}`}
+                  className={`${styles.card} ${review.testimonialImage ? styles.cardWithImage : ''} ${review.isFeatured ? styles.cardFeatured : ''}`}
                   style={{
                     flex: `0 0 calc((100% - ${(itemsPerView - 1) * gap}px) / ${itemsPerView})`,
                     maxWidth: `calc((100% - ${(itemsPerView - 1) * gap}px) / ${itemsPerView})`,
                   }}
                 >
-                  <div className={styles.cardInner}>
-                    {/* Header Row: Stars, Badges & Product Tag */}
-                    <div className={styles.cardHeaderRow}>
-                      <div className={styles.starsRow}>
-                        {[1, 2, 3, 4, 5].map((s) => (
-                          <Star
-                            key={s}
-                            size={12}
-                            className={s <= review.rating ? styles.starFilled : ''}
-                            color={s <= review.rating ? '#d97706' : 'var(--border-subtle)'}
-                            fill={s <= review.rating ? '#d97706' : 'none'}
-                          />
-                        ))}
-                        <span className={styles.ratingNumber}>{review.rating}.0</span>
+                  {review.testimonialImage ? (
+                    <div className={styles.imageCardBody}>
+                      {/* Direct Graphic Testimonial Card Image */}
+                      <div
+                        className={styles.imageCardMedia}
+                        onClick={() => setSelectedModalImage({
+                          src: review.testimonialImage!,
+                          author: review.authorName,
+                          title: review.title
+                        })}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`View feedback from ${review.authorName}`}
+                      >
+                        <img
+                          src={review.testimonialImage}
+                          alt={`Testimonial card from ${review.authorName}`}
+                          className={styles.imageCardImg}
+                          loading="lazy"
+                        />
+                        <div className={styles.imageCardZoomHint}>
+                          <Maximize2 size={12} />
+                          <span>Tap to Zoom</span>
+                        </div>
                       </div>
 
-                      <div className={styles.badgesRow}>
-                        {review.isFeatured && (
-                          <span className={styles.featuredBadge}>
-                            <Sparkles size={10} />
-                            Featured
-                          </span>
-                        )}
-                        {review.isVerifiedBuyer && (
-                          <span className={styles.verifiedBadge}>
-                            <ShieldCheck size={10} strokeWidth={2.4} />
+                      {/* Card Footer: Tagged Product & Patron Name */}
+                      <div className={styles.imageCardFooter}>
+                        <div className={styles.imageCardPatronMeta}>
+                          <span className={styles.imageCardAuthorName}>{review.authorName}</span>
+                          <span className={styles.imageCardVerifiedBadge}>
+                            <ShieldCheck size={11} strokeWidth={2.4} />
                             Verified
                           </span>
+                        </div>
+                        <Link
+                          href={`/product/${review.productId}`}
+                          className={styles.imageCardProductLink}
+                          title={`View ${review.productName}`}
+                        >
+                          <span>{review.productName}</span>
+                          <span className={styles.productTagArrow}>➔</span>
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className={styles.cardInner}>
+                        {/* Header Row: Stars, Badges & Product Tag */}
+                        <div className={styles.cardHeaderRow}>
+                          <div className={styles.starsRow}>
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <Star
+                                key={s}
+                                size={12}
+                                className={s <= review.rating ? styles.starFilled : ''}
+                                color={s <= review.rating ? '#d97706' : 'var(--border-subtle)'}
+                                fill={s <= review.rating ? '#d97706' : 'none'}
+                              />
+                            ))}
+                            <span className={styles.ratingNumber}>{review.rating}.0</span>
+                          </div>
+
+                          <div className={styles.badgesRow}>
+                            {review.isFeatured && (
+                              <span className={styles.featuredBadge}>
+                                <Sparkles size={10} />
+                                Featured
+                              </span>
+                            )}
+                            {review.isVerifiedBuyer && (
+                              <span className={styles.verifiedBadge}>
+                                <ShieldCheck size={10} strokeWidth={2.4} />
+                                Verified
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Product Mention Link */}
+                        <div className={styles.productTagWrapper}>
+                          <Link
+                            href={`/product/${review.productId}`}
+                            className={styles.productTag}
+                            title={`View ${review.productName}`}
+                          >
+                            <span>{review.productName}</span>
+                            <span className={styles.productTagArrow}>➔</span>
+                          </Link>
+                        </div>
+
+                        {/* Quote Content */}
+                        <div className={styles.quoteWrapper}>
+                          <Quote size={18} className={styles.quoteIcon} aria-hidden="true" />
+                          <h3 className={styles.reviewTitle}>&ldquo;{review.title}&rdquo;</h3>
+                          <p className={styles.reviewComment}>{review.comment}</p>
+                        </div>
+
+                        {/* Kitchen Note if present */}
+                        {review.founderReply && (
+                          <div className={styles.founderReplyBox}>
+                            <div className={styles.founderReplyLabel}>Kitchen Note:</div>
+                            <p className={styles.founderReplyText}>{review.founderReply.message}</p>
+                          </div>
                         )}
                       </div>
-                    </div>
 
-                    {/* Product Mention Link */}
-                    <div className={styles.productTagWrapper}>
-                      <Link
-                        href={`/product/${review.productId}`}
-                        className={styles.productTag}
-                        title={`View ${review.productName}`}
-                      >
-                        <span>{review.productName}</span>
-                        <span className={styles.productTagArrow}>➔</span>
-                      </Link>
-                    </div>
-
-                    {/* Quote Content */}
-                    <div className={styles.quoteWrapper}>
-                      <Quote size={18} className={styles.quoteIcon} aria-hidden="true" />
-                      <h3 className={styles.reviewTitle}>&ldquo;{review.title}&rdquo;</h3>
-                      <p className={styles.reviewComment}>{review.comment}</p>
-                    </div>
-
-                    {/* Verified Customer Feedback Photo / Note Inside Card */}
-                    {review.testimonialImage && (
-                      <div className={styles.testimonialPhotoWrapper}>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedModalImage({
-                            src: review.testimonialImage!,
-                            author: review.authorName,
-                            title: review.title
-                          })}
-                          className={styles.photoThumbnailBtn}
-                          aria-label={`View verified note from ${review.authorName}`}
-                        >
-                          <div className={styles.photoThumbFrame}>
-                            <img
-                              src={review.testimonialImage}
-                              alt={`Verified note from ${review.authorName}`}
-                              className={styles.photoThumbImg}
-                              loading="lazy"
-                            />
-                            <div className={styles.photoZoomOverlay}>
-                              <Maximize2 size={12} />
-                              <span>View Verified Note</span>
-                            </div>
+                      {/* Card Footer: Author Monogram, Name & Details */}
+                      <div className={styles.cardAuthor}>
+                        <div className={styles.authorProfile}>
+                          <div className={styles.avatarMonogram} aria-hidden="true">
+                            {initials}
                           </div>
-                        </button>
-                      </div>
-                    )}
+                          <div className={styles.authorDetails}>
+                            <span className={styles.authorName}>{review.authorName}</span>
+                            <span className={styles.authorMeta}>{review.location}</span>
+                          </div>
+                        </div>
 
-                    {/* Kitchen Note if present */}
-                    {review.founderReply && (
-                      <div className={styles.founderReplyBox}>
-                        <div className={styles.founderReplyLabel}>Kitchen Note:</div>
-                        <p className={styles.founderReplyText}>{review.founderReply.message}</p>
+                        {review.childAge && (
+                          <span className={styles.childAgeTag}>{review.childAge}</span>
+                        )}
                       </div>
-                    )}
-                  </div>
-
-                  {/* Card Footer: Author Monogram, Name & Details */}
-                  <div className={styles.cardAuthor}>
-                    <div className={styles.authorProfile}>
-                      <div className={styles.avatarMonogram} aria-hidden="true">
-                        {initials}
-                      </div>
-                      <div className={styles.authorDetails}>
-                        <span className={styles.authorName}>{review.authorName}</span>
-                        <span className={styles.authorMeta}>{review.location}</span>
-                      </div>
-                    </div>
-
-                    {review.childAge && (
-                      <span className={styles.childAgeTag}>{review.childAge}</span>
-                    )}
-                  </div>
+                    </>
+                  )}
                 </article>
               );
             })}

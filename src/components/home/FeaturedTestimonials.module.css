@@ -590,69 +590,137 @@
 }
 
 /* ========================================================
-   VERIFIED TESTIMONIAL PHOTO THUMBNAIL (INSIDE CARDS)
+   DIRECT VISUAL TESTIMONIAL CARD (IMAGE IN CARD)
    ======================================================== */
-.testimonialPhotoWrapper {
-  margin-top: 12px;
+.cardWithImage {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: #FAF8F5;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
 }
 
-.photoThumbnailBtn {
+.imageCardBody {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   width: 100%;
-  display: block;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  text-align: left;
 }
 
-.photoThumbFrame {
+.imageCardMedia {
   position: relative;
   width: 100%;
-  height: 95px;
-  border-radius: 8px;
+  flex: 1;
+  min-height: 245px;
+  background-color: #f7f4ee;
+  cursor: pointer;
   overflow: hidden;
-  border: 1px solid var(--border-subtle);
-  background-color: #f7f5f0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-}
-
-.photoThumbnailBtn:hover .photoThumbFrame {
-  transform: translateY(-2px);
-  border-color: var(--accent-terracotta);
-  box-shadow: 0 4px 12px rgba(151, 65, 29, 0.12);
-}
-
-.photoThumbImg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
-  display: block;
-  transition: transform 0.3s ease;
-}
-
-.photoThumbnailBtn:hover .photoThumbImg {
-  transform: scale(1.03);
-}
-
-.photoZoomOverlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 5px 10px;
-  background: linear-gradient(to top, rgba(10, 15, 25, 0.82) 0%, rgba(10, 15, 25, 0.35) 75%, transparent 100%);
-  color: #ffffff;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  padding: 10px;
+}
+
+.imageCardImg {
+  width: 100%;
+  height: 100%;
+  max-height: 275px;
+  object-fit: contain;
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.imageCardMedia:hover .imageCardImg {
+  transform: scale(1.025);
+}
+
+.imageCardZoomHint {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  background: rgba(18, 22, 32, 0.78);
+  color: #ffffff;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  backdrop-filter: blur(2px);
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.imageCardMedia:hover .imageCardZoomHint {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.imageCardFooter {
+  padding: 11px 16px;
+  background-color: #ffffff;
+  border-top: 1px solid var(--border-hairline);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.imageCardPatronMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.imageCardAuthorName {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.imageCardVerifiedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: #15803d;
+  background-color: rgba(21, 128, 61, 0.08);
+  padding: 2px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.imageCardProductLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--accent-terracotta);
+  text-decoration: none;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.imageCardProductLink:hover {
+  color: var(--text-primary);
+  transform: translateX(2px);
 }
 
 /* ========================================================

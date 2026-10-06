@@ -307,9 +307,13 @@ export function SiteFooter() {
           </div>
         </div>
 
-        {/* 3. Massive Watermark Wordmark Cropped at Bottom */}
+        {/* 3. Massive Watermark Logo Cropped at Bottom */}
         <div className="footer-giant-watermark" aria-hidden="true">
-          GOOD FILLS
+          <img
+            src="/logo.png"
+            alt="Good Fills Logo"
+            className="footer-giant-watermark-logo"
+          />
         </div>
       </div>
     </footer>

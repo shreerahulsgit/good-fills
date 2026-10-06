@@ -491,7 +491,7 @@ export function AboutView() {
                 <span className={styles.cardEyebrow} style={{ color: 'var(--accent-terracotta)' }}>
                   OUR PROMISE
                 </span>
-                <span className={styles.atelierBadge}>GOOD FILLS</span>
+                <img src="/logo.png" alt="Good Fills" className={styles.atelierBadgeLogo} />
               </div>
               <h3 className={styles.cardTitle}>Freshly Homemade</h3>
 
@@ -505,7 +505,7 @@ export function AboutView() {
                 <li className={styles.comparisonItem}>
                   <Check size={18} className={styles.itemIconGood} />
                   <span>
-                    <strong>Cool Stone Grinding:</strong> Slow, traditional stone grinding keeps grains cool, preserving natural fiber and nutrition.
+                    <strong>Gentle Milling:</strong> Slow, traditional milling keeps grains cool, preserving natural fiber and nutrition.
                   </span>
                 </li>
                 <li className={styles.comparisonItem}>

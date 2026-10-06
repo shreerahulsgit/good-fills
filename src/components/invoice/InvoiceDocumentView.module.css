@@ -438,7 +438,7 @@
 
 .stampCol {
   text-align: center;
-  width: 170px;
+  width: 215px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -448,36 +448,74 @@
   margin-bottom: 6px;
   position: relative;
   display: inline-block;
-  transform: rotate(-5deg);
+  transform: rotate(-3deg);
   transition: transform 0.2s ease;
 }
 
 .stampWrap:hover {
-  transform: rotate(-2deg) scale(1.03);
+  transform: rotate(-1deg) scale(1.02);
 }
 
-.stampSvg {
-  width: 105px;
-  height: 105px;
+.stampBox {
+  border: 2px solid #97411d;
+  border-radius: 8px;
+  padding: 3px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(151, 65, 29, 0.12);
+}
+
+.stampInnerBox {
+  border: 1px dashed #97411d;
+  border-radius: 5px;
+  padding: 7px 12px 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fffdfb;
+}
+
+.stampLogoImg {
+  height: 34px;
+  width: auto;
+  max-width: 155px;
+  object-fit: contain;
   display: block;
-  margin: 0 auto;
-  filter: drop-shadow(0 1px 2px rgba(151, 65, 29, 0.12));
+  margin: 0 auto 3px;
+}
+
+.stampDivider {
+  width: 100%;
+  height: 1px;
+  background: #97411d;
+  opacity: 0.6;
+  margin: 2px 0 3px;
+}
+
+.stampTextRow {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #97411d;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.stampSubRow {
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #97411d;
+  text-transform: uppercase;
+  opacity: 0.85;
+  margin-top: 1px;
 }
 
 .stampLabel {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: #25201d;
   margin: 0;
   letter-spacing: 0.02em;
-}
-
-.stampEntity {
-  font-size: 0.68rem;
-  color: #97411d;
-  font-weight: 600;
-  margin-top: 2px;
-  letter-spacing: 0.03em;
 }
 
 /* Print Optimization */

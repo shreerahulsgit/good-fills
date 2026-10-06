@@ -2376,32 +2376,38 @@ button {
   color: var(--text-primary);
 }
 
-/* 3. Massive Watermark Wordmark Cropped at Bottom (Safely constrained to prevent horizontal scroll) */
+/* 3. Massive Watermark Logo Cropped at Bottom (Safely constrained to prevent horizontal scroll) */
 .footer-giant-watermark {
   width: 100%;
-  text-align: center;
-  font-family: var(--font-serif);
-  font-size: clamp(2.8rem, 12vw, 11rem);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--text-primary);
-  opacity: 0.045;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   pointer-events: none;
   user-select: none;
-  white-space: nowrap;
   overflow: hidden;
   margin-top: var(--space-8);
-  margin-bottom: -20px;
-  line-height: 0.85;
+  margin-bottom: -15px;
   position: relative;
   z-index: 1;
 }
 
+.footer-giant-watermark-logo {
+  max-width: 520px;
+  width: 65%;
+  height: auto;
+  opacity: 0.08;
+  display: block;
+}
+
 @media (min-width: 768px) {
   .footer-giant-watermark {
-    font-size: clamp(5rem, 13vw, 12rem);
-    margin-top: var(--space-12);
-    margin-bottom: -40px;
+    margin-top: var(--space-10);
+    margin-bottom: -25px;
+  }
+
+  .footer-giant-watermark-logo {
+    max-width: 680px;
+    width: 50%;
   }
 }
 

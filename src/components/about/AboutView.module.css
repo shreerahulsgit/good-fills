@@ -759,6 +759,14 @@
   letter-spacing: 0.1em;
 }
 
+.atelierBadgeLogo {
+  height: 28px;
+  width: auto;
+  max-width: 130px;
+  object-fit: contain;
+  display: block;
+}
+
 .comparisonList {
   list-style: none;
   display: flex;

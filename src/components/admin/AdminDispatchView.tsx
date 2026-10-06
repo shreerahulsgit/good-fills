@@ -983,7 +983,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
 
     let message = `Hello ${firstName}! `;
     if (status === 'Confirmed') {
-      message += `Your Good Fills freshly milled order #${order.id} is confirmed. Our kitchen is roasting and stone-milling your ingredients fresh! Track live: https://goodfills.in/track-order?id=${order.id}`;
+      message += `Your Good Fills freshly milled order #${order.id} is confirmed. Our kitchen is roasting and milling your ingredients fresh! Track live: https://goodfills.in/track-order?id=${order.id}`;
     } else if (status === 'Processing') {
       message += `Your Good Fills order #${order.id} has been freshly milled, sealed warm, and packed for dispatch! Track live: https://goodfills.in/track-order?id=${order.id}`;
     } else if (status === 'Shipped') {
@@ -1899,7 +1899,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                   ) : (
                     analyticsData.recentOrders.map((o) => {
                       const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus);
-                      const firstItem = o.items?.[0]?.product.name || 'Stone-Milled Creation';
+                      const firstItem = o.items?.[0]?.product.name || 'Freshly Milled Creation';
                       return (
                         <div key={o.id} className={styles.recentOrderItem}>
                           <div className={styles.recentItemThumb}>

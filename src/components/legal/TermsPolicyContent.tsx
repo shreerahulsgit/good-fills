@@ -50,7 +50,7 @@ export function TermsPolicyContent() {
         As detailed in our <Link href="/refund-policy" style={{ color: 'var(--accent-terracotta)', fontWeight: 600 }}>Returns Policy</Link>:
       </p>
       <ul>
-        <li>Because raw organic ingredients and stone-milling labor are immediately committed upon payment confirmation, <strong>orders cannot be cancelled, amended, or recalled once placed</strong>.</li>
+        <li>Because raw organic ingredients and milling labor are immediately committed upon payment confirmation, <strong>orders cannot be cancelled, amended, or recalled once placed</strong>.</li>
         <li>Due to food safety standards and personal hygiene regulations, all products are strictly non-returnable and non-exchangeable once dispatched from our atelier.</li>
         <li>In the event of verified transit damage, broken seals, or missing items reported within 24 hours of delivery with photographic evidence, we will provide a free priority replacement or full refund.</li>
       </ul>

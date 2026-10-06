@@ -15,7 +15,7 @@ export function RefundPolicyContent() {
           <span>Core Policy Notice · Strictly Non-Returnable &amp; Non-Cancellable</span>
         </div>
         <p className={styles.noticeText}>
-          Because every Good Fills creation is freshly roasted, sprouted, and stone-milled only after your order is confirmed, <strong>all orders are final, non-cancellable, and strictly non-returnable</strong> once payment is completed.
+          Because every Good Fills creation is freshly roasted, sprouted, and milled only after your order is confirmed, <strong>all orders are final, non-cancellable, and strictly non-returnable</strong> once payment is completed.
         </p>
       </div>
 
@@ -28,7 +28,7 @@ export function RefundPolicyContent() {
       </p>
       <ul>
         <li>Certified organic grains, pulses, and cold-pressed botanical oils are immediately drawn from farm storage.</li>
-        <li>Traditional culinary processes—such as 24-hour soaking, sprouting, shade-drying, and slow stone-milling—are queued specifically for your batch.</li>
+        <li>Traditional culinary processes—such as 24-hour soaking, sprouting, shade-drying, and fresh milling—are queued specifically for your batch.</li>
         <li>Artisanal labor and kitchen capacity are irreversibly committed.</li>
       </ul>
       <p>

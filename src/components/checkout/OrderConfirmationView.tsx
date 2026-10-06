@@ -160,7 +160,7 @@ export function OrderConfirmationView({ orderId }: OrderConfirmationViewProps) {
                 Express Doorstep Delivery (2–4 Business Days)
               </h4>
               <p className={styles.courierDesc}>
-                Preparation takes 24–48 hours for soaking, sun-drying &amp; fresh stone-milling. The moment your barrier pouch is sealed and dispatched, a consignment tracking SMS with a live link will be dispatched to{' '}
+                Preparation takes 24–48 hours for soaking, sun-drying &amp; fresh milling. The moment your barrier pouch is sealed and dispatched, a consignment tracking SMS with a live link will be dispatched to{' '}
                 <strong>{order ? order.customerPhone : 'your mobile number'}</strong>.
               </p>
             </div>

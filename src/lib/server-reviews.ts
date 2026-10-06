@@ -124,7 +124,7 @@ const INITIAL_REVIEWS: Review[] = [
     productId: 'prod-02',
     productName: 'Ragi Porridge Mix',
     rating: 5,
-    title: 'Finely stone-milled and completely lump-free',
+    title: 'Finely milled and completely lump-free',
     comment: 'Whisks effortlessly into cold water before boiling. Cooks in just 5 minutes into a rich, glossy porridge. My twin toddlers eat this every evening before bed.',
     authorName: 'Kavitha Radhakrishnan',
     location: 'Hyderabad, Telangana',

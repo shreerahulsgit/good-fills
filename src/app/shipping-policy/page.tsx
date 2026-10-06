@@ -13,7 +13,7 @@ export default function ShippingPolicyPage() {
     <PolicyLayout
       activePolicy="shipping"
       title="Shipping &amp; <em>Delivery Policy</em>"
-      subtitle="Freshly roasted, sprouted, and stone-milled in Bengaluru within 24–48 hours. Fast, tracked delivery across India and worldwide."
+      subtitle="Freshly roasted, sprouted, and milled in Bengaluru within 24–48 hours. Fast, tracked delivery across India and worldwide."
       lastUpdated="October 2026"
     >
       <ShippingPolicyContent />

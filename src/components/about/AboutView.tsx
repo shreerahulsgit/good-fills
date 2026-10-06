@@ -72,13 +72,13 @@ const RITUALS: RitualItem[] = [
   {
     id: 'ritual-04',
     step: 'STEP 04',
-    tabLabel: '04 Roasting & Stone Milling',
+    tabLabel: '04 Roasting & Milling',
     ghostNum: '04',
-    title: 'Slow Iron Roasting & Cool Stone Grinding',
+    title: 'Slow Iron Roasting & Gentle Milling',
     description:
-      'We slow-roast each batch in heavy iron pans on a gentle flame until fragrant, then grind them on traditional stone mills (chakki). Stone grinding stays cool, keeping all the natural fiber, healthy oils, and nutrients completely safe.',
+      'We slow-roast each batch in heavy iron pans on a gentle flame until fragrant, then mill them to a fine, digestible texture. Milling at low temperatures keeps all the natural fiber, healthy oils, and nutrients completely safe.',
     image: '/images/story/ritual-04-roasting-milling.jpg',
-    benefit: 'Cool Stone Ground • Zero Heat Damage',
+    benefit: 'Gently Milled • Zero Heat Damage',
     icon: Flame,
   },
 ];
@@ -258,7 +258,7 @@ export function AboutView() {
               >
                 That simple thought started Good Fills. In our Bengaluru kitchen, we do things the way families always have.
                 We keep zero old stock sitting in warehouses. When you place an order, we wash the grains, sprout the ragi,
-                slow-roast them in small batches, and pack every pouch fresh from the stone mill.
+                slow-roast them in small batches, and pack every pouch fresh after milling.
               </motion.p>
             </div>
 
@@ -272,7 +272,7 @@ export function AboutView() {
             >
               <img
                 src="/images/story/genesis-kitchen.jpg"
-                alt="Traditional Bengaluru kitchen with earthen pots and fresh stone-ground grains"
+                alt="Traditional Bengaluru kitchen with earthen pots and freshly milled grains"
                 className={styles.genesisPhoto}
               />
               <motion.div

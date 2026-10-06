@@ -65,7 +65,7 @@ const KITCHEN_FAQS: FaqItem[] = [
     id: 'faq-3',
     question: 'Can I cancel or modify my order after payment?',
     answer:
-      'Because traditional soaking, sprouting, and stone-milling are queued specifically for your batch shortly after checkout, cancellations are only possible if requested before kitchen preparation begins. Once grinding or dispatch is underway, orders cannot be cancelled.',
+      'Because traditional soaking, sprouting, and milling are queued specifically for your batch shortly after checkout, cancellations are only possible if requested before kitchen preparation begins. Once grinding or dispatch is underway, orders cannot be cancelled.',
   },
   {
     id: 'faq-4',
@@ -168,7 +168,7 @@ export function ContactView() {
               Contact the Atelier
             </motion.h1>
             <motion.p variants={itemFadeVariants} className={styles.pageSubtitle}>
-              Direct communication for infant weaning questions, custom stone-milling ratios,
+              Direct communication for infant weaning questions, custom milling ratios,
               freshness timelines, and DTDC parcel assistance.
             </motion.p>
           </div>
@@ -595,7 +595,7 @@ export function ContactView() {
             <div>
               <h4 className={styles.trustTitle}>Milled Fresh to Order</h4>
               <p className={styles.trustText}>
-                Never warehoused or stale. We soak, sprout, and stone-mill after checkout in Bengaluru.
+                Never warehoused or stale. We soak, sprout, and mill fresh after checkout in Bengaluru.
               </p>
             </div>
           </motion.div>

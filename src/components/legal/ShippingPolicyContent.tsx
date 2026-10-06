@@ -53,7 +53,7 @@ export function ShippingPolicyContent() {
             <span>Made-to-Order Dispatch Guarantee · Fresh from Bengaluru</span>
           </div>
           <p className={styles.noticeText}>
-            Good Fills never stores pre-packed food powder in warehouse distribution hubs. Every batch is soaked, sprouted, and stone-milled in Bengaluru within <strong>24 to 48 hours</strong> of order placement, sealed warm for 6-month natural freshness, and dispatched via <strong>DTDC Domestic Express</strong>.
+            Good Fills never stores pre-packed food powder in warehouse distribution hubs. Every batch is soaked, sprouted, and milled in Bengaluru within <strong>24 to 48 hours</strong> of order placement, sealed warm for 6-month natural freshness, and dispatched via <strong>DTDC Domestic Express</strong>.
           </p>
         </div>
 
@@ -66,7 +66,7 @@ export function ShippingPolicyContent() {
             <strong>Order Confirmation &amp; Queueing (Day 0):</strong> Your order is recorded, and high-purity pulses and grains are scheduled for washing and soaking.
           </li>
           <li>
-            <strong>Sprouting, Roasting &amp; Stone-Milling (Day 1):</strong> Grains are germinated to unlock bio-available micronutrients, gently roasted, and slow-milled on traditional granite mills to preserve essential fatty acids and aromatic vitality.
+            <strong>Sprouting, Roasting &amp; Milling (Day 1):</strong> Grains are germinated to unlock bio-available micronutrients, gently roasted, and freshly milled to preserve essential fatty acids and aromatic vitality.
           </li>
           <li>
             <strong>Airtight Barrier Sealing (Day 1–2):</strong> The finished powder or botanical blend is sealed in a multi-layered food-grade foil pouch with zero oxygen exposure.

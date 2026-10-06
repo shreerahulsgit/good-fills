@@ -66,7 +66,7 @@ export function PrivacyPolicyContent() {
         Your data is used strictly for legitimate operational purposes:
       </p>
       <ol>
-        <li>To stone-mill, pack, and prepare your bespoke creations in our Bengaluru kitchen.</li>
+        <li>To mill, pack, and prepare your bespoke creations in our Bengaluru kitchen.</li>
         <li>To print the official shipping manifest and courier label for DTDC Domestic Express.</li>
         <li>To transmit transactional notifications via SMS and WhatsApp (order confirmation, dispatch alerts, and DTDC AWB tracking updates).</li>
         <li>To provide customer support and address any inquiries submitted via our Concierge desk.</li>

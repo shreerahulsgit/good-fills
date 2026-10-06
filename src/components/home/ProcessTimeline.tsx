@@ -28,7 +28,7 @@ const STEPS: StepItem[] = [
   {
     step: '02',
     navLabel: 'Small-Batch Prep',
-    title: 'Sprouted, Roasted & Stone-Ground',
+    title: 'Sprouted, Roasted & Milled',
     description:
       'Grains and botanicals are hand-sorted, sprouted over 48 hours, sun-dried, and slow-roasted in traditional iron kadhais to preserve volatile natural oils and vital nutrients. Freshly crafted in small batches with strictly zero artificial preservatives or synthetic additives.',
     metric: '12–24h',

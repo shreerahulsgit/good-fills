@@ -266,7 +266,7 @@ export function buildTrackingTelemetry(order: Order, forcedStage?: number): Trac
       : activeStage === 3
       ? 'In Transit with DTDC'
       : activeStage === 2
-      ? 'Stone-Milled & Packed'
+      ? 'Freshly Milled & Packed'
       : 'Order Confirmed & Preparing';
 
   const estimatedDeliveryWindow = currentDeliveryStage;

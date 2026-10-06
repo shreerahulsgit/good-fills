@@ -5,7 +5,7 @@ import { TrackView } from '@/components/track/TrackView';
 export const metadata: Metadata = {
   title: 'Live Order Tracking • Good Fills Express Delivery',
   description:
-    'Track your freshly stone-milled sprouted porridge and organic flour consignments in real time. Kitchen preparation milestones and live tracking updates.',
+    'Track your freshly milled sprouted porridge and organic flour consignments in real time. Kitchen preparation milestones and live tracking updates.',
 };
 
 export default function TrackOrderPage() {

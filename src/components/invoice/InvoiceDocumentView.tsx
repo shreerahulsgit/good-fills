@@ -316,39 +316,71 @@ export function InvoiceDocumentView({ orderId, initialOrder }: InvoiceDocumentVi
             </div>
           </div>
 
-          {/* Authorized Signature Block */}
-          <div className={styles.signatureCol}>
-            <div className={styles.signatureWrap}>
+          {/* Official Good Fills Atelier Stamp */}
+          <div className={styles.stampCol}>
+            <div className={styles.stampWrap}>
               <svg
-                viewBox="0 0 240 60"
-                className={styles.signatureSvg}
-                fill="none"
+                viewBox="0 0 140 140"
+                className={styles.stampSvg}
                 xmlns="http://www.w3.org/2000/svg"
+                role="img"
+                aria-label="Good Fills Official Atelier Stamp"
               >
-                <path
-                  d="M15 45 C 35 15, 60 10, 85 30 C 110 50, 130 15, 160 25 C 185 32, 210 20, 230 18"
-                  stroke="#97411d"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M40 38 C 75 35, 120 40, 195 28"
-                  stroke="#97411d"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M70 20 C 72 38, 75 48, 76 52"
-                  stroke="#97411d"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
+                <defs>
+                  <path id="gfStampTopArc" d="M 18 70 A 52 52 0 0 1 122 70" fill="none" />
+                  <path id="gfStampBotArc" d="M 18 70 A 52 52 0 0 0 122 70" fill="none" />
+                </defs>
+
+                {/* Outer Heavy Seal Ring */}
+                <circle cx="70" cy="70" r="64" stroke="#97411d" strokeWidth="2.4" fill="none" />
+
+                {/* Middle Dotted Ring */}
+                <circle cx="70" cy="70" r="59" stroke="#97411d" strokeWidth="1.2" strokeDasharray="3.5 2.5" fill="none" />
+
+                {/* Inner Solid Ring */}
+                <circle cx="70" cy="70" r="41" stroke="#97411d" strokeWidth="1.4" fill="none" />
+
+                {/* Top Curved Text: GOOD FILLS HOMEMADE */}
+                <text
+                  fontFamily="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif"
+                  fontSize="8"
+                  fontWeight="800"
+                  fill="#97411d"
+                  letterSpacing="1.4"
+                  textAnchor="middle"
+                >
+                  <textPath href="#gfStampTopArc" startOffset="50%">
+                    GOOD FILLS HOMEMADE
+                  </textPath>
+                </text>
+
+                {/* Bottom Curved Text: BENGALURU • KARNATAKA */}
+                <text
+                  fontFamily="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif"
+                  fontSize="7"
+                  fontWeight="800"
+                  fill="#97411d"
+                  letterSpacing="1.1"
+                  textAnchor="middle"
+                >
+                  <textPath href="#gfStampBotArc" startOffset="50%">
+                    ★ BENGALURU • KARNATAKA ★
+                  </textPath>
+                </text>
+
+                {/* Center Badge Details */}
+                <g textAnchor="middle" fontFamily="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" fill="#97411d">
+                  <path d="M70 47 L71.5 50.5 L75 51 L72.5 53.5 L73 57 L70 55 L67 57 L67.5 53.5 L65 51 L68.5 50.5 Z" fill="#97411d" />
+                  <line x1="43" y1="59" x2="97" y2="59" stroke="#97411d" strokeWidth="1" />
+                  <text x="70" y="69" fontSize="9" fontWeight="900" letterSpacing="1.2">OFFICIAL</text>
+                  <text x="70" y="80" fontSize="8" fontWeight="800" letterSpacing="1">STAMP</text>
+                  <line x1="43" y1="84" x2="97" y2="84" stroke="#97411d" strokeWidth="1" />
+                  <text x="70" y="93" fontSize="6.5" fontWeight="700" letterSpacing="0.8">ATELIER SEAL</text>
+                </g>
               </svg>
             </div>
-            <div className={styles.signatureLine}></div>
-            <div className={styles.signatoryName}>{ATELIER_INFO.founderName}</div>
-            <div className={styles.signatoryTitle}>Authorized Signatory • {ATELIER_INFO.brandName}</div>
+            <div className={styles.stampLabel}>Official Atelier Stamp</div>
+            <div className={styles.stampEntity}>{ATELIER_INFO.brandName} • Bengaluru</div>
           </div>
         </div>
       </div>

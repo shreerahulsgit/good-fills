@@ -311,7 +311,7 @@ export function buildTrackingTelemetry(order: Order, forcedStage?: number): Trac
       imagePrimary:
         matchedProduct?.images?.primary ||
         it.product?.images?.primary ||
-        'https://res.cloudinary.com/dqqrrgdwd/image/upload/v1791332817/kids-nutrition-powder_ya030n.png',
+        'https://res.cloudinary.com/dqqrrgdwd/image/upload/v1791342152/kids-nutrition-powder_viuweb.png',
       productWeightGrams: it.product?.productWeightGrams || matchedProduct?.productWeightGrams || 250,
     };
   });

@@ -22,6 +22,8 @@ import {
   Check,
   CheckCircle2,
   Building2,
+  Zap,
+  MessageCircle,
 } from 'lucide-react';
 import { PRODUCTS, CATEGORIES } from '@/data/products';
 import { useCart } from '@/lib/cart-context';
@@ -30,7 +32,8 @@ import { formatCurrency } from '@/lib/shipping';
 import { saveOrder } from '@/lib/orders';
 import { loadRazorpayScript } from '@/lib/loadRazorpayScript';
 import { ShippingAddress } from '@/types';
-import { MapplsAddressSearch } from './MapplsAddressSearch';
+import { OlaAddressSearch } from './OlaAddressSearch';
+import { GooglePayLogo, PhonePeLogo, PaytmLogo, UpiLogo, NetBankingLogo } from './PaymentMethodLogos';
 import styles from './CheckoutView.module.css';
 
 const INDIAN_STATES = [
@@ -75,6 +78,7 @@ export function CheckoutView() {
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
   const [saveAddressToAccount, setSaveAddressToAccount] = useState<boolean>(true);
   const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
+  const [deliveryMethod, setDeliveryMethod] = useState<'standard' | 'porter'>('standard');
   const [isAddProductsOpen, setIsAddProductsOpen] = useState(false);
   const [quickAddCategory, setQuickAddCategory] = useState<string>('all');
   const [addedNoticeId, setAddedNoticeId] = useState<string | null>(null);
@@ -247,6 +251,48 @@ export function CheckoutView() {
     }
 
     msg += `Please share the international shipping quote and payment link. Thank you!`;
+    return `https://wa.me/91${atelierPhone}?text=${encodeURIComponent(msg)}`;
+  };
+
+  // Strictly check if PIN code is a Bengaluru PIN (Bengaluru postal codes start with 560)
+  const isBengaluruPincode = formData.pincode.replace(/\D/g, '').startsWith('560');
+
+  // If PIN changes away from 560, automatically revert to standard delivery
+  useEffect(() => {
+    if (!isBengaluruPincode && deliveryMethod === 'porter') {
+      setDeliveryMethod('standard');
+    }
+  }, [isBengaluruPincode, deliveryMethod]);
+
+  const getSameDayPorterWhatsAppUrl = () => {
+    let msg = `Hello Good Fills! 🌿\n\nI would like to request *Same-Day Instant Delivery via Porter / Uber* in Bengaluru.\n\n`;
+
+    const fullAddr = [
+      formData.addressLine1.trim(),
+      formData.addressLine2?.trim(),
+      formData.city.trim(),
+      formData.pincode.trim() ? `PIN: ${formData.pincode.trim()}` : '',
+    ].filter(Boolean).join(', ');
+
+    if (formData.fullName.trim() || formData.phone.trim() || fullAddr) {
+      msg += `📍 *Delivery Destination:*\n`;
+      if (formData.fullName.trim()) msg += `• Recipient: ${formData.fullName.trim()}\n`;
+      if (formData.phone.trim()) msg += `• Phone: +91 ${formData.phone.trim()}\n`;
+      if (fullAddr) msg += `• Address: ${fullAddr}\n`;
+      msg += `\n`;
+    }
+
+    if (items.length > 0) {
+      msg += `📦 *Order Items:*\n`;
+      items.forEach((item) => {
+        msg += `• ${item.quantity}x ${item.product.name} (${item.product.packSize || ''}) - ₹${item.product.price * item.quantity}\n`;
+      });
+      msg += `\n⚖️ Total Weight: ~${totalWeightGrams}g\n`;
+      msg += `💰 Products Total: ₹${subtotal}\n\n`;
+    }
+
+    msg += `⚡ *Same-Day Delivery Notice:* I understand that Porter / Uber delivery charges apply & vary based on live distance from your Indiranagar kitchen. Please confirm the delivery fare and dispatch availability. Thank you!`;
+
     return `https://wa.me/91${atelierPhone}?text=${encodeURIComponent(msg)}`;
   };
 
@@ -798,9 +844,9 @@ export function CheckoutView() {
                   {errors.email && <span className={styles.errorText}>{errors.email}</span>}
                 </div>
 
-                {/* Mappls Doorstep & Apartment Address Search */}
+                {/* Ola Maps Doorstep & Apartment Address Search */}
                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-                  <MapplsAddressSearch
+                  <OlaAddressSearch
                     onSelectAddress={(place) => {
                       setFormData((prev) => ({
                         ...prev,
@@ -1023,27 +1069,115 @@ export function CheckoutView() {
                     <span className={styles.stepBadge}>STEP 02 OF 03</span>
                     <span className={styles.stepTagLine} />
                   </div>
-                  <h2 className={styles.sectionTitle}>Tracked Express Courier</h2>
+                  <h2 className={styles.sectionTitle}>Select Delivery Method</h2>
                   <p className={styles.sectionSubtitle}>
-                    Calculated strictly by net product weight ({totalWeightGrams}g)
+                    Choose between standard tracked courier or same-day instant delivery in Bengaluru
                   </p>
                 </div>
 
-                <div className={styles.deliveryOptionCard}>
-                  <div className={styles.deliveryIconBox}>
-                    <Truck size={20} strokeWidth={2} />
-                  </div>
-                  <div className={styles.deliveryMeta}>
-                    <div className={styles.deliveryHeaderRow}>
-                      <h3 className={styles.deliveryTitle}>Express Doorstep Delivery</h3>
-                      <span className={styles.deliveryBadge}>
-                        {formatCurrency(shipping.shippingCost)}
-                      </span>
+                {/* Delivery Methods Selection List */}
+                <div className={styles.deliveryMethodsList}>
+                  {/* Button / Option 1: Standard Tracked Courier (Primary / Standard) */}
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setDeliveryMethod('standard')}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') setDeliveryMethod('standard');
+                    }}
+                    className={`${styles.deliveryOptionCard} ${styles.deliverySelectableCard} ${styles.standardOptionCard} ${deliveryMethod === 'standard' ? styles.standardOptionCardActive : ''}`}
+                  >
+                    <div className={styles.deliveryRadioWrap}>
+                      <input
+                        type="radio"
+                        id="delivery-standard"
+                        name="deliveryMethod"
+                        checked={deliveryMethod === 'standard'}
+                        onChange={() => setDeliveryMethod('standard')}
+                        className={styles.deliveryRadioInput}
+                      />
                     </div>
-                    <p className={styles.deliveryDesc}>
-                      Estimated delivery in <strong>2–4 business days</strong> following fresh kitchen preparation. Consignment tracking SMS sent directly to your phone upon courier dispatch.
-                    </p>
+                    <div className={styles.deliveryIconBox}>
+                      <Truck size={20} strokeWidth={2} />
+                    </div>
+                    <div className={styles.deliveryMeta}>
+                      <div className={styles.deliveryHeaderRow}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <h3 className={styles.deliveryTitle}>Standard Doorstep Courier</h3>
+                          <span className={styles.primaryPill}>Standard Delivery</span>
+                        </div>
+                        <span className={styles.deliveryBadge}>
+                          {formatCurrency(shipping.shippingCost)}
+                        </span>
+                      </div>
+                      <p className={styles.deliveryDesc}>
+                        Delivered in <strong>2–4 business days</strong> following fresh kitchen preparation. Calculated strictly by net package weight ({totalWeightGrams}g). Consignment tracking SMS sent upon courier dispatch.
+                      </p>
+                    </div>
                   </div>
+
+                  {/* Button / Option 2: Same-Day Delivery via Porter / Uber (ONLY VISIBLE FOR BENGALURU PIN CODES STARTING WITH 560) */}
+                  {isBengaluruPincode && (
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setDeliveryMethod('porter')}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') setDeliveryMethod('porter');
+                      }}
+                      className={`${styles.deliveryOptionCard} ${styles.deliverySelectableCard} ${styles.porterOptionCard} ${deliveryMethod === 'porter' ? styles.deliveryOptionCardActive : ''}`}
+                    >
+                      <div className={styles.deliveryRadioWrap}>
+                        <input
+                          type="radio"
+                          id="delivery-porter"
+                          name="deliveryMethod"
+                          checked={deliveryMethod === 'porter'}
+                          onChange={() => setDeliveryMethod('porter')}
+                          className={styles.deliveryRadioInput}
+                        />
+                      </div>
+                      <div className={`${styles.deliveryIconBox} ${styles.porterIconBox}`}>
+                        <Zap size={18} strokeWidth={2} />
+                      </div>
+                      <div className={styles.deliveryMeta}>
+                        <div className={styles.deliveryHeaderRow}>
+                          <div className={styles.porterTitleWrap}>
+                            <h3 className={styles.deliveryTitle} style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                              Alternative: Same-Day Delivery (Porter / Uber)
+                            </h3>
+                            <span className={styles.sameDayPill}>
+                              Bengaluru PIN 560xxx
+                            </span>
+                          </div>
+                          <span className={`${styles.deliveryBadge} ${styles.porterBadge}`}>
+                            Charges Apply &amp; Vary
+                          </span>
+                        </div>
+                        <p className={styles.deliveryDesc}>
+                          Need it urgently today? Dispatched directly from our Indiranagar kitchen. <strong>Delivery charges apply &amp; vary based on your live distance</strong> via Porter or Uber (paid directly to the driver).
+                        </p>
+
+                        {/* WhatsApp Instant Inquiry CTA (Discreet secondary outline link) */}
+                        <div className={styles.porterCtaSection}>
+                          <div className={styles.porterFareNotice}>
+                            <span>ℹ️ Delivery fare varies by distance from our kitchen and is confirmed on WhatsApp / paid directly to courier.</span>
+                          </div>
+                          <a
+                            href={getSameDayPorterWhatsAppUrl()}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.porterWhatsAppBtn}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MessageCircle size={14} />
+                            <span>Request Same-Day on WhatsApp</span>
+                            <ExternalLink size={11} />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Step 2 Action Buttons */}
@@ -1121,10 +1255,16 @@ export function CheckoutView() {
                   <div className={styles.recapInfo}>
                     <div className={styles.recapHeader}>
                       <span className={styles.recapLabel}>Shipping Courier</span>
-                      <span className={styles.recapName}>Express Doorstep Courier</span>
+                      <span className={styles.recapName}>
+                        {deliveryMethod === 'porter'
+                          ? 'Same-Day Instant Delivery (Porter / Uber)'
+                          : 'Express Doorstep Courier'}
+                      </span>
                     </div>
                     <p className={styles.recapText}>
-                      {totalWeightGrams}g package weight • {formatCurrency(shipping.shippingCost)} • Estimated delivery in 2–4 business days
+                      {deliveryMethod === 'porter'
+                        ? 'Dispatched today from Indiranagar kitchen • Delivery fee paid on WhatsApp / at actuals'
+                        : `${totalWeightGrams}g package weight • ${formatCurrency(shipping.shippingCost)} • Estimated delivery in 2–4 business days`}
                     </p>
                   </div>
                 </div>
@@ -1156,13 +1296,9 @@ export function CheckoutView() {
               <div className={styles.upiGatewayCard}>
                 <div className={styles.upiHeaderRow}>
                   <div className={styles.upiTitleGroup}>
-                    <span className={styles.upiMethodPill}>UPI 2.0</span>
+                    <span className={styles.upiMethodPill}>UPI</span>
                     <span className={styles.upiMethodPill} style={{ marginLeft: 6 }}>Net Banking</span>
                     <h3 className={styles.upiTitle}>Instant Payment Gateway</h3>
-                  </div>
-                  <div className={styles.upiSecureBadge}>
-                    <ShieldCheck size={13} />
-                    <span>256-Bit SSL Encrypted</span>
                   </div>
                 </div>
 
@@ -1173,23 +1309,23 @@ export function CheckoutView() {
 
                   <div className={styles.upiRailsList}>
                     <span className={styles.upiRailItem}>
-                      <Smartphone size={13} style={{ color: 'var(--accent-terracotta)' }} />
+                      <span className={styles.upiRailLogo}><GooglePayLogo size={18} /></span>
                       Google Pay
                     </span>
                     <span className={styles.upiRailItem}>
-                      <Smartphone size={13} style={{ color: 'var(--accent-terracotta)' }} />
+                      <span className={styles.upiRailLogo}><PhonePeLogo size={18} /></span>
                       PhonePe
                     </span>
                     <span className={styles.upiRailItem}>
-                      <Smartphone size={13} style={{ color: 'var(--accent-terracotta)' }} />
+                      <span className={styles.upiRailLogo}><PaytmLogo size={14} /></span>
                       Paytm
                     </span>
                     <span className={styles.upiRailItem}>
-                      <Smartphone size={13} style={{ color: 'var(--accent-terracotta)' }} />
+                      <span className={styles.upiRailLogo}><UpiLogo size={16} /></span>
                       Any UPI QR / App
                     </span>
                     <span className={styles.upiRailItem}>
-                      <Building2 size={13} style={{ color: 'var(--accent-terracotta)' }} />
+                      <span className={styles.upiRailLogo}><NetBankingLogo size={16} /></span>
                       Net Banking (All Indian Banks)
                     </span>
                   </div>
@@ -1356,13 +1492,21 @@ export function CheckoutView() {
 
                 <div className={styles.costRow}>
                   <div>
-                    <span>Express Domestic Courier</span>
+                    <span>
+                      {deliveryMethod === 'porter'
+                        ? 'Express Same-Day (Porter / Uber)'
+                        : 'Express Domestic Courier'}
+                    </span>
                     <span className={styles.shippingSlabNote}>
-                      {totalWeightGrams}g net ({shipping.slabDescription})
+                      {deliveryMethod === 'porter'
+                        ? 'Delivery fee paid on WhatsApp / at actuals'
+                        : `${totalWeightGrams}g net (${shipping.slabDescription})`}
                     </span>
                   </div>
                   <strong style={{ color: 'var(--accent-terracotta)' }}>
-                    {formatCurrency(shipping.shippingCost)}
+                    {deliveryMethod === 'porter'
+                      ? 'Actuals'
+                      : formatCurrency(shipping.shippingCost)}
                   </strong>
                 </div>
 

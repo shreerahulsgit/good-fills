@@ -32,6 +32,7 @@ import { saveOrder } from '@/lib/orders';
 import { loadRazorpayScript } from '@/lib/loadRazorpayScript';
 import { ShippingAddress } from '@/types';
 import { LocationDetector } from './LocationDetector';
+import { MapplsAddressSearch } from './MapplsAddressSearch';
 import styles from './CheckoutView.module.css';
 
 const INDIAN_STATES = [
@@ -857,6 +858,35 @@ export function CheckoutView() {
                     Order confirmation &amp; digital invoice sent here.
                   </span>
                   {errors.email && <span className={styles.errorText}>{errors.email}</span>}
+                </div>
+
+                {/* Mappls Doorstep & Apartment Address Search */}
+                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                  <MapplsAddressSearch
+                    onSelectAddress={(place) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        addressLine1: place.addressLine1 || prev.addressLine1,
+                        addressLine2: place.addressLine2 || prev.addressLine2,
+                        city: place.city || prev.city,
+                        state: place.state || prev.state,
+                        pincode: place.pincode || prev.pincode,
+                      }));
+
+                      if (place.pincode && place.pincode.replace(/\D/g, '').length === 6) {
+                        lookupPincode(place.pincode);
+                      }
+
+                      setErrors((prev) => {
+                        const next = { ...prev };
+                        if (place.city) delete next.city;
+                        if (place.state) delete next.state;
+                        if (place.pincode) delete next.pincode;
+                        if (place.addressLine1) delete next.addressLine1;
+                        return next;
+                      });
+                    }}
+                  />
                 </div>
 
                 {/* 1-Click Current Location GPS Detector */}

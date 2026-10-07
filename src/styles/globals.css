@@ -3181,6 +3181,43 @@ button {
   }
 }
 
+/* ========================================================
+   MAPPLS SEARCH WIDGET AESTHETIC OVERRIDES
+   ======================================================== */
+.mmi_s_ul {
+  border-radius: 12px !important;
+  border: 1.5px solid var(--border-color, #e4ded7) !important;
+  box-shadow: 0 12px 28px -4px rgba(45, 38, 33, 0.12), 0 6px 12px -4px rgba(45, 38, 33, 0.08) !important;
+  overflow: hidden !important;
+  font-family: inherit !important;
+  background: var(--bg-card, #ffffff) !important;
+  z-index: 9999 !important;
+  margin-top: 4px !important;
+}
+
+.mmi_s_li {
+  padding: 10px 14px !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+  font-size: 0.9rem !important;
+  color: var(--text-primary, #2d2621) !important;
+  transition: background-color 0.15s ease !important;
+  cursor: pointer !important;
+}
+
+.mmi_s_li:hover,
+.mmi_s_li.active {
+  background-color: #fbf8f5 !important;
+  color: var(--accent-terracotta, #b85034) !important;
+}
+
+.mmi_s_pow {
+  font-size: 0.72rem !important;
+  padding: 6px 14px !important;
+  background-color: #faf7f4 !important;
+  border-top: 1px solid #ebe5df !important;
+  color: #887d72 !important;
+}
+
 
 
 

@@ -1179,7 +1179,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
     // Recent 5 orders for Overview widget
     const recentOrders = [...orders]
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, 5);
+      .slice(0, 3);
 
     return {
       totalRevenue,
@@ -1496,17 +1496,13 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
             <div className={styles.sidebarFooterTitle}>Shortcuts</div>
             <Link href="/shop" target="_blank" className={styles.footerLink}>
               <Store size={15} />
-              <span>Live Store ↗</span>
-            </Link>
-            <Link href="/track-order" target="_blank" className={styles.footerLink}>
-              <Eye size={15} />
-              <span>Tracking Portal ↗</span>
+              <span>Open the Store</span>
             </Link>
             <button onClick={handleLogout} className={styles.footerLinkBtn}>
               <LogOut size={15} />
               <span>Lock Console</span>
             </button>
-            <button
+            {/* <button
               type="button"
               onClick={handleResetTestData}
               disabled={isResettingData}
@@ -1516,7 +1512,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
             >
               <Trash2 size={15} />
               <span>{isResettingData ? 'Erasing...' : 'Reset Test Data'}</span>
-            </button>
+            </button>*/}
           </div>
         </div>
       </aside>
@@ -1948,7 +1944,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                   onClick={() => handleTabChange('orders')}
                   className={styles.viewAllOrdersBlockBtn}
                 >
-                  <span>Go to Full Orders Manifest ({orders.length})</span>
+                  <span>Go to Orders Section ({orders.length})</span>
                   <ArrowRight size={13} />
                 </button>
               </div>
@@ -1959,7 +1955,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
               {/* Left: Active Dispatch Queue (STRICTLY PAID ORDERS ONLY) */}
               <div className={styles.topCreationsPanel}>
                 <div className={styles.panelHeaderRow}>
-                  <div className={styles.chartTitle}>Active Dispatch Queue</div>
+                  <div className={styles.chartTitle}>Dispatch Queue</div>
                   <span className={styles.panelBadgeSmall}>
                     {orders.filter((o) => o.paymentStatus === 'Paid' && getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) !== 'Delivered').length} Actionable
                   </span>
@@ -1985,7 +1981,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                       ) : (
                         orders
                           .filter((o) => o.paymentStatus === 'Paid' && getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) !== 'Delivered')
-                          .slice(0, 4)
+                          .slice(0, 3)
                           .map((o) => {
                             const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
                             const next = getNextStatusConfig(u);
@@ -2142,7 +2138,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
 
               <div className={styles.manifestHeaderActions}>
                 <button type="button" onClick={exportManifestCSV} className={styles.exportBtn}>
-                  <Download size={14} />
+                  <Download size={15} />
                   <span>Export CSV</span>
                 </button>
               </div>
@@ -2266,10 +2262,9 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                         <th>Customer &amp; City</th>
                         <th>Items &amp; Weight</th>
                         <th style={{ minWidth: '125px' }}>Amount</th>
-                        <th>Live Status</th>
-                        <th style={{ minWidth: '170px' }}>1-Click Next Action</th>
+                        <th>Order Status</th>
                         <th style={{ minWidth: '140px' }}>Consignment / AWB</th>
-                        <th style={{ textAlign: 'right' }}>Actions</th>
+                        <th style={{ textAlign: 'left' }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2345,12 +2340,10 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                                   {o.paymentStatus === 'Paid' ? (
                                     <span className={styles.paymentBadgePaid}>
                                       <span>Paid</span>
-                                      <span className={styles.paidCheckIcon}>✓</span>
                                     </span>
                                   ) : (
                                     <span className={styles.paymentBadgeUnpaid}>
                                       <span>Unpaid</span>
-                                      <span>⚠️</span>
                                     </span>
                                   )}
                                 </div>
@@ -2429,50 +2422,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                             </td>
 
                             <td>
-                              {nextConfig ? (
-                                <motion.button
-                                  type="button"
-                                  onClick={() => handleQuickAdvance(o.id, nextConfig.nextStatus)}
-                                  disabled={edit.isSaving}
-                                  className={`${styles.oneClickNextBtn} ${
-                                    nextConfig.colorScheme === 'amber'
-                                      ? styles.nextBtnAmber
-                                      : nextConfig.colorScheme === 'blue'
-                                      ? styles.nextBtnBlue
-                                      : nextConfig.colorScheme === 'green'
-                                      ? styles.nextBtnGreen
-                                      : styles.nextBtnGray
-                                  }`}
-                                  whileHover={{ scale: 1.02 }}
-                                  whileTap={{ scale: 0.96 }}
-                                >
-                                  {edit.isSaving ? (
-                                    <span className={styles.savingSpinnerMini} />
-                                  ) : (
-                                    <>
-                                      <span>{nextConfig.label}</span>
-                                      <ArrowRight size={12} />
-                                    </>
-                                  )}
-                                </motion.button>
-                              ) : uStatus === 'Payment Pending' ? (
-                                <span className={styles.paymentBadgeUnpaid} style={{ padding: '4px 8px', fontSize: '0.72rem' }}>
-                                  <AlertCircle size={12} />
-                                  <span>Unpaid • Awaiting</span>
-                                </span>
-                              ) : uStatus === 'Cancelled' ? (
-                                <span className={styles.paymentBadgeUnpaid} style={{ padding: '4px 8px', fontSize: '0.72rem' }}>
-                                  <span>Cancelled / Failed</span>
-                                </span>
-                              ) : (
-                                <span className={styles.fulfilledCompleteBadge}>
-                                  <CheckCircle2 size={13} />
-                                  <span>Fulfilled</span>
-                                </span>
-                              )}
-                            </td>
-
-                            <td>
                               <div className={styles.tableAwbWrap}>
                                 <input
                                   type="text"
@@ -2503,7 +2452,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                                 >
                                   {edit.justSaved ? (
                                     <>
-                                      <Check size={11} />
                                       <span>Saved</span>
                                     </>
                                   ) : edit.isSaving ? (
@@ -2515,7 +2463,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                               </div>
                             </td>
 
-                            <td style={{ textAlign: 'right' }}>
+                            <td style={{ textAlign: 'left' }}>
                               <div className={styles.tableActionsRow}>
                                 <Link
                                   href={`/invoice/${o.id}`}
@@ -2681,7 +2629,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                               </motion.button>
                             ) : uStatus === 'Payment Pending' ? (
                               <div className={styles.unpaidAlertBadgeMobile}>
-                                <AlertCircle size={14} />
                                 <span>Awaiting Payment — Do Not Pack</span>
                               </div>
                             ) : uStatus === 'Cancelled' ? (
@@ -2690,7 +2637,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                               </div>
                             ) : (
                               <div className={styles.fulfilledCompleteBadgeMobile}>
-                                <CheckCircle2 size={15} />
                                 <span>Order Delivered &amp; Closed</span>
                               </div>
                             )}
@@ -2820,12 +2766,17 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                   className={styles.exportBtn}
                   title="Reload inquiries"
                 >
-                  <span>{isLoadingInquiries ? 'Refreshing...' : 'Refresh ↻'}</span>
+                  <RefreshCw size={14} className={isLoadingInquiries ? styles.spin : ''} />
+                  <span>{isLoadingInquiries ? 'Refreshing...' : 'Refresh'}</span>
                 </button>
-                <Link href="/contact-us" target="_blank" className={styles.exportBtn}>
-                  <ExternalLink size={13} />
-                  <span>Open Contact Page ↗</span>
-                </Link>
+                <button
+                  type="button"
+                  onClick={() => window.open('/contact-us', '_blank', 'noopener,noreferrer')}
+                  className={styles.addCreationBtn}
+                >
+                  <ExternalLink size={14} />
+                  <span>Contact Page</span>
+                </button>
               </div>
             </div>
 
@@ -2935,6 +2886,38 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
             ==================================================================== */}
         {activeSidebarTab === 'products' && (
           <div className={styles.creationsContainer}>
+            {/* Products Header */}
+            <header className={styles.manifestHeaderStrip}>
+              <div>
+                <h1 className={styles.overviewTitle}>Products &amp; Creations</h1>
+                <p className={styles.overviewDateText}>
+                  {products.length} creations in catalog • Manage storefront availability and featured products
+                </p>
+              </div>
+
+              <div className={styles.manifestHeaderActions}>
+                <button
+                  type="button"
+                  onClick={() => fetchProducts()}
+                  disabled={isLoadingProducts}
+                  className={styles.refreshCreationBtn}
+                  title="Force refresh catalog from server"
+                >
+                  <RefreshCw size={13} className={isLoadingProducts ? styles.spinningIcon : ''} />
+                  <span>{isLoadingProducts ? 'Refreshing...' : 'Refresh'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleOpenCreateProduct}
+                  className={styles.addCreationBtn}
+                >
+                  <Plus size={15} />
+                  <span>Add Creation</span>
+                </button>
+              </div>
+            </header>
+
             {/* Top Stats Strip */}
             <div className={styles.creationsStatsRow}>
               <div className={styles.creationStatCard}>
@@ -3043,27 +3026,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                 </button>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => fetchProducts()}
-                  disabled={isLoadingProducts}
-                  className={styles.refreshCreationBtn}
-                  title="Force refresh catalog from server"
-                >
-                  <RefreshCw size={13} className={isLoadingProducts ? styles.spinningIcon : ''} />
-                  <span>{isLoadingProducts ? 'Refreshing...' : 'Refresh'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleOpenCreateProduct}
-                  className={styles.addCreationBtn}
-                >
-                  <Plus size={15} />
-                  <span>Add Creation</span>
-                </button>
-              </div>
             </div>
 
             {/* Loading / Empty States */}

@@ -258,23 +258,16 @@ export function AdminReviewsModerationView({ showToast, onNavigateToOrder }: Adm
 
   return (
     <div className={styles.container}>
-      {/* 1. Header Banner */}
-      <header className={styles.headerBanner}>
-        <div className={styles.headerLeft}>
-          <div className={styles.eyebrowRow}>
-            <span className={styles.eyebrow}>Good Fills Community Voice</span>
-            <span className={styles.countBadge}>
-              <CheckCircle2 size={12} />
-              <span>{reviews.length} Total Reviews</span>
-            </span>
-          </div>
-          <h1 className={styles.title}>Customer Reviews &amp; Testimonials Console</h1>
-          <p className={styles.subtitle}>
-            Read and moderate all customer reviews, highlight top testimonials for the store, post founder replies, and verify delivered order references.
+      {/* 1. Header */}
+      <header className={styles.manifestHeaderStrip}>
+        <div>
+          <h1 className={styles.overviewTitle}>Customer Reviews &amp; Testimonials</h1>
+          <p className={styles.overviewDateText}>
+            {reviews.length} reviews recorded • Community feedback &amp; moderation
           </p>
         </div>
 
-        <div className={styles.headerActions}>
+        <div className={styles.manifestHeaderActions}>
           <button
             type="button"
             onClick={() => loadReviews(true)}

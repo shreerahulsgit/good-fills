@@ -340,35 +340,24 @@ export function AdminKitchenManifestView({
 
   return (
     <div className={styles.container}>
-      {/* 1. Header Banner */}
-      <header className={styles.headerBanner}>
-        <div className={styles.headerLeft}>
-          <div className={styles.eyebrowRow}>
-            <span className={styles.eyebrow}>Good Fills Kitchen Console</span>
-            <span className={styles.liveBadge}>
-              <span className={styles.liveDot} />
-              <span>Live Batch Production</span>
-            </span>
-            {totalCompletedOrders > 0 && (
-              <span className={styles.completedStatsBadge} title="Orders already prepared, shipped, or delivered">
-                ✓ {totalCompletedOrders} Dispatched &amp; Delivered
-              </span>
-            )}
-          </div>
-          <h1 className={styles.title}>Daily Kitchen Prep Manifest</h1>
-          <p className={styles.subtitle}>
-            Aggregated batch production sheet. Displays total kilograms to roast and mill across pending orders. Delivered and dispatched orders are automatically marked finished and cleared from active prep.
+      {/* 1. Header */}
+      <header className={styles.manifestHeaderStrip}>
+        <div>
+          <h1 className={styles.overviewTitle}>Daily Kitchen Prep Manifest</h1>
+          <p className={styles.overviewDateText}>
+            {todayFormatted}
+            {totalCompletedOrders > 0 ? ` • ${totalCompletedOrders} dispatched or delivered` : ''}
           </p>
         </div>
 
-        <div className={styles.headerActions}>
+        <div className={styles.manifestHeaderActions}>
           <button
             type="button"
             onClick={() => window.print()}
             className={styles.printBtn}
             title="Print clean A4 prep sheet for the kitchen clipboard"
           >
-            <Printer size={15} />
+            <Printer size={14} />
             <span>Print Batch Sheet</span>
           </button>
 
@@ -380,8 +369,8 @@ export function AdminKitchenManifestView({
               className={styles.advanceAllBtn}
               title="Mark all confirmed orders in this list as packed and ready for dispatch"
             >
-              <CheckCircle2 size={15} />
-              <span>{isAdvancingAll ? 'Updating Orders...' : 'Mark All as Packed ✓'}</span>
+              <CheckCircle2 size={14} />
+              <span>{isAdvancingAll ? 'Updating Orders...' : 'Mark All as Packed'}</span>
             </button>
           )}
         </div>
@@ -488,31 +477,6 @@ export function AdminKitchenManifestView({
             </select>
           </div>
         </div>
-
-        <div className={styles.toolbarRight}>
-          <div className={styles.searchBox}>
-            <Search size={14} color="var(--text-muted)" />
-            <input
-              type="text"
-              placeholder="Search product..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={styles.searchInput}
-            />
-          </div>
-
-          {completedBatchesCount > 0 && (
-            <button
-              type="button"
-              onClick={handleResetAllTicks}
-              className={styles.resetTicksBtn}
-              title="Reset all checkboxes for today"
-            >
-              <RotateCcw size={12} />
-              <span>Reset Ticks</span>
-            </button>
-          )}
-        </div>
       </div>
 
       {/* 4. Production Batches Section (What Product, How Much KG) */}
@@ -560,22 +524,6 @@ export function AdminKitchenManifestView({
                   key={batch.productId}
                   className={`${styles.productBatchCard} ${isPrepared ? styles.productBatchCardDone : ''}`}
                 >
-                  {/* Top Bar: Category & Status */}
-                  <div className={styles.batchCardTopBar}>
-                    <span className={styles.batchCategoryBadge}>
-                      {batch.category.replace('-', ' & ')}
-                    </span>
-                    {isPrepared ? (
-                      <span className={styles.preparedBadge}>
-                        <Check size={12} strokeWidth={3} /> Prepared ✓
-                      </span>
-                    ) : batch.unpackedCount === 0 ? (
-                      <span className={styles.allPackedBadge}>All Orders Packed ✓</span>
-                    ) : (
-                      <span className={styles.pendingBadge}>Needs Prep</span>
-                    )}
-                  </div>
-
                   {/* Main Product Info & Large Weight Callout */}
                   <div className={styles.batchMainRow}>
                     <div className={styles.batchProductIdentity}>
@@ -596,9 +544,6 @@ export function AdminKitchenManifestView({
                     <div className={styles.batchWeightBox}>
                       <span className={styles.batchWeightLabel}>Total to Prepare</span>
                       <span className={styles.batchWeightValue}>{totalKgFormatted}</span>
-                      <span className={styles.batchPacketsCount}>
-                        {batch.totalQuantity} {batch.totalQuantity === 1 ? 'packet' : 'packets'}
-                      </span>
                     </div>
                   </div>
 
@@ -641,7 +586,7 @@ export function AdminKitchenManifestView({
                       {isPrepared ? (
                         <>
                           <CheckSquare size={16} />
-                          <span>Batch Prepared &amp; Ready ✓</span>
+                          <span>Prepared &amp; Ready</span>
                         </>
                       ) : (
                         <>
@@ -661,7 +606,7 @@ export function AdminKitchenManifestView({
                       >
                         <Package size={14} />
                         <span>
-                          {isBatchAdvancing ? 'Updating...' : `Pack ${batch.unpackedCount} Orders ✓`}
+                          {isBatchAdvancing ? 'Updating...' : `Pack ${batch.unpackedCount} Orders`}
                         </span>
                       </button>
                     )}

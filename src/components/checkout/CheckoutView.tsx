@@ -22,6 +22,7 @@ import {
   Check,
   CheckCircle2,
   Building2,
+  Sparkles,
 } from 'lucide-react';
 import { PRODUCTS, CATEGORIES } from '@/data/products';
 import { useCart } from '@/lib/cart-context';
@@ -894,6 +895,14 @@ export function CheckoutView() {
                   />
                 </div>
 
+                {/* Smart PIN Helper Banner */}
+                <div className={styles.pinHelperBanner}>
+                  <Sparkles size={16} style={{ color: 'var(--accent-terracotta)', flexShrink: 0 }} />
+                  <span>
+                    <strong>Fast Auto-Fill:</strong> Enter your <strong>6-digit PIN code</strong> below to automatically detect your <strong>City</strong>, <strong>State</strong>, and <strong>Area</strong>.
+                  </span>
+                </div>
+
                 {/* Street Address */}
                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
                   <label htmlFor="addressLine1" className={styles.inputLabel}>
@@ -914,44 +923,11 @@ export function CheckoutView() {
                   )}
                 </div>
 
-                {/* Address Line 2 */}
-                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-                  <label htmlFor="addressLine2" className={styles.inputLabel}>
-                    Landmark / Locality <span className={styles.inputLabelOptional}>(Optional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="addressLine2"
-                    name="addressLine2"
-                    value={formData.addressLine2 || ''}
-                    onChange={handleInputChange}
-                    placeholder="Near BDA Complex, Indiranagar"
-                    className={styles.textInput}
-                  />
-                </div>
-
-                {/* City */}
-                <div className={styles.inputGroup}>
-                  <label htmlFor="city" className={styles.inputLabel}>
-                    City / Town *
-                  </label>
-                  <input
-                    type="text"
-                    id="city"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    placeholder="e.g. Bengaluru"
-                    className={`${styles.textInput} ${errors.city ? styles.inputError : ''}`}
-                    required
-                  />
-                  {errors.city && <span className={styles.errorText}>{errors.city}</span>}
-                </div>
-
                 {/* PIN Code with Instant India Post Auto-Fill */}
                 <div className={styles.inputGroup}>
                   <label htmlFor="pincode" className={styles.inputLabel}>
                     PIN Code *
+                    <span className={styles.pinAutoDetectBadge}>⚡ Auto-detects City &amp; State</span>
                   </label>
                   <div style={{ position: 'relative' }}>
                     <input
@@ -963,7 +939,7 @@ export function CheckoutView() {
                       maxLength={6}
                       value={formData.pincode}
                       onChange={handleInputChange}
-                      placeholder="6-digit PIN code (e.g. 560038)"
+                      placeholder="Enter 6-digit PIN (e.g. 560038)"
                       className={`${styles.textInput} ${errors.pincode ? styles.inputError : ''}`}
                       required
                     />
@@ -983,6 +959,12 @@ export function CheckoutView() {
                       </span>
                     )}
                   </div>
+
+                  {!formData.pincode && (
+                    <p className={styles.pinUnderInputHint}>
+                      Enter 6 digits to automatically detect City and State.
+                    </p>
+                  )}
 
                   {/* India Post Feedback & Locality Quick-Pick Pills */}
                   {pinStatus === 'success' && pinFeedback && (
@@ -1023,10 +1005,34 @@ export function CheckoutView() {
                   {errors.pincode && <span className={styles.errorText}>{errors.pincode}</span>}
                 </div>
 
+                {/* City */}
+                <div className={styles.inputGroup}>
+                  <label htmlFor="city" className={styles.inputLabel}>
+                    City / Town *
+                    {pinStatus === 'success' && formData.city && (
+                      <span className={styles.autoFilledTag}>✓ Auto-filled</span>
+                    )}
+                  </label>
+                  <input
+                    type="text"
+                    id="city"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Bengaluru"
+                    className={`${styles.textInput} ${errors.city ? styles.inputError : ''}`}
+                    required
+                  />
+                  {errors.city && <span className={styles.errorText}>{errors.city}</span>}
+                </div>
+
                 {/* State */}
                 <div className={styles.inputGroup}>
                   <label htmlFor="state" className={styles.inputLabel}>
                     State / Territory *
+                    {pinStatus === 'success' && formData.state && (
+                      <span className={styles.autoFilledTag}>✓ Auto-filled</span>
+                    )}
                   </label>
                   <select
                     id="state"
@@ -1041,6 +1047,22 @@ export function CheckoutView() {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                {/* Address Line 2 (Landmark / Locality) */}
+                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                  <label htmlFor="addressLine2" className={styles.inputLabel}>
+                    Landmark / Locality <span className={styles.inputLabelOptional}>(Optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="addressLine2"
+                    name="addressLine2"
+                    value={formData.addressLine2 || ''}
+                    onChange={handleInputChange}
+                    placeholder="Near BDA Complex, 2nd Main"
+                    className={styles.textInput}
+                  />
                 </div>
 
                 {/* Country */}

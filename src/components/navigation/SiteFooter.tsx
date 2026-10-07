@@ -28,8 +28,7 @@ export function SiteFooter() {
     pathname?.startsWith('/terms-of-service') ||
     pathname?.startsWith('/terms') ||
     pathname?.startsWith('/shipping-policy') ||
-    pathname?.startsWith('/refund-policy') ||
-    pathname?.startsWith('/cancellation-policy')
+    pathname?.startsWith('/refund-policy')
   );
 
   return (
@@ -226,7 +225,7 @@ export function SiteFooter() {
                     </li>
                     <li>
                       <Link href="/shipping-policy#international" className="footer-nav-link">
-                        Worldwide Delivery
+                        Ship International
                       </Link>
                     </li>
                   </ul>
@@ -266,11 +265,6 @@ export function SiteFooter() {
                     <li>
                       <Link href="/refund-policy" className="footer-nav-link">
                         Returns &amp; Replacements
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/cancellation-policy" className="footer-nav-link">
-                        Cancellation Policy
                       </Link>
                     </li>
                     <li>

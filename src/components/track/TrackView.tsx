@@ -95,28 +95,6 @@ export function TrackView() {
 
   return (
     <main className={styles.trackContainer}>
-      {/* 1. TOP LOGISTICS STATUS BAR */}
-      <motion.div 
-        className={styles.controlBar}
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: luxuryEase }}
-      >
-        <div className={styles.controlBarInner}>
-          <div className={styles.gatewayBadge}>
-            <span className={styles.pulseDot} />
-            <span>Live Express Order Tracking</span>
-          </div>
-          <div className={styles.hubRoute}>
-            <span>Dispatch: <span className={styles.hubRouteItem}>Bengaluru Kitchen</span></span>
-            <span>•</span>
-            <span>Courier: <span className={styles.hubRouteItem}>DTDC Domestic Express</span></span>
-            <span>•</span>
-            <span>Service: <span className={styles.hubRouteItem}>Doorstep Delivery</span></span>
-          </div>
-        </div>
-      </motion.div>
-
       {/* 2. SEARCH CONSOLE */}
       <section className={styles.consoleHero}>
         <div className={styles.heroHeader}>

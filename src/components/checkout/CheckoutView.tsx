@@ -256,6 +256,7 @@ export function CheckoutView() {
 
   // Strictly check if PIN code is a Bengaluru PIN (Bengaluru postal codes start with 560)
   const isBengaluruPincode = formData.pincode.replace(/\D/g, '').startsWith('560');
+  const checkoutTotal = deliveryMethod === 'porter' ? subtotal : grandTotal;
 
   // If PIN changes away from 560, automatically revert to standard delivery
   useEffect(() => {
@@ -365,6 +366,9 @@ export function CheckoutView() {
     if (targetStep === 1) {
       setActiveStep(1);
       window.scrollTo({ top: 120, behavior: 'smooth' });
+      return;
+    }
+    if (targetStep === 3 && deliveryMethod === 'porter') {
       return;
     }
     if (!validateForm()) {
@@ -889,6 +893,40 @@ export function CheckoutView() {
                   )}
                 </div>
 
+                {/* Address Line 2 (Landmark / Locality) */}
+                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                  <label htmlFor="addressLine2" className={styles.inputLabel}>
+                    Landmark / Locality <span className={styles.inputLabelOptional}>(Optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="addressLine2"
+                    name="addressLine2"
+                    value={formData.addressLine2 || ''}
+                    onChange={handleInputChange}
+                    placeholder="Near BDA Complex, 2nd Main"
+                    className={styles.textInput}
+                  />
+                </div>
+
+                {/* City */}
+                <div className={styles.inputGroup}>
+                  <label htmlFor="city" className={styles.inputLabel}>
+                    City / Town *
+                  </label>
+                  <input
+                    type="text"
+                    id="city"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Bengaluru"
+                    className={`${styles.textInput} ${errors.city ? styles.inputError : ''}`}
+                    required
+                  />
+                  {errors.city && <span className={styles.errorText}>{errors.city}</span>}
+                </div>
+
                 {/* PIN Code */}
                 <div className={styles.inputGroup}>
                   <label htmlFor="pincode" className={styles.inputLabel}>
@@ -910,24 +948,6 @@ export function CheckoutView() {
                   {errors.pincode && <span className={styles.errorText}>{errors.pincode}</span>}
                 </div>
 
-                {/* City */}
-                <div className={styles.inputGroup}>
-                  <label htmlFor="city" className={styles.inputLabel}>
-                    City / Town *
-                  </label>
-                  <input
-                    type="text"
-                    id="city"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    placeholder="e.g. Bengaluru"
-                    className={`${styles.textInput} ${errors.city ? styles.inputError : ''}`}
-                    required
-                  />
-                  {errors.city && <span className={styles.errorText}>{errors.city}</span>}
-                </div>
-
                 {/* State */}
                 <div className={styles.inputGroup}>
                   <label htmlFor="state" className={styles.inputLabel}>
@@ -946,22 +966,6 @@ export function CheckoutView() {
                       </option>
                     ))}
                   </select>
-                </div>
-
-                {/* Address Line 2 (Landmark / Locality) */}
-                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-                  <label htmlFor="addressLine2" className={styles.inputLabel}>
-                    Landmark / Locality <span className={styles.inputLabelOptional}>(Optional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="addressLine2"
-                    name="addressLine2"
-                    value={formData.addressLine2 || ''}
-                    onChange={handleInputChange}
-                    placeholder="Near BDA Complex, 2nd Main"
-                    className={styles.textInput}
-                  />
                 </div>
 
                 {/* Country */}
@@ -996,7 +1000,7 @@ export function CheckoutView() {
               {/* International Order Callout */}
               <div className={styles.intlNotice}>
                 <span className={styles.intlNoticeText}>
-                  Need delivery outside India? We fulfill international orders with custom courier rates (or call{' '}
+                  Need delivery outside India? We fulfill international orders with custom courier rates<br></br>(or call{' '}
                   <a href={`tel:+91${atelierPhone}`} style={{ color: 'inherit', textDecoration: 'underline' }}>
                     +91 {atelierPhone}
                   </a>).
@@ -1077,6 +1081,48 @@ export function CheckoutView() {
 
                 {/* Delivery Methods Selection List */}
                 <div className={styles.deliveryMethodsList}>
+                  {/* Button / Option 2: Same-Day Delivery via Porter / Uber (ONLY VISIBLE FOR BENGALURU PIN CODES STARTING WITH 560) */}
+                  {isBengaluruPincode && (
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setDeliveryMethod('porter')}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') setDeliveryMethod('porter');
+                      }}
+                      className={`${styles.deliveryOptionCard} ${styles.deliverySelectableCard} ${styles.porterOptionCard} ${deliveryMethod === 'porter' ? styles.deliveryOptionCardActive : ''}`}
+                    >
+                      <div className={styles.deliveryRadioWrap}>
+                        <input
+                          type="radio"
+                          id="delivery-porter"
+                          name="deliveryMethod"
+                          checked={deliveryMethod === 'porter'}
+                          onChange={() => setDeliveryMethod('porter')}
+                          className={styles.deliveryRadioInput}
+                        />
+                      </div>
+                      <div className={styles.deliveryIconBox}>
+                        <Zap size={18} strokeWidth={2} />
+                      </div>
+                      <div className={styles.deliveryMeta}>
+                        <div className={styles.deliveryHeaderRow}>
+                          <div className={styles.porterTitleWrap}>
+                            <h3 className={styles.deliveryTitle}>
+                              Same-Day Delivery (Porter / Uber)
+                            </h3>
+                            <span className={styles.sameDayPill}>
+                              BENGALURU
+                            </span>
+                          </div>
+                        </div>
+                        <p className={styles.deliveryDesc}>
+                          Need it urgently today? Dispatched directly from our Indiranagar kitchen. <strong>Delivery charges apply &amp; vary based on your live distance</strong> via Porter or Uber.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Button / Option 1: Standard Tracked Courier (Primary / Standard) */}
                   <div
                     role="button"
@@ -1103,8 +1149,8 @@ export function CheckoutView() {
                     <div className={styles.deliveryMeta}>
                       <div className={styles.deliveryHeaderRow}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          <h3 className={styles.deliveryTitle}>Standard Doorstep Courier</h3>
-                          <span className={styles.primaryPill}>Standard Delivery</span>
+                          <h3 className={styles.deliveryTitle}>Standard Delivery (DTDC)</h3>
+                          <span className={styles.primaryPill}>PAN INDIA</span>
                         </div>
                         <span className={styles.deliveryBadge}>
                           {formatCurrency(shipping.shippingCost)}
@@ -1115,69 +1161,6 @@ export function CheckoutView() {
                       </p>
                     </div>
                   </div>
-
-                  {/* Button / Option 2: Same-Day Delivery via Porter / Uber (ONLY VISIBLE FOR BENGALURU PIN CODES STARTING WITH 560) */}
-                  {isBengaluruPincode && (
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => setDeliveryMethod('porter')}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') setDeliveryMethod('porter');
-                      }}
-                      className={`${styles.deliveryOptionCard} ${styles.deliverySelectableCard} ${styles.porterOptionCard} ${deliveryMethod === 'porter' ? styles.deliveryOptionCardActive : ''}`}
-                    >
-                      <div className={styles.deliveryRadioWrap}>
-                        <input
-                          type="radio"
-                          id="delivery-porter"
-                          name="deliveryMethod"
-                          checked={deliveryMethod === 'porter'}
-                          onChange={() => setDeliveryMethod('porter')}
-                          className={styles.deliveryRadioInput}
-                        />
-                      </div>
-                      <div className={`${styles.deliveryIconBox} ${styles.porterIconBox}`}>
-                        <Zap size={18} strokeWidth={2} />
-                      </div>
-                      <div className={styles.deliveryMeta}>
-                        <div className={styles.deliveryHeaderRow}>
-                          <div className={styles.porterTitleWrap}>
-                            <h3 className={styles.deliveryTitle} style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                              Alternative: Same-Day Delivery (Porter / Uber)
-                            </h3>
-                            <span className={styles.sameDayPill}>
-                              Bengaluru PIN 560xxx
-                            </span>
-                          </div>
-                          <span className={`${styles.deliveryBadge} ${styles.porterBadge}`}>
-                            Charges Apply &amp; Vary
-                          </span>
-                        </div>
-                        <p className={styles.deliveryDesc}>
-                          Need it urgently today? Dispatched directly from our Indiranagar kitchen. <strong>Delivery charges apply &amp; vary based on your live distance</strong> via Porter or Uber (paid directly to the driver).
-                        </p>
-
-                        {/* WhatsApp Instant Inquiry CTA (Discreet secondary outline link) */}
-                        <div className={styles.porterCtaSection}>
-                          <div className={styles.porterFareNotice}>
-                            <span>ℹ️ Delivery fare varies by distance from our kitchen and is confirmed on WhatsApp / paid directly to courier.</span>
-                          </div>
-                          <a
-                            href={getSameDayPorterWhatsAppUrl()}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={styles.porterWhatsAppBtn}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <MessageCircle size={14} />
-                            <span>Request Same-Day on WhatsApp</span>
-                            <ExternalLink size={11} />
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Step 2 Action Buttons */}
@@ -1196,13 +1179,26 @@ export function CheckoutView() {
                   <button
                     type="button"
                     onClick={() => {
+                      if (deliveryMethod === 'porter') {
+                        window.location.href = getSameDayPorterWhatsAppUrl();
+                        return;
+                      }
                       setActiveStep(3);
                       window.scrollTo({ top: 120, behavior: 'smooth' });
                     }}
                     className={styles.nextStepBtn}
                   >
-                    <span>Continue to Payment</span>
-                    <ArrowRight size={16} />
+                    {deliveryMethod === 'porter' ? (
+                      <>
+                        <span>Continue on WhatsApp</span>
+                        <ExternalLink size={13} />
+                      </>
+                    ) : (
+                      <>
+                        <span>Continue to Payment</span>
+                        <ArrowRight size={16} />
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -1257,8 +1253,8 @@ export function CheckoutView() {
                       <span className={styles.recapLabel}>Shipping Courier</span>
                       <span className={styles.recapName}>
                         {deliveryMethod === 'porter'
-                          ? 'Same-Day Instant Delivery (Porter / Uber)'
-                          : 'Express Doorstep Courier'}
+                          ? 'Same-Day Delivery (Porter / Uber)'
+                          : 'DTDC Doorstep Courier'}
                       </span>
                     </div>
                     <p className={styles.recapText}>
@@ -1296,9 +1292,8 @@ export function CheckoutView() {
               <div className={styles.upiGatewayCard}>
                 <div className={styles.upiHeaderRow}>
                   <div className={styles.upiTitleGroup}>
-                    <span className={styles.upiMethodPill}>UPI</span>
-                    <span className={styles.upiMethodPill} style={{ marginLeft: 6 }}>Net Banking</span>
                     <h3 className={styles.upiTitle}>Instant Payment Gateway</h3>
+                    <span className={styles.upiMethodPill}>Razorpay</span>
                   </div>
                 </div>
 
@@ -1308,8 +1303,8 @@ export function CheckoutView() {
                   </div>
 
                   <div className={styles.upiRailsList}>
-                    <span className={styles.upiRailItem}>
-                      <span className={styles.upiRailLogo}><GooglePayLogo size={18} /></span>
+                    <span className={styles.upiRailItem} style={{ paddingLeft: '4px' }}>
+                      <span className={styles.upiRailLogo}><GooglePayLogo size={17} /></span>
                       Google Pay
                     </span>
                     <span className={styles.upiRailItem}>
@@ -1317,7 +1312,7 @@ export function CheckoutView() {
                       PhonePe
                     </span>
                     <span className={styles.upiRailItem}>
-                      <span className={styles.upiRailLogo}><PaytmLogo size={14} /></span>
+                      <span className={styles.upiRailLogo}><PaytmLogo size={16} /></span>
                       Paytm
                     </span>
                     <span className={styles.upiRailItem}>
@@ -1325,7 +1320,7 @@ export function CheckoutView() {
                       Any UPI QR / App
                     </span>
                     <span className={styles.upiRailItem}>
-                      <span className={styles.upiRailLogo}><NetBankingLogo size={16} /></span>
+                      <span className={styles.upiRailLogo}><NetBankingLogo size={17} /></span>
                       Net Banking (All Indian Banks)
                     </span>
                   </div>
@@ -1363,22 +1358,9 @@ export function CheckoutView() {
                     className={styles.submitOrderBtn}
                   >
                     <Lock size={17} />
-                    <span>Pay {formatCurrency(grandTotal)} via UPI / Netbanking</span>
+                    <span>Pay {formatCurrency(checkoutTotal)} via UPI / Netbanking</span>
                     <ArrowRight size={17} />
                   </button>
-                  <div style={{ marginTop: '14px', textAlign: 'center' }}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveStep(2);
-                        window.scrollTo({ top: 120, behavior: 'smooth' });
-                      }}
-                      className={styles.backStepTextBtn}
-                    >
-                      <ArrowLeft size={14} />
-                      <span>Back to Courier &amp; Shipping</span>
-                    </button>
-                  </div>
                   <p className={styles.legalDisclaimer}>
                     By confirming payment, you agree to our{' '}
                     <Link href="/terms-of-service" target="_blank" className={styles.legalLink}>
@@ -1494,8 +1476,8 @@ export function CheckoutView() {
                   <div>
                     <span>
                       {deliveryMethod === 'porter'
-                        ? 'Express Same-Day (Porter / Uber)'
-                        : 'Express Domestic Courier'}
+                        ? 'Same-Day (Porter / Uber)'
+                        : 'DTDC Doorstep Courier'}
                     </span>
                     <span className={styles.shippingSlabNote}>
                       {deliveryMethod === 'porter'
@@ -1513,10 +1495,14 @@ export function CheckoutView() {
                 <div className={styles.totalRow}>
                   <div className={styles.totalLabelBlock}>
                     <span className={styles.totalLabel}>Total Payable</span>
-                    <span className={styles.totalTaxNote}>(Inclusive of all taxes &amp; shipping)</span>
+                    <span className={styles.totalTaxNote}>
+                      {deliveryMethod === 'porter'
+                        ? <>Taxes included; Delivery fee charged<br></br>separately at actuals</>
+                        : <>Inclusive of all taxes &amp; shipping</>}
+                    </span>
                   </div>
                   <span className={styles.totalAmount}>
-                    {formatCurrency(grandTotal)}
+                    {formatCurrency(checkoutTotal)}
                   </span>
                 </div>
               </div>
@@ -1675,7 +1661,7 @@ export function CheckoutView() {
               <div className={styles.quickAddFooter}>
                 <div className={styles.quickAddTotalPreview}>
                   <span>Total in Basket: <strong>{items.reduce((s, i) => s + i.quantity, 0)} items</strong></span>
-                  <span className={styles.quickAddGrandTotal}>{formatCurrency(grandTotal)}</span>
+                  <span className={styles.quickAddGrandTotal}>{formatCurrency(checkoutTotal)}</span>
                 </div>
                 <button
                   type="button"

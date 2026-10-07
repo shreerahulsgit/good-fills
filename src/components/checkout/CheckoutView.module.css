@@ -621,9 +621,9 @@
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: 6px;
   background-color: rgba(151, 65, 29, 0.1);
   color: var(--accent-terracotta);
   border: 1px solid rgba(151, 65, 29, 0.2);
@@ -643,23 +643,29 @@
   cursor: pointer;
 }
 
-/* Subdued Secondary Alternative Card (Porter / Uber) */
+/* Porter / Uber card uses the same surface treatment as standard delivery */
 .porterOptionCard {
-  background-color: #FAFAFA;
-  border: 1px solid rgba(34, 24, 19, 0.12);
+  background-color: #FAF7F2;
+  border: 1.5px solid rgba(151, 65, 29, 0.2);
   border-radius: 16px;
-  padding: 16px 20px;
+  padding: 18px 22px;
+}
+
+.porterOptionCard:hover {
+  border-color: rgba(151, 65, 29, 0.35);
+  box-shadow: 0 4px 14px rgba(34, 24, 19, 0.04);
+}
+
+.deliveryOptionCardActive {
+  border: 2px solid var(--accent-terracotta);
+  background-color: #FFFDF9;
+  box-shadow: 0 4px 16px rgba(151, 65, 29, 0.1);
 }
 
 .deliveryOptionCardActive.porterOptionCard {
-  border: 1.5px solid rgba(151, 65, 29, 0.45);
+  border: 2px solid var(--accent-terracotta);
   background-color: #FFFDF9;
-}
-
-.porterIconBox {
-  background-color: rgba(34, 24, 19, 0.05);
-  border: 1px solid rgba(34, 24, 19, 0.1);
-  color: var(--text-secondary);
+  box-shadow: 0 4px 16px rgba(151, 65, 29, 0.1);
 }
 
 .porterTitleWrap {
@@ -671,10 +677,10 @@
 
 .sameDayPill {
   font-family: var(--font-sans);
-  font-size: 0.66rem;
+  font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: 6px;
   background-color: rgba(34, 24, 19, 0.06);
   color: var(--text-secondary);
@@ -696,17 +702,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.porterFareNotice {
-  font-family: var(--font-sans);
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  background-color: rgba(34, 24, 19, 0.03);
-  border: 1px solid rgba(34, 24, 19, 0.08);
-  border-radius: 6px;
-  padding: 6px 10px;
-  line-height: 1.4;
 }
 
 /* Subtle, secondary WhatsApp outline button */
@@ -997,7 +992,7 @@
   line-height: 1.5;
   color: var(--text-muted);
   text-align: center;
-  margin-top: 12px;
+  margin-top: 24px;
   margin-bottom: 0;
 }
 
@@ -1051,7 +1046,7 @@
   text-transform: uppercase;
   color: var(--accent-terracotta);
   display: block;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .summaryTitle {

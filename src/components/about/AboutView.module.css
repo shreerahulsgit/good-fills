@@ -32,7 +32,7 @@
 }
 
 .heroBrandLogo {
-  height: clamp(60px, 9vw, 105px);
+  height: clamp(68px, 10vw, 120px);
   width: auto;
   max-width: 100%;
   object-fit: contain;
@@ -926,7 +926,7 @@
   }
 
   .heroBrandLogo {
-    height: clamp(44px, 12vw, 68px);
+    height: clamp(50px, 13vw, 76px);
   }
 
   .heroAsideBox {

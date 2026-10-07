@@ -464,14 +464,6 @@ export function FeaturedTestimonials({ initialReviews = [] }: FeaturedTestimonia
               />
             ))}
           </div>
-
-          {/* Bottom Catalog Link */}
-          <div className={styles.footerAction}>
-            <Link href="/shop" className={styles.exploreBtn}>
-              <span>Explore All 13 Creations</span>
-              <ArrowRight size={14} />
-            </Link>
-          </div>
         </div>
       </div>
 

@@ -4,7 +4,7 @@
    ========================================================================== */
 
 .section {
-  padding: clamp(48px, 6vw, 76px) 0;
+  padding: clamp(40px, 6vw, 64px) 0;
   background-color: var(--bg-canvas);
   border-top: 1px solid var(--border-hairline);
   border-bottom: 1px solid var(--border-hairline);

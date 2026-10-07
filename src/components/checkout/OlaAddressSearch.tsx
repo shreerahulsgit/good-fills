@@ -235,10 +235,6 @@ export function OlaAddressSearch({ onSelectAddress, className = '' }: OlaAddress
           <Building2 size={16} style={{ color: 'var(--accent-terracotta, #b85034)' }} />
           Apartment / Society / Street Search
         </span>
-        <span className={styles.badge}>
-          <Sparkles size={11} />
-          Powered by Ola Maps
-        </span>
       </div>
 
       <div className={styles.inputWrapper}>
@@ -308,10 +304,6 @@ export function OlaAddressSearch({ onSelectAddress, className = '' }: OlaAddress
             <div className={styles.selectedDetails}>
               <span className={styles.selectedName}>{selectedPlace.addressLine1}</span>
               <span className={styles.selectedAddress}>{selectedPlace.formattedAddress}</span>
-              <span className={styles.olaVerifiedBadge}>
-                <Sparkles size={10} />
-                Ola Maps Verified Location • PIN: {selectedPlace.pincode || 'Verified'}
-              </span>
             </div>
           </div>
           <button type="button" onClick={handleClear} className={styles.changeButton}>

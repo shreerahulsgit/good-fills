@@ -26,7 +26,7 @@ import {
   FileText,
   Star
 } from 'lucide-react';
-import { TrackingTelemetryResult } from '@/lib/tracking';
+import { DtdcTrackingResponse, TrackingTelemetryResult } from '@/lib/tracking';
 import styles from './TrackView.module.css';
 
 const luxuryEase = [0.16, 1, 0.3, 1] as const;
@@ -37,9 +37,44 @@ export function TrackView() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeOrder, setActiveOrder] = useState<TrackingTelemetryResult | null>(null);
+  const [dtdcTracking, setDtdcTracking] = useState<DtdcTrackingResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copiedAwb, setCopiedAwb] = useState(false);
+  const [showAllCheckpoints, setShowAllCheckpoints] = useState(false);
+
+  const dtdcStatus = (dtdcTracking?.MostRecentStatus || dtdcTracking?.ShipmentState || '').toLowerCase();
+  const dtdcCheckpointStates = dtdcTracking?.Checkpoints?.map((checkpoint) => checkpoint.CheckpointState.toLowerCase()) || [];
+  const hasDtdcInfoReceived = dtdcCheckpointStates.includes('inforeceived');
+  const dtdcStage = dtdcTracking
+    ? dtdcStatus.includes('out for delivery') || dtdcStatus.includes('outfordelivery')
+      ? 'out_for_delivery'
+      : dtdcStatus === 'delivered' || dtdcStatus === 'delivery completed'
+      ? 'delivered'
+      : dtdcStatus.includes('transit')
+      ? hasDtdcInfoReceived
+        ? 'in_transit'
+        : 'packed'
+      : dtdcStatus.includes('inforeceived')
+      ? 'shipped'
+      : 'packed'
+    : null;
+  const dtdcProgressPercent = dtdcStage === 'delivered' ? 100 : dtdcStage === 'out_for_delivery' ? 80 : dtdcStage === 'in_transit' ? 60 : dtdcStage === 'shipped' ? 40 : 20;
+  const dtdcBadgeType = dtdcStage === 'delivered' ? 'completed' : dtdcStage === 'in_transit' || dtdcStage === 'out_for_delivery' ? 'live' : 'processing';
+  const dtdcBadgeLabel = dtdcStage === 'delivered' ? 'Delivered' : dtdcStage === 'out_for_delivery' ? 'Out for Delivery' : dtdcStage === 'in_transit' ? 'In Transit' : dtdcStage === 'shipped' ? 'Order Shipped' : 'Order Packed';
+  const dtdcAdditionalInfo = dtdcTracking?.AdditionalInfo?.trim();
+  const dtdcLeadTitle = dtdcStage === 'delivered'
+    ? 'Delivered to Doorstep'
+    : dtdcTracking
+    ? dtdcAdditionalInfo || activeOrder?.currentStatusHeadline || ''
+    : 'Order Confirmed';
+  const dtdcLeadDescription = dtdcStage === 'delivered'
+    ? 'Your package has been safely delivered to the customer.'
+    : !dtdcTracking
+    ? 'Your order has been confirmed and is awaiting preparation by our team.'
+    : dtdcAdditionalInfo
+    ? `Your shipment is ${dtdcTracking?.MostRecentStatus?.toLowerCase() || 'being processed'} with DTDC Courier Partner.`
+    : activeOrder?.currentStatusDescription || '';
 
   // Auto-lookup on mount only if query param is present
   useEffect(() => {
@@ -59,6 +94,8 @@ export function TrackView() {
 
     setIsLoading(true);
     setErrorMessage(null);
+    setDtdcTracking(null);
+    setShowAllCheckpoints(false);
 
     try {
       const res = await fetch(`/api/orders/track?q=${encodeURIComponent(trimmed)}`);
@@ -69,6 +106,13 @@ export function TrackView() {
         setActiveOrder(null);
       } else {
         setActiveOrder(data.tracking);
+
+        if (data.tracking.courier.isAssigned) {
+          const dtdcRes = await fetch(`/api/orders/track/dtdc?q=${encodeURIComponent(trimmed)}`);
+          if (dtdcRes.ok && dtdcRes.status !== 204) {
+            setDtdcTracking((await dtdcRes.json()) as DtdcTrackingResponse);
+          }
+        }
       }
     } catch (err) {
       console.error('Tracking fetch error:', err);
@@ -82,7 +126,6 @@ export function TrackView() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    executeTrackingLookup(searchQuery);
     router.replace(`/track-order?q=${encodeURIComponent(searchQuery.trim())}`, { scroll: false });
   };
 
@@ -215,47 +258,19 @@ export function TrackView() {
             <div className={styles.statusMasterCard}>
               <div className={styles.statusHeaderStrip}>
                 <div className={styles.statusHeaderLeft}>
-                  {activeOrder.statusBadgeType === 'live' && (
-                    <span className={styles.badgeLive}>
-                      <span className={styles.pulseDot} />
-                      In Transit
-                    </span>
-                  )}
-                  {activeOrder.statusBadgeType === 'completed' && (
-                    <span className={styles.badgeDelivered}>
-                      <CheckCircle2 size={13} />
-                      Delivered
-                    </span>
-                  )}
-                  {activeOrder.statusBadgeType === 'processing' && (
+                  {!dtdcTracking ? (
                     <span className={styles.badgeProcessing}>
                       <Clock size={13} />
-                      Kitchen Preparation
+                      Order Confirmed
+                    </span>
+                  ) : (
+                    <span className={dtdcBadgeType === 'completed' ? styles.badgeDelivered : dtdcBadgeType === 'live' ? styles.badgeLive : styles.badgeProcessing}>
+                      {dtdcBadgeType === 'completed' ? <CheckCircle2 size={13} /> : dtdcBadgeType === 'live' ? <span className={styles.pulseDot} /> : <Clock size={13} />}
+                      {dtdcBadgeLabel}
                     </span>
                   )}
                 </div>
                 <div className={styles.statusHeaderRight}>
-                  <Link
-                    href={`/invoice/${activeOrder.orderId}`}
-                    target="_blank"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      fontSize: '0.78rem',
-                      fontWeight: 600,
-                      color: 'var(--accent-terracotta)',
-                      textDecoration: 'none',
-                      marginRight: '12px',
-                      padding: '3px 8px',
-                      borderRadius: 0,
-                      backgroundColor: 'rgba(151, 65, 29, 0.08)'
-                    }}
-                    title="View & Download Official Invoice"
-                  >
-                    <FileText size={12} />
-                    <span>Official Invoice</span>
-                  </Link>
                   <span className={styles.awbBadgeText}>
                     AWB / Consignment: <strong>{activeOrder.courier.awbNumber}</strong>
                   </span>
@@ -264,10 +279,10 @@ export function TrackView() {
 
               <div className={styles.statusHeadlineBody}>
                 <h2 className={styles.statusLeadTitle}>
-                  {activeOrder.currentStatusHeadline}
+                  {dtdcLeadTitle}
                 </h2>
                 <p className={styles.statusLeadDesc}>
-                  {activeOrder.currentStatusDescription}
+                  {dtdcLeadDescription}
                 </p>
               </div>
 
@@ -322,16 +337,16 @@ export function TrackView() {
                 <div className={styles.progressLabelLeft}>
                   <span>Order &amp; Delivery Progress</span>
                   <span className={styles.progressStepBadge}>
-                    {activeOrder.isDelivered ? 'Step 5 of 5' : `Step ${Math.min(5, Math.max(1, Math.round(activeOrder.overallProgressPercent / 20)))} of 5`}
+                    {dtdcTracking ? `Step ${Math.round(dtdcProgressPercent / 20)} of 5` : 'Step 0 of 5'}
                   </span>
                 </div>
-                <span className={styles.progressPercentText}>{activeOrder.overallProgressPercent}%</span>
+                <span className={styles.progressPercentText}>{dtdcTracking ? dtdcProgressPercent : 0}%</span>
               </div>
               <div className={styles.progressTrack}>
                 <motion.div
-                  className={`${styles.progressFill} ${activeOrder.isDelivered ? styles.progressFillDelivered : ''}`}
+                  className={`${styles.progressFill} ${(dtdcTracking ? dtdcStage === 'delivered' : activeOrder.isDelivered) ? styles.progressFillDelivered : ''}`}
                   initial={{ width: '0%' }}
-                  animate={{ width: `${activeOrder.overallProgressPercent}%` }}
+                  animate={{ width: `${dtdcTracking ? dtdcProgressPercent : 0}%` }}
                   transition={{ duration: 1.2, ease: luxuryEase, delay: 0.15 }}
                 />
               </div>
@@ -346,8 +361,42 @@ export function TrackView() {
                   <span className={styles.timelineSlaNote}>Pan-India Express</span>
                 </div>
 
-                <div className={styles.milestonesList}>
-                  {activeOrder.milestones.map((m, idx) => {
+                <div className={`${styles.milestonesList} ${showAllCheckpoints ? styles.milestonesListExpanded : ''}`}>
+                  {(dtdcTracking?.Checkpoints?.length
+                    ? dtdcTracking.Checkpoints.map((checkpoint, idx) => ({
+                        step: idx + 1,
+                        title: checkpoint.Location
+                          ? ({
+                              delivered: 'Delivered',
+                              outfordelivery: 'Out For Delivery',
+                              intransit: 'In Transit',
+                              inforeceived: 'Info Received',
+                            } as Record<string, string>)[checkpoint.CheckpointState] || checkpoint.CheckpointState
+                          : 'Order Packed',
+                        timestamp: `${checkpoint.Date} ${checkpoint.Time}`,
+                        location: checkpoint.Location
+                          ? checkpoint.CheckpointState === 'delivered'
+                            ? `Customer - ${checkpoint.Location}`
+                            : checkpoint.CheckpointState === 'outfordelivery'
+                            ? `Executive - ${checkpoint.Location}`
+                            : `${checkpoint.CourierName} - ${checkpoint.Location}`
+                          : 'Kitchen - Bengaluru',
+                        telemetryNote: checkpoint.Activity.toLowerCase() === 'delivered'
+                          ? 'Delivered safely to the customer'
+                          : checkpoint.Activity,
+                        status: idx === 0 && checkpoint.CheckpointState !== 'delivered'
+                          ? 'in_progress' as const
+                          : 'completed' as const,
+                      }))
+                    : [{
+                        step: 1,
+                        title: 'Order Confirmed',
+                        timestamp: activeOrder.orderCreatedAt,
+                        location: 'Kitchen - Bengaluru',
+                        telemetryNote: 'Your order has been confirmed and is awaiting preparation.',
+                        status: 'in_progress' as const,
+                      }]
+                  ).map((m, idx) => {
                     const isCompleted = m.status === 'completed';
                     const isCurrent = m.status === 'in_progress';
 
@@ -395,6 +444,15 @@ export function TrackView() {
                     );
                   })}
                 </div>
+                {dtdcTracking?.Checkpoints && dtdcTracking.Checkpoints.length > 4 && (
+                  <button
+                    type="button"
+                    className={styles.viewMoreCheckpoints}
+                    onClick={() => setShowAllCheckpoints((isExpanded) => !isExpanded)}
+                  >
+                    {showAllCheckpoints ? 'View less' : 'View more'}
+                  </button>
+                )}
               </div>
 
               {/* Right Column: Courier & Manifest Details */}
@@ -576,44 +634,6 @@ export function TrackView() {
                 Enter your Order ID (from your confirmation SMS or email) or your 10-digit mobile number above.
               </p>
 
-              {/* 4 Simple Steps with Staggered Entrance */}
-              <div className={styles.logisticsProcessGrid}>
-                {[
-                  {
-                    step: 'STEP 1',
-                    title: 'Order Received',
-                    desc: 'Grains are soaked and sprouted for 24 hours for tender infant digestion.',
-                  },
-                  {
-                    step: 'STEP 2',
-                    title: 'Preparation & Packaging',
-                    desc: 'Carefully prepared and packed in airtight pouches to preserve natural nutrients.',
-                  },
-                  {
-                    step: 'STEP 3',
-                    title: 'Foil Sealed',
-                    desc: 'Sealed immediately in airtight pouches with zero preservatives.',
-                  },
-                  {
-                    step: 'STEP 4',
-                    title: 'Doorstep Delivery',
-                    desc: 'Dispatched via express courier straight to your doorstep with live SMS tracking.',
-                  },
-                ].map((item, idx) => (
-                  <motion.div 
-                    key={item.step}
-                    className={styles.processStepCard}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.45, ease: luxuryEase, delay: idx * 0.08 }}
-                    whileHover={{ y: -3 }}
-                  >
-                    <span className={styles.stepNum}>{item.step}</span>
-                    <h4 className={styles.stepTitle}>{item.title}</h4>
-                    <p className={styles.stepDesc}>{item.desc}</p>
-                  </motion.div>
-                ))}
-              </div>
             </div>
           </motion.section>
         )}

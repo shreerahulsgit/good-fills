@@ -596,6 +596,30 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+  max-height: 524px;
+  overflow: hidden;
+}
+
+.milestonesListExpanded {
+  max-height: none;
+}
+
+.viewMoreCheckpoints {
+  display: block;
+  margin: var(--space-5) 0 0 auto;
+  padding: 9px 18px;
+  background-color: transparent;
+  border: 1px solid var(--accent-terracotta);
+  color: var(--accent-terracotta);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.viewMoreCheckpoints:hover {
+  background-color: var(--accent-terracotta);
+  color: var(--text-light);
 }
 
 .milestonesList::before {

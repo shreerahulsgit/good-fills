@@ -69,6 +69,22 @@ export interface TrackingTelemetryResult {
   total: number;
 }
 
+export interface DtdcCheckpoint {
+  Time: string;
+  Date: string;
+  Location: string;
+  Activity: string;
+  CourierName: string;
+  CheckpointState: string;
+}
+
+export interface DtdcTrackingResponse {
+  Checkpoints?: DtdcCheckpoint[];
+  MostRecentStatus?: string;
+  ShipmentState?: string;
+  AdditionalInfo?: string;
+}
+
 import os from 'os';
 
 const DATA_DIR = path.join(process.cwd(), '.data');

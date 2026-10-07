@@ -42,7 +42,15 @@ async function fetchWithTimeout(input: string, init?: RequestInit) {
   const timeout = setTimeout(() => controller.abort(), TRACKING_API_TIMEOUT_MS);
 
   try {
-    return await fetch(input, { ...init, signal: controller.signal });
+    return await fetch(input, {
+      ...init,
+      cache: 'no-store',
+      headers: {
+        ...init?.headers,
+        'cache-control': 'no-cache, no-store, max-age=0',
+      },
+      signal: controller.signal,
+    });
   } finally {
     clearTimeout(timeout);
   }

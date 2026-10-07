@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
     const trackingData = await searchTrackingOrder(query);
 
-    if (!trackingData) {
+    if (!trackingData || ['pending', 'cancelled'].includes(trackingData.orderStatus.trim().toLowerCase())) {
       return NextResponse.json(
         {
           error: `No consignment record located for query "${query.trim()}". Please verify your Order ID or mobile number.`,

@@ -770,10 +770,6 @@ export function AccountView() {
             </button>
           </form>
 
-          <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-            <span>🔒 Secure account access. Zero SMS spam or carrier delivery delays.</span>
-          </div>
-
           <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px dashed var(--border-hairline)', textAlign: 'center' }}>
             <Link
               href="/track-order"
@@ -787,7 +783,7 @@ export function AccountView() {
                 gap: '6px',
               }}
             >
-              <Truck size={14} /> Looking for quick order tracking? Track with Order ID or Mobile ↗
+              <Truck size={14} /> Looking for quick order tracking? ↗
             </Link>
           </div>
         </div>

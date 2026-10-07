@@ -53,11 +53,6 @@ export default function NotFound() {
             <Home size={15} />
             <span>Return to Homepage</span>
           </Link>
-
-          <Link href="/track-order" className={styles.secondaryBtn}>
-            <Truck size={15} />
-            <span>Track Order</span>
-          </Link>
         </div>
 
         {/* Category Portals Section */}

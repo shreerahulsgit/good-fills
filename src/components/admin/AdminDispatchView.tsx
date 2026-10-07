@@ -1305,7 +1305,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
         <div className={styles.adminTopBarMobile}>
           <div className={styles.brandWrap}>
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img src="/logo.png" alt="Good Fills" style={{ height: '40px', width: 'auto', display: 'block' }} />
+              <img src="/logo.png" alt="Good Fills" style={{ height: '42px', width: 'auto', display: 'block' }} />
             </Link>
             <span className={styles.badgeAdmin}>Dispatch Cockpit</span>
           </div>
@@ -1325,18 +1325,18 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                 className={styles.loginBrandLogo}
               />
             </div>
-            <span className={styles.loginPillBadge}>Atelier Dispatch &amp; Operations</span>
-            <h2 className={styles.loginTitle}>Kitchen Dispatch Login</h2>
+            <h2 className={styles.loginTitle}>Dispatch Sign In</h2>
             <p className={styles.loginSubtitle}>
-              Enter manager PIN to access the Good Fills executive dashboard, order fulfillment, and consignments.
+              Sign in to access the operations console, order fulfillment,<br></br>and dispatch tools.
             </p>
 
             <form onSubmit={handleUnlock}>
               <div className={styles.pinInputWrap}>
+              <label className={styles.formLabel}>Access Code</label>
                 <input
                   type="password"
                   className={styles.pinInput}
-                  placeholder="••••"
+                  placeholder="••••••••"
                   maxLength={8}
                   value={pin}
                   onChange={(e) => {
@@ -1357,21 +1357,31 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                 </div>
               )}
 
-              <button type="submit" className={styles.unlockBtn} disabled={isLoading || !pin.trim()}>
+              <button type="submit" className={styles.unlockBtn} disabled={isLoading}>
                 {isLoading ? (
-                  <span>Verifying PIN...</span>
+                  <span>Processing...</span>
                 ) : (
                   <>
-                    <span>Unlock Dispatch Console</span>
-                    <ArrowRight size={15} />
+                    <span>Sign In</span>
                   </>
                 )}
               </button>
             </form>
 
-            <div className={styles.loginSecureFooter}>
-              <Lock size={12} />
-              <span>Encrypted Session • Good Fills Atelier Operations</span>
+            <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px dashed var(--border-hairline)', textAlign: 'center' }}>
+              <div
+                style={{
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  color: 'var(--accent-terracotta)',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                Encrypted Session + Good Fills Atelier Operations
+              </div>
             </div>
           </div>
         </div>

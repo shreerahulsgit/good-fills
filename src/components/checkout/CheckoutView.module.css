@@ -468,6 +468,95 @@
   margin-top: 2px;
 }
 
+/* India Post PIN Code Status Indicators & Locality Pills */
+.pincodeFeedback {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pincodeStatusRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.pincodeSuccess {
+  color: #166534;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pincodeErrorNotice {
+  color: #991b1b;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pincodeLoadingNotice {
+  color: var(--accent-terracotta);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.localityGroup {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.localityLabel {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.localityPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.localityPill {
+  font-family: var(--font-sans);
+  font-size: 0.73rem;
+  padding: 3px 8px;
+  background-color: #F6F1EA;
+  color: var(--text-secondary);
+  border: 1px solid rgba(151, 65, 29, 0.16);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.localityPill:hover {
+  background-color: var(--accent-terracotta);
+  color: #FFFFFF;
+  border-color: var(--accent-terracotta);
+}
+
 /* International Shipping Callout */
 .intlNotice {
   background-color: #FAF6F0;

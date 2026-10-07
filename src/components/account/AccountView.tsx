@@ -412,6 +412,28 @@ export function AccountView() {
     setAddressFeedback(null);
   };
 
+  const handleAccountPinChange = async (val: string) => {
+    const clean = val.replace(/\D/g, '').slice(0, 6);
+    setAddressForm((prev) => ({ ...prev, pincode: clean }));
+    if (clean.length === 6) {
+      try {
+        const res = await fetch(`/api/pincode?pin=${clean}`);
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setAddressForm((prev) => ({
+            ...prev,
+            pincode: clean,
+            city: data.city || prev.city,
+            state: data.state || prev.state,
+            addressLine2: prev.addressLine2 ? prev.addressLine2 : (data.primaryLocality || prev.addressLine2),
+          }));
+        }
+      } catch (e) {
+        console.warn('Account pin lookup error:', e);
+      }
+    }
+  };
+
   const handleSaveAddress = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) return;
@@ -1200,7 +1222,7 @@ export function AccountView() {
                           type="text"
                           className={styles.formInput}
                           value={addressForm.pincode}
-                          onChange={(e) => setAddressForm({ ...addressForm, pincode: e.target.value })}
+                          onChange={(e) => handleAccountPinChange(e.target.value)}
                           maxLength={6}
                           required
                         />

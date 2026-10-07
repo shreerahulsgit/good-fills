@@ -250,11 +250,77 @@ export function CheckoutView() {
     return `https://wa.me/91${atelierPhone}?text=${encodeURIComponent(msg)}`;
   };
 
+  // India Post PIN Code Auto-Fill State
+  const [pinStatus, setPinStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [pinFeedback, setPinFeedback] = useState<string | null>(null);
+  const [localities, setLocalities] = useState<string[]>([]);
+
+  const lookupPincode = async (rawPin: string) => {
+    const clean = rawPin.replace(/\D/g, '').slice(0, 6);
+    if (clean.length !== 6) {
+      setPinStatus('idle');
+      setPinFeedback(null);
+      setLocalities([]);
+      return;
+    }
+
+    setPinStatus('loading');
+    setPinFeedback('Verifying PIN with India Post directory...');
+
+    try {
+      const res = await fetch(`/api/pincode?pin=${clean}`);
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setPinStatus('success');
+        setPinFeedback(`✓ India Post: ${data.primaryLocality ? `${data.primaryLocality}, ` : ''}${data.city}, ${data.state}`);
+        setLocalities(data.localities || []);
+
+        setFormData((prev) => ({
+          ...prev,
+          pincode: clean,
+          city: data.city || prev.city,
+          state: data.state || prev.state,
+          addressLine2: prev.addressLine2 ? prev.addressLine2 : (data.primaryLocality || prev.addressLine2),
+        }));
+
+        setErrors((prev) => {
+          const next = { ...prev };
+          delete next.pincode;
+          delete next.city;
+          delete next.state;
+          return next;
+        });
+      } else {
+        setPinStatus('error');
+        setPinFeedback(data.error || 'PIN code not found in postal directory.');
+        setLocalities([]);
+      }
+    } catch (err) {
+      console.warn('Pincode lookup network error:', err);
+      setPinStatus('idle');
+      setPinFeedback(null);
+    }
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'pincode') {
+      const clean = value.replace(/\D/g, '').slice(0, 6);
+      setFormData((prev) => ({ ...prev, pincode: clean }));
+      if (clean.length === 6) {
+        lookupPincode(clean);
+      } else {
+        setPinStatus('idle');
+        setPinFeedback(null);
+        setLocalities([]);
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+
     if (errors[name]) {
       setErrors((prev) => {
         const next = { ...prev };
@@ -807,6 +873,10 @@ export function CheckoutView() {
                           : prev.addressLine1,
                       }));
 
+                      if (loc.pincode && loc.pincode.replace(/\D/g, '').length === 6) {
+                        lookupPincode(loc.pincode);
+                      }
+
                       setErrors((prev) => {
                         const next = { ...prev };
                         if (loc.city) delete next.city;
@@ -878,22 +948,78 @@ export function CheckoutView() {
                   {errors.city && <span className={styles.errorText}>{errors.city}</span>}
                 </div>
 
-                {/* PIN Code */}
+                {/* PIN Code with Instant India Post Auto-Fill */}
                 <div className={styles.inputGroup}>
                   <label htmlFor="pincode" className={styles.inputLabel}>
                     PIN Code *
                   </label>
-                  <input
-                    type="text"
-                    id="pincode"
-                    name="pincode"
-                    maxLength={6}
-                    value={formData.pincode}
-                    onChange={handleInputChange}
-                    placeholder="6-digit PIN code"
-                    className={`${styles.textInput} ${errors.pincode ? styles.inputError : ''}`}
-                    required
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      id="pincode"
+                      name="pincode"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={6}
+                      value={formData.pincode}
+                      onChange={handleInputChange}
+                      placeholder="6-digit PIN code (e.g. 560038)"
+                      className={`${styles.textInput} ${errors.pincode ? styles.inputError : ''}`}
+                      required
+                    />
+                    {pinStatus === 'loading' && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          right: '12px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          fontSize: '0.72rem',
+                          color: 'var(--accent-terracotta)',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Verifying...
+                      </span>
+                    )}
+                  </div>
+
+                  {/* India Post Feedback & Locality Quick-Pick Pills */}
+                  {pinStatus === 'success' && pinFeedback && (
+                    <div className={styles.pincodeFeedback}>
+                      <div className={styles.pincodeSuccess}>
+                        <Check size={13} />
+                        <span>{pinFeedback}</span>
+                      </div>
+                      {localities.length > 1 && (
+                        <div className={styles.localityGroup}>
+                          <span className={styles.localityLabel}>Detected postal areas (click to fill landmark):</span>
+                          <div className={styles.localityPills}>
+                            {localities.map((loc) => (
+                              <button
+                                key={loc}
+                                type="button"
+                                className={styles.localityPill}
+                                onClick={() => setFormData((prev) => ({ ...prev, addressLine2: loc }))}
+                                title={`Set landmark to ${loc}`}
+                              >
+                                + {loc}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {pinStatus === 'error' && pinFeedback && (
+                    <div className={styles.pincodeFeedback}>
+                      <div className={styles.pincodeErrorNotice}>
+                        <span>{pinFeedback}</span>
+                      </div>
+                    </div>
+                  )}
+
                   {errors.pincode && <span className={styles.errorText}>{errors.pincode}</span>}
                 </div>
 

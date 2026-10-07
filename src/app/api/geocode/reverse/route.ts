@@ -136,6 +136,35 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // Cross-verify detected PIN code with official India Post Directory for pinpoint district & state
+    if (pincode && pincode.length === 6) {
+      try {
+        const postRes = await fetch(`https://api.postalpincode.in/pincode/${pincode}`, {
+          signal: AbortSignal.timeout(2500),
+        });
+        if (postRes.ok) {
+          const postData = await postRes.json();
+          const firstPo = postData?.[0]?.PostOffice?.[0];
+          if (firstPo) {
+            if (firstPo.State) rawState = firstPo.State;
+            if (firstPo.District) {
+              const d = firstPo.District.trim();
+              if (/^bangalore/i.test(d)) city = 'Bengaluru';
+              else if (/^bombay/i.test(d)) city = 'Mumbai';
+              else if (/^madras/i.test(d)) city = 'Chennai';
+              else if (/^calcutta/i.test(d)) city = 'Kolkata';
+              else city = d;
+            }
+            if (!locality && firstPo.Name) {
+              locality = firstPo.Name.replace(/\s*\([^)]*\)/g, '').trim();
+            }
+          }
+        }
+      } catch (postErr) {
+        // Keep fallback data if India Post is slow
+      }
+    }
+
     const state = normalizeIndianState(rawState);
     city = city || 'Bengaluru';
 

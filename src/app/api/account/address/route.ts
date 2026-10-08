@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server';
 import { manageCustomerAddress } from '@/lib/server-customer';
+import { getSupabaseUser } from '@/lib/require-supabase-user';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { identifier, action = 'add', address, addressIndex } = body;
+    const user = await getSupabaseUser();
+    if (!user) return NextResponse.json({ error: 'Account authentication required.' }, { status: 401 });
 
-    if (!identifier) {
-      return NextResponse.json(
-        { error: 'Customer identifier is required.' },
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
+    const { action = 'add', address, addressIndex } = body;
 
     if (action === 'add' || action === 'edit') {
       if (!address?.addressLine1 || !address?.city || !address?.pincode) {
@@ -22,7 +19,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const updatedUser = await manageCustomerAddress(identifier, action, address, addressIndex);
+    const updatedUser = await manageCustomerAddress(user.id, action, address, addressIndex);
     if (!updatedUser) {
       return NextResponse.json(
         { error: 'Customer profile not found.' },

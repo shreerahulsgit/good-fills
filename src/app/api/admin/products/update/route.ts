@@ -1,18 +1,11 @@
 import { NextResponse } from 'next/server';
 import { updateServerProduct } from '@/lib/server-products';
+import { requireConsoleSession } from '@/lib/require-console-session';
 
 export async function POST(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const pin = request.headers.get('x-admin-pin') || searchParams.get('pin');
-    const validPin = process.env.ADMIN_PIN || '2026';
-
-    if (pin !== validPin && pin !== 'admin123') {
-      return NextResponse.json(
-        { error: 'Unauthorized. Please provide a valid admin PIN.' },
-        { status: 401 }
-      );
-    }
+    const authError = requireConsoleSession();
+    if (authError) return authError;
 
     const body = await request.json();
     const { id, updates } = body;

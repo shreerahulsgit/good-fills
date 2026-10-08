@@ -1098,7 +1098,7 @@ export function AccountView() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Contact Phone (For Courier Delivery)</label>
+                  <label className={styles.formLabel}>Contact Phone</label>
                   <input
                     type="tel"
                     className={styles.formInput}

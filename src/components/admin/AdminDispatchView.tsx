@@ -185,6 +185,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
   // Inquiries Desk State
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [isLoadingInquiries, setIsLoadingInquiries] = useState(false);
+  const [inquiryFilter, setInquiryFilter] = useState<'all' | 'new' | 'replied'>('all');
   const [isResettingData, setIsResettingData] = useState(false);
 
   // Products Management State
@@ -260,46 +261,55 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
     setSearchTerm(orderId);
   }, []);
 
-  // Check saved session PIN or URL query parameter on mount
+  // Bootstrap the server-side console session on mount.
   useEffect(() => {
       if (hasBootstrappedAdminSession.current) return;
       hasBootstrappedAdminSession.current = true;
 
     if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlPin = urlParams.get('pin');
-      const savedPin = sessionStorage.getItem('goodfills_admin_pin');
-      const activePin = urlPin || savedPin;
-      if (activePin) {
-        setPin(activePin);
-        fetchOrders(activePin);
-      }
+      fetchOrders(false, false);
     }
   }, []);
 
-  const handleUnlock = (e: React.FormEvent) => {
+  const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
     const clean = pin.trim();
     if (!clean) return;
-    fetchOrders(clean);
+    setIsLoading(true);
+    setAuthError(null);
+    try {
+      const res = await fetch('/api/admin/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode: clean }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setAuthError(data.error || 'Invalid console passcode.');
+        return;
+      }
+      setPin('');
+      await fetchOrders();
+    } catch {
+      setAuthError('Connection error to server. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const fetchOrders = async (adminPin: string) => {
-    setIsLoading(true);
+  const fetchOrders = async (showError = true, showLoading = true) => {
+    if (showLoading) setIsLoading(true);
     setAuthError(null);
 
     try {
-      const res = await fetch('/api/admin/orders', {
-        headers: { 'x-admin-pin': adminPin },
-      });
+      const res = await fetch('/api/admin/orders', { cache: 'no-store' });
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        setAuthError(data.error || 'Invalid Admin PIN. (Default PIN: 2026)');
+        if (showError) setAuthError(data.error || 'Invalid console session.');
         setIsAuthenticated(false);
       } else {
         setIsAuthenticated(true);
-        sessionStorage.setItem('goodfills_admin_pin', adminPin);
         setOrders(data.orders || []);
 
         const initialEditStates: Record<string, any> = {};
@@ -314,13 +324,13 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
         });
         setEditStates(initialEditStates);
         fetchInquiries();
-        fetchProducts(adminPin);
+        fetchProducts();
       }
     } catch (err) {
       console.error('Fetch admin orders error:', err);
-      setAuthError('Connection error to server. Please try again.');
+      if (showError) setAuthError('Connection error to server. Please try again.');
     } finally {
-      setIsLoading(false);
+      if (showLoading) setIsLoading(false);
     }
   };
 
@@ -365,12 +375,9 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
     if (!confirmed) return;
 
     setIsResettingData(true);
-    const activePin = pin || (typeof window !== 'undefined' ? sessionStorage.getItem('goodfills_admin_pin') || '2026' : '2026');
-
     try {
-      const res = await fetch(`/api/admin/reset?pin=${activePin}`, {
+      const res = await fetch('/api/admin/reset', {
         method: 'POST',
-        headers: { 'x-admin-pin': activePin },
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -396,12 +403,10 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
   };
 
   // Products Management Methods
-  const fetchProducts = async (adminPin?: string) => {
+  const fetchProducts = async () => {
     setIsLoadingProducts(true);
-    const activePin = adminPin || pin || (typeof window !== 'undefined' ? sessionStorage.getItem('goodfills_admin_pin') || '' : '');
     try {
       const res = await fetch(`/api/admin/products?t=${Date.now()}`, {
-        headers: { 'x-admin-pin': activePin },
         cache: 'no-store',
       });
       const data = await res.json();
@@ -416,7 +421,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
   };
 
   const handleToggleAvailability = async (productId: string, newAvailability: ProductAvailability) => {
-    const activePin = pin || (typeof window !== 'undefined' ? sessionStorage.getItem('goodfills_admin_pin') || '' : '');
     setProducts((prev) =>
       prev.map((p) => (p.id === productId ? { ...p, availability: newAvailability } : p))
     );
@@ -426,7 +430,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-pin': activePin,
         },
         body: JSON.stringify({
           id: productId,
@@ -444,7 +447,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
       }
     } catch (err: any) {
       showToast(err.message || 'Error updating stock', 'error');
-      fetchProducts(activePin);
+      fetchProducts();
     }
   };
 
@@ -452,8 +455,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
     const nextFeatured = !currentFeatured;
     const target = products.find((p) => p.id === productId);
     const prodName = target?.name || 'Creation';
-    const activePin = pin || (typeof window !== 'undefined' ? sessionStorage.getItem('goodfills_admin_pin') || '' : '');
-
     const updatedProducts = products.map((p) =>
       p.id === productId ? { ...p, featured: nextFeatured } : p
     );
@@ -464,7 +465,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-pin': activePin,
         },
         body: JSON.stringify({
           id: productId,
@@ -487,7 +487,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
       }
     } catch (err: any) {
       showToast(err.message || 'Error updating featured state', 'error');
-      fetchProducts(activePin);
+      fetchProducts();
     }
   };
 
@@ -545,8 +545,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
     }
 
     setIsSavingProduct(true);
-    const activePin = pin || sessionStorage.getItem('goodfills_admin_pin') || '';
-
     const ingredientsList = formIngredients
       .split(',')
       .map((s) => s.trim())
@@ -581,7 +579,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-admin-pin': activePin,
           },
           body: JSON.stringify({
             id: editingProductId,
@@ -598,7 +595,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
               prev.map((p) => (p.id === editingProductId ? data.product : p))
             );
           }
-          fetchProducts(activePin);
+          fetchProducts();
         } else {
           throw new Error(data.error || 'Failed to update product');
         }
@@ -627,7 +624,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-admin-pin': activePin,
           },
           body: JSON.stringify(payload),
         });
@@ -639,7 +635,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
           if (data.product) {
             setProducts((prev) => [data.product, ...prev]);
           }
-          fetchProducts(activePin);
+          fetchProducts();
         } else {
           throw new Error(data.error || 'Failed to create product');
         }
@@ -654,15 +650,10 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
   const handleDeleteProduct = async () => {
     if (!productToDelete) return;
     setIsDeletingProduct(true);
-    const activePin = pin || sessionStorage.getItem('goodfills_admin_pin') || '';
-
     try {
       const res = await fetch('/api/admin/products/delete', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-pin': activePin,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: productToDelete.id }),
       });
       const data = await res.json();
@@ -671,7 +662,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
         const deletedId = productToDelete.id;
         setProducts((prev) => prev.filter((p) => p.id !== deletedId));
         setProductToDelete(null);
-        fetchProducts(activePin);
+        fetchProducts();
       } else {
         throw new Error(data.error || 'Failed to delete product');
       }
@@ -729,10 +720,16 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
     });
   }, [products, productSearch, productCategoryFilter, productAvailabilityFilter, productFeaturedFilter]);
 
+  const filteredInquiries = useMemo(() => {
+    if (inquiryFilter === 'all') return inquiries;
+    return inquiries.filter((inquiry) => inquiry.status === inquiryFilter);
+  }, [inquiries, inquiryFilter]);
+
   const handleLogout = () => {
-    sessionStorage.removeItem('goodfills_admin_pin');
-    setIsAuthenticated(false);
-    setPin('');
+    void fetch('/api/admin/auth/logout', { method: 'POST' }).finally(() => {
+      setIsAuthenticated(false);
+      setPin('');
+    });
   };
 
   // 1-Click Status Progression Handler with Optimistic UI updates
@@ -794,10 +791,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
     try {
       const res = await fetch('/api/admin/orders/update', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-pin': pin,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId,
           orderStatus: newOrderStatus,
@@ -823,11 +817,11 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
         }, 2000);
       } else {
         showToast(data.error || 'Server error updating status. Reverting.', 'error');
-        fetchOrders(pin);
+        fetchOrders();
       }
     } catch {
       showToast('Network error while saving order status.', 'error');
-      fetchOrders(pin);
+      fetchOrders();
     }
   };
 
@@ -866,10 +860,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
     try {
       const res = await fetch('/api/admin/orders/update', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-pin': pin,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId,
           orderStatus: current.orderStatus,
@@ -1269,9 +1260,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                   onChange={(e) => {
                     const val = e.target.value;
                     setPin(val);
-                    if (val.trim() === '2026' || val.trim() === 'admin123') {
-                      fetchOrders(val.trim());
-                    }
                   }}
                   autoFocus
                 />
@@ -2598,7 +2586,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
             allProducts={products.length > 0 ? products : PRODUCTS}
             onQuickAdvance={handleQuickAdvance}
             showToast={showToast}
-            adminPin={pin}
           />
         )}
 
@@ -2615,7 +2602,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div className={styles.inquiryHeaderActions}>
                 <button
                   type="button"
                   onClick={fetchInquiries}
@@ -2636,19 +2623,52 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
               </div>
             </div>
 
-            {inquiries.length === 0 ? (
-              <div style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
-                <MessageCircle size={32} color="#9CA3AF" style={{ margin: '0 auto 12px' }} />
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#111827', margin: '0 0 10px' }}>
-                  No Inquiries Recorded Yet
-                </h3>
-                <p style={{ fontSize: '0.8rem', color: '#6B7280', margin: 0 }}>
-                  Customer messages submitted from the Contact page will automatically appear here.
+            <div className={styles.inquirySummaryGrid}>
+              <button
+                type="button"
+                className={`${styles.inquirySummaryCard} ${inquiryFilter === 'all' ? styles.inquirySummaryCardActive : ''}`}
+                onClick={() => setInquiryFilter('all')}
+              >
+                <span className={styles.inquirySummaryLabel}>All messages</span>
+                <strong>{inquiries.length}</strong>
+              </button>
+              <button
+                type="button"
+                className={`${styles.inquirySummaryCard} ${inquiryFilter === 'new' ? styles.inquirySummaryCardActive : ''}`}
+                onClick={() => setInquiryFilter('new')}
+              >
+                <span className={styles.inquirySummaryLabel}>Needs reply</span>
+                <strong>{inquiries.filter((inquiry) => inquiry.status === 'new').length}</strong>
+              </button>
+              <button
+                type="button"
+                className={`${styles.inquirySummaryCard} ${inquiryFilter === 'replied' ? styles.inquirySummaryCardActive : ''}`}
+                onClick={() => setInquiryFilter('replied')}
+              >
+                <span className={styles.inquirySummaryLabel}>Replied</span>
+                <strong>{inquiries.filter((inquiry) => inquiry.status === 'replied').length}</strong>
+              </button>
+            </div>
+
+            {isLoadingInquiries && inquiries.length === 0 ? (
+              <div className={styles.inquiryEmptyState}>
+                <RefreshCw size={24} className={styles.spinningIcon} />
+                <h3>Loading inquiries</h3>
+                <p>Syncing messages from the Atelier desk.</p>
+              </div>
+            ) : filteredInquiries.length === 0 ? (
+              <div className={styles.inquiryEmptyState}>
+                <MessageCircle size={28} />
+                <h3>{inquiries.length === 0 ? 'No inquiries recorded yet' : 'No messages in this view'}</h3>
+                <p>
+                  {inquiries.length === 0
+                    ? 'Customer messages submitted from the Contact page will appear here.'
+                    : 'Try another status filter to see more messages.'}
                 </p>
               </div>
             ) : (
               <div className={styles.inquiriesListGrid}>
-                {inquiries.map((inq) => {
+                {filteredInquiries.map((inq) => {
                   const rawPhone = (inq.phone || '').replace(/[^0-9]/g, '');
                   const cleanPhone = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
                   const firstName = inq.name ? inq.name.split(' ')[0] : 'Patron';
@@ -2666,12 +2686,16 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                   });
 
                   return (
-                    <div key={inq.id} className={styles.inquiryCard}>
+                    <article
+                      key={inq.id}
+                      className={`${styles.inquiryCard} ${inq.status === 'new' ? styles.inquiryCardNew : ''}`}
+                    >
                       <div className={styles.inquiryHeader}>
-                        <div>
+                        <div className={styles.inquiryIdentity}>
                           <strong className={styles.inquiryName}>{inq.name}</strong>
-                          <div className={styles.inquiryPhone}>
-                            {inq.phone} {inq.email ? `• ${inq.email}` : ''}
+                          <div className={styles.inquiryContact}>
+                            {inq.phone}
+                            {inq.email && `, ${inq.email}`}
                           </div>
                         </div>
                         <div className={styles.inquiryMetaRow}>
@@ -2682,7 +2706,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                                 : styles.inquiryStatusBadgeNew
                             }
                           >
-                            {inq.status === 'replied' ? 'Replied' : 'New'}
+                            {inq.status === 'replied' ? 'Replied' : 'Not Replied'}
                           </span>
                           <span className={styles.inquiryBadge}>{inq.category}</span>
                         </div>
@@ -2705,18 +2729,21 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                         </div>
                       )}
 
-                      <p className={styles.inquiryBody}>&ldquo;{inq.message}&rdquo;</p>
+                      <div className={styles.inquiryMessageBlock}>
+                        <span className={styles.inquiryMessageLabel}>Message</span>
+                        <p className={styles.inquiryBody}>&ldquo;{inq.message}&rdquo;</p>
+                      </div>
 
                       <div className={styles.inquiryFooter}>
                         <span className={styles.inquiryTime}>{timeFormatted}</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div className={styles.inquiryActionGroup}>
                           <button
                             type="button"
                             onClick={() => handleToggleInquiryStatus(inq.id, inq.status)}
                             className={styles.inquiryToggleBtn}
                             title="Toggle status"
                           >
-                            {inq.status === 'replied' ? 'Mark New' : 'Mark Replied'}
+                            {inq.status === 'replied' ? 'Mark Pending' : 'Mark Solved'}
                           </button>
                           <a
                             href={waUrl}
@@ -2724,12 +2751,12 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                             rel="noopener noreferrer"
                             className={styles.btnWhatsApp}
                           >
-                            <MessageCircle size={13} color="#25D366" />
+                            <MessageCircle size={13} color="currentColor" />
                             <span>Reply via WhatsApp</span>
                           </a>
                         </div>
                       </div>
-                    </div>
+                    </article>
                   );
                 })}
               </div>

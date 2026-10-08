@@ -2109,6 +2109,86 @@
 /* ==========================================================================
    8. INQUIRIES DESK & PRODUCTS TAB
    ========================================================================== */
+.inquiryHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inquirySummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.inquirySummaryCard {
+  appearance: none;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-left: 3px solid var(--border-medium);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 14px 16px;
+  text-align: left;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.inquirySummaryCard:hover,
+.inquirySummaryCardActive {
+  background-color: var(--bg-cream);
+  border-color: var(--accent-warm-petal);
+  border-left-color: var(--accent-terracotta);
+}
+
+.inquirySummaryCard strong {
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.inquirySummaryLabel {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.inquiryEmptyState {
+  align-items: center;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  padding: 56px 20px;
+  text-align: center;
+}
+
+.inquiryEmptyState svg {
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.inquiryEmptyState h3 {
+  color: var(--text-primary);
+  font-size: 1rem;
+  margin: 0 0 8px;
+}
+
+.inquiryEmptyState p {
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.inquiryActionGroup {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
 .inquiriesListGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -2116,31 +2196,73 @@
 }
 
 .inquiryCard {
-  background-color: #FFFFFF;
-  border: 1px solid #E5E7EB;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-top: 3px solid var(--border-medium);
   padding: 20px;
   border-radius: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+}
+
+.inquiryCardNew {
+  border-top-color: var(--accent-terracotta);
 }
 
 .inquiryHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 16px;
+}
+
+.inquiryIdentity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.inquiryMessageLabel {
+  color: var(--text-muted);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .inquiryName {
   font-size: 0.92rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
 }
 
-.inquiryPhone {
+.inquiryContact {
+  color: var(--text-secondary);
+  display: flex;
+  flex-wrap: wrap;
   font-size: 0.76rem;
-  color: #6B7280;
-  margin-top: 2px;
+  gap: 4px 10px;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+
+.inquiryContact span + span::before {
+  color: var(--border-medium);
+  content: ', ';
+}
+
+.inquiryMessageBlock {
+  background-color: var(--bg-canvas);
+  border-left: 2px solid var(--border-medium);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+}
+
+.inquiryMessageBlock .inquiryMessageLabel {
+  color: var(--text-secondary);
 }
 
 .inquiryBadge {
@@ -2154,17 +2276,18 @@
 
 .inquiryBody {
   font-size: 0.84rem;
-  color: #374151;
+  color: var(--text-primary);
   line-height: 1.5;
   margin: 0;
-  font-style: italic;
+  font-style: normal;
+  overflow-wrap: anywhere;
 }
 
 .inquiryFooter {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 1px solid #F3F4F6;
+  border-top: 1px solid var(--border-hairline);
   padding-top: 12px;
   flex-wrap: wrap;
   gap: 8px;
@@ -2172,7 +2295,7 @@
 
 .inquiryTime {
   font-size: 0.72rem;
-  color: #9CA3AF;
+  color: var(--text-muted);
 }
 
 .btnWhatsApp {
@@ -2242,9 +2365,9 @@
   background: transparent;
   border: 1px solid #D1D5DB;
   color: #4B5563;
-  padding: 5px 9px;
-  font-size: 0.72rem;
-  font-weight: 600;
+  padding: 9px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
   cursor: pointer;
   border-radius: 0;
   transition: all 0.15s ease;
@@ -2546,6 +2669,13 @@
     flex-direction: column;
     align-items: flex-start;
   }
+  .inquiryHeaderActions {
+    width: 100%;
+  }
+  .inquiryHeaderActions > button {
+    flex: 1;
+    justify-content: center;
+  }
 
   .dateDropdownWrapper {
     width: 100%;
@@ -2553,6 +2683,30 @@
 
   .overviewDateSelect {
     width: 100%;
+  }
+}
+@media (max-width: 480px) {
+  .inquirySummaryGrid {
+    gap: 8px;
+  }
+  .inquirySummaryCard {
+    padding: 12px 10px;
+  }
+  .inquirySummaryLabel {
+    font-size: 0.62rem;
+  }
+  .inquiryCard {
+    padding: 16px;
+  }
+  .inquiryFooter,
+  .inquiryActionGroup {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .btnWhatsApp,
+  .inquiryToggleBtn {
+    justify-content: center;
+    text-align: center;
   }
 }
 

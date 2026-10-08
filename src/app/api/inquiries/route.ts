@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getAllInquiries, createInquiry, updateInquiryStatus } from '@/lib/inquiries';
+import { requireConsoleSession } from '@/lib/require-console-session';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const authError = requireConsoleSession();
+    if (authError) return authError;
+
     const inquiries = await getAllInquiries();
     return NextResponse.json({ success: true, inquiries });
   } catch (error) {
@@ -48,6 +52,9 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    const authError = requireConsoleSession();
+    if (authError) return authError;
+
     const body = await request.json();
     const { id, status } = body;
 

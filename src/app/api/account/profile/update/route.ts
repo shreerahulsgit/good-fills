@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server';
 import { updateCustomerProfile } from '@/lib/server-customer';
+import { getSupabaseUser } from '@/lib/require-supabase-user';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { identifier, name, email, phone } = body;
+    const user = await getSupabaseUser();
+    if (!user) return NextResponse.json({ error: 'Account authentication required.' }, { status: 401 });
 
-    if (!identifier) {
-      return NextResponse.json(
-        { error: 'Customer identifier is required.' },
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
+    const { name, email, phone } = body;
 
     if (!name && !email && phone === undefined) {
       return NextResponse.json(
@@ -20,7 +17,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const updated = await updateCustomerProfile(identifier, { name, email, phone });
+    const updated = await updateCustomerProfile(user.id, { name, email, phone });
     if (!updated) {
       return NextResponse.json(
         { error: 'Customer profile not found.' },

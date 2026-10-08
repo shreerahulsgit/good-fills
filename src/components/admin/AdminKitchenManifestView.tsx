@@ -27,7 +27,6 @@ interface AdminKitchenManifestViewProps {
   allProducts: Product[];
   onQuickAdvance: (orderId: string, targetStatus: any) => Promise<void>;
   showToast: (message: string, type: 'success' | 'info' | 'error') => void;
-  adminPin?: string;
 }
 
 interface AggregatedBatchProduct {

@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { loginOrRegisterCustomer } from '@/lib/server-customer';
+import { getSupabaseUser } from '@/lib/require-supabase-user';
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getSupabaseUser();
+    if (!authUser) return NextResponse.json({ error: 'Account authentication required.' }, { status: 401 });
+
     const body = await request.json();
-    const { email, name, authUserId } = body;
+    const { name } = body;
+    const email = authUser.email;
 
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       return NextResponse.json(
@@ -13,7 +18,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await loginOrRegisterCustomer({ email, name, authUserId });
+    const result = await loginOrRegisterCustomer({ email, name, authUserId: authUser.id });
     if (!result) {
       return NextResponse.json(
         { error: 'Failed to authenticate patron session.' },

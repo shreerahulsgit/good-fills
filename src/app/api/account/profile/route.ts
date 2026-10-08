@@ -1,21 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getCustomerProfile } from '@/lib/server-customer';
+import { getSupabaseUser } from '@/lib/require-supabase-user';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const identifier = searchParams.get('id') || searchParams.get('phone') || searchParams.get('email');
+    const user = await getSupabaseUser();
+    if (!user) return NextResponse.json({ error: 'Account authentication required.' }, { status: 401 });
 
-    if (!identifier || !identifier.trim()) {
-      return NextResponse.json(
-        { error: 'Customer mobile number or email is required.' },
-        { status: 400 }
-      );
-    }
-
-    const data = await getCustomerProfile(identifier);
+    const data = await getCustomerProfile(user.id);
     if (!data) {
       return NextResponse.json(
         { error: 'Customer record not found. Please verify your phone number or email.' },

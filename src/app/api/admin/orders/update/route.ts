@@ -1,18 +1,12 @@
 import { NextResponse } from 'next/server';
 import { updateOrderAdmin, getServerOrderById } from '@/lib/supabase-orders';
 import { OrderStatus, ShipmentStatus } from '@/types';
+import { requireConsoleSession } from '@/lib/require-console-session';
 
 export async function POST(request: Request) {
   try {
-    const pin = request.headers.get('x-admin-pin');
-    const validPin = process.env.ADMIN_PIN || '2026';
-
-    if (pin !== validPin && pin !== 'admin123') {
-      return NextResponse.json(
-        { error: 'Unauthorized. Invalid admin PIN.' },
-        { status: 401 }
-      );
-    }
+    const authError = requireConsoleSession();
+    if (authError) return authError;
 
     const body = await request.json();
     const { orderId, orderStatus, shipmentStatus, trackingNumber, note } = body;

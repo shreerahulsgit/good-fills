@@ -3,21 +3,14 @@ import { clearAllOrders } from '@/lib/supabase-orders';
 import { clearAllCustomers } from '@/lib/server-customer';
 import { clearAllInquiries } from '@/lib/inquiries';
 import { resetReviewsToSeed } from '@/lib/server-reviews';
+import { requireConsoleSession } from '@/lib/require-console-session';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const pin = request.headers.get('x-admin-pin') || searchParams.get('pin');
-    const validPin = process.env.ADMIN_PIN || '2026';
-
-    if (pin !== validPin && pin !== 'admin123') {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized. Please provide a valid admin PIN.' },
-        { status: 401 }
-      );
-    }
+    const authError = requireConsoleSession();
+    if (authError) return authError;
 
     // 1. Wipe all orders, payments, and webhook events
     await clearAllOrders();

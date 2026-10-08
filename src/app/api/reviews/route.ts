@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProductReviewSummary, getAllReviews, addCustomerReview, getReviewsByOrderId } from '@/lib/server-reviews';
 import { resolveOrderById } from '@/lib/supabase-orders';
+import { getSupabaseUser } from '@/lib/require-supabase-user';
+import { getCustomerProfile } from '@/lib/server-customer';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,6 +62,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const authUser = await getSupabaseUser();
+    if (!authUser) return NextResponse.json({ success: false, error: 'Account authentication required.' }, { status: 401 });
+
     const body = await req.json();
     const { orderId, productId, productName, rating, title, comment, authorName, location, childAge } = body;
 
@@ -90,6 +95,15 @@ export async function POST(req: NextRequest) {
           error: `Order #${orderId} was not found. Please verify your order number.`,
         },
         { status: 404 }
+      );
+    }
+
+    const customerProfile = await getCustomerProfile(authUser.id);
+    const ownsOrder = customerProfile?.orders.some((customerOrder) => customerOrder.id === order.id);
+    if (!ownsOrder) {
+      return NextResponse.json(
+        { success: false, error: 'You can only review products from your own orders.' },
+        { status: 403 }
       );
     }
 

@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const reviews = getAllReviews();
+    const reviews = await getAllReviews();
 
     const totalCount = reviews.length;
     const distribution: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'delete') {
-      const deleted = deleteReview(reviewId);
+      const deleted = await deleteReview(reviewId);
       if (!deleted) {
         return NextResponse.json(
           { success: false, error: 'Review not found or already deleted.' },
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'toggle-feature') {
-      const isFeatured = toggleFeaturedReview(reviewId);
+      const isFeatured = await toggleFeaturedReview(reviewId);
       return NextResponse.json({
         success: true,
         isFeatured,
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'toggle-visibility') {
-      const updated = toggleReviewVisibility(reviewId);
+      const updated = await toggleReviewVisibility(reviewId);
       if (!updated) {
         return NextResponse.json(
           { success: false, error: 'Review not found.' },
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-      const updated = addFounderReply(reviewId, message);
+      const updated = await addFounderReply(reviewId, message);
       if (!updated) {
         return NextResponse.json(
           { success: false, error: 'Review not found.' },

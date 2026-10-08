@@ -15,7 +15,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const data = getCustomerProfile(identifier);
+    const data = await getCustomerProfile(identifier);
     if (!data) {
       return NextResponse.json(
         { error: 'Customer record not found. Please verify your phone number or email.' },

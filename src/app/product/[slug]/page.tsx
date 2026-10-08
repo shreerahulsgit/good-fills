@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { PRODUCTS } from '@/data/products';
 import { getServerProductBySlug, getAllServerProducts } from '@/lib/server-products';
 import { ProductDetailView } from '@/components/product/ProductDetailView';
 
@@ -12,16 +11,15 @@ interface ProductPageProps {
   };
 }
 
-export function generateStaticParams() {
-  const allProducts = getAllServerProducts();
-  const list = allProducts.length > 0 ? allProducts : PRODUCTS;
-  return list.map((product) => ({
+export async function generateStaticParams() {
+  const allProducts = await getAllServerProducts();
+  return allProducts.map((product) => ({
     slug: product.slug,
   }));
 }
 
-export function generateMetadata({ params }: ProductPageProps): Metadata {
-  const product = getServerProductBySlug(params.slug) || PRODUCTS.find((p) => p.slug === params.slug);
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const product = await getServerProductBySlug(params.slug);
 
   if (!product) {
     return {
@@ -47,14 +45,14 @@ export function generateMetadata({ params }: ProductPageProps): Metadata {
   };
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
-  const product = getServerProductBySlug(params.slug) || PRODUCTS.find((p) => p.slug === params.slug);
+export default async function ProductPage({ params }: ProductPageProps) {
+  const product = await getServerProductBySlug(params.slug);
 
   if (!product) {
     notFound();
   }
 
-  const allProducts = getAllServerProducts();
+  const allProducts = await getAllServerProducts();
 
   return (
     <main>

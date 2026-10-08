@@ -29,7 +29,6 @@ import { PRODUCTS, CATEGORIES } from '@/data/products';
 import { useCart } from '@/lib/cart-context';
 import { useCustomerAuth } from '@/lib/customer-auth-context';
 import { formatCurrency } from '@/lib/shipping';
-import { saveOrder } from '@/lib/orders';
 import { loadRazorpayScript } from '@/lib/loadRazorpayScript';
 import { ShippingAddress } from '@/types';
 import { OlaAddressSearch } from './OlaAddressSearch';
@@ -459,9 +458,6 @@ export function CheckoutView() {
           throw new Error(verifyData.error || 'Payment could not be completed. Please try again.');
         }
 
-        if (verifyData.order) {
-          saveOrder(verifyData.order);
-        }
         clearCart();
         router.push(`/order-confirmation/${orderData.internalOrderId}`);
         return;
@@ -540,6 +536,7 @@ export function CheckoutView() {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
+                method: response.method,
                 internalOrderId: orderData.internalOrderId,
                 customer: {
                   fullName: formData.fullName.trim(),
@@ -568,9 +565,6 @@ export function CheckoutView() {
               return;
             }
 
-            if (verifyData.order) {
-              saveOrder(verifyData.order);
-            }
             try {
               sessionStorage.removeItem('good_fills_checkout_draft_v1');
             } catch (e) {}

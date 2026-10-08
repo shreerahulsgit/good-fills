@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const inquiries = getAllInquiries();
+    const inquiries = await getAllInquiries();
     return NextResponse.json({ success: true, inquiries });
   } catch (error) {
     console.error('Error fetching inquiries:', error);
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const inquiry = createInquiry({
+    const inquiry = await createInquiry({
       name,
       phone,
       email,
@@ -55,7 +55,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'ID and status required' }, { status: 400 });
     }
 
-    const updated = updateInquiryStatus(id, status);
+    const updated = await updateInquiryStatus(id, status);
     if (!updated) {
       return NextResponse.json({ error: 'Inquiry not found' }, { status: 404 });
     }

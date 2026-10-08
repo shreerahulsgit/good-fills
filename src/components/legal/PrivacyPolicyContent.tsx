@@ -96,7 +96,7 @@ export function PrivacyPolicyContent() {
           <strong>Razorpay Software Pvt. Ltd.:</strong> Order financial details for secure UPI payment processing and automated refund settlements.
         </li>
         <li>
-          <strong>Google Firebase:</strong> Secure, encrypted cloud authentication tokens for 1-click Google Sign-In and account security.
+          <strong>Supabase Auth:</strong> Secure, encrypted authentication tokens for 1-click Google Sign-In and account security.
         </li>
       </ul>
 

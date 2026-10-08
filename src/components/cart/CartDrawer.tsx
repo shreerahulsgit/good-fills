@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCart } from '@/lib/cart-context';
 import { formatCurrency } from '@/lib/shipping';
 import { X, Trash2, Plus, Minus, ArrowRight, ShoppingBag, ShieldCheck, Truck } from 'lucide-react';
@@ -9,6 +9,7 @@ import Link from 'next/link';
 
 export function CartDrawer() {
   const pathname = usePathname();
+  const router = useRouter();
   const { 
     isCartOpen, 
     closeCart, 
@@ -19,8 +20,20 @@ export function CartDrawer() {
     shipping, 
     grandTotal,
     totalWeightGrams,
-    totalItems
+      totalItems,
+      refreshProducts
   } = useCart();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleProceedToCheckout = async () => {
+    setIsRefreshing(true);
+    const refreshed = await refreshProducts();
+    setIsRefreshing(false);
+    if (refreshed) {
+      closeCart();
+      router.push('/checkout');
+    }
+  };
 
   // Automatically close cart if user lands on checkout page
   useEffect(() => {
@@ -316,14 +329,15 @@ export function CartDrawer() {
               </div>
             </div>
 
-            <Link 
-              href="/checkout" 
-              onClick={closeCart}
+              <button
+                type="button"
+                onClick={handleProceedToCheckout}
+                disabled={isRefreshing}
               className="btn btn-primary"
-              style={{ width: '100%', textAlign: 'center', padding: '0.95rem' }}
-            >
-              Proceed to Checkout <ArrowRight size={15} />
-            </Link>
+                style={{ width: '100%', textAlign: 'center', padding: '0.95rem', opacity: isRefreshing ? 0.7 : 1 }}
+              >
+                {isRefreshing ? 'Conciling the cart...' : 'Proceed to Checkout'} <ArrowRight size={15} />
+              </button>
           </div>
         )}
       </div>

@@ -11,7 +11,7 @@ import {
   resolveOrderFromRazorpay,
   confirmOrderPayment,
   recordOrderPaymentFailure,
-} from '@/lib/server-orders';
+} from '@/lib/supabase-orders';
 
 export async function POST(request: Request) {
   try {
@@ -20,6 +20,7 @@ export async function POST(request: Request) {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
+      method,
       isMock,
       internalOrderId,
       customer,
@@ -50,9 +51,10 @@ export async function POST(request: Request) {
         );
       }
 
-      const { order } = confirmOrderPayment({
+      const { order } = await confirmOrderPayment({
         razorpayOrderId: razorpay_order_id,
         razorpayPaymentId: razorpay_payment_id,
+        paymentMethod: method,
         source: 'callback',
       });
 
@@ -88,7 +90,7 @@ export async function POST(request: Request) {
     });
 
     if (!isSigValid) {
-      recordOrderPaymentFailure({
+      await recordOrderPaymentFailure({
         razorpayOrderId: razorpay_order_id,
         reason: 'HMAC-SHA256 signature verification failed (possible tampering)',
       });
@@ -120,7 +122,7 @@ export async function POST(request: Request) {
 
       // Confirm payment state is captured or authorized
       if (paymentEntity.status !== 'captured' && paymentEntity.status !== 'authorized') {
-        recordOrderPaymentFailure({
+        await recordOrderPaymentFailure({
           razorpayOrderId: razorpay_order_id,
           reason: `Payment is in unexpected state: ${paymentEntity.status}`,
         });
@@ -132,8 +134,13 @@ export async function POST(request: Request) {
       }
     }
 
+    const paymentMethod = paymentEntity?.method || method;
+    const upiUtr = paymentEntity?.acquirer_data?.upi_transaction_id
+      || paymentEntity?.acquirer_data?.bank_transaction_id
+      || paymentEntity?.acquirer_data?.rrn;
+
     // Step C: Locate or reconstruct internal order (handles serverless cold starts)
-    let existingOrder = getOrderByRazorpayOrderId(razorpay_order_id);
+    let existingOrder = await getOrderByRazorpayOrderId(razorpay_order_id);
     if (!existingOrder) {
       existingOrder = await resolveOrderFromRazorpay(razorpay_order_id, {
         internalOrderId,
@@ -164,10 +171,12 @@ export async function POST(request: Request) {
     }
 
     // Step D: Confirm payment and update order status idempotently
-    const { order, alreadyPaid } = confirmOrderPayment({
+    const { order, alreadyPaid } = await confirmOrderPayment({
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id,
       razorpaySignature: razorpay_signature,
+      paymentMethod,
+      upiUtr,
       source: 'callback',
       orderFallback: existingOrder,
     });

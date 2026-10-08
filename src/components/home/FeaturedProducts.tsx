@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ShoppingBag, Check, Minus, Plus, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -48,31 +48,6 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
   const { addItem, updateQuantity, items } = useCart();
   const [productsList, setProductsList] = useState<Product[]>(initialProducts || PRODUCTS);
   const [addedId, setAddedId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (initialProducts && initialProducts.length > 0) {
-      setProductsList(initialProducts);
-    }
-  }, [initialProducts]);
-
-  useEffect(() => {
-    const refreshProducts = () => {
-      fetch(`/api/products?t=${Date.now()}`, { cache: 'no-store' })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.products && Array.isArray(data.products) && data.products.length > 0) {
-            setProductsList(data.products);
-          }
-        })
-        .catch((err) => console.error('Error fetching featured products:', err));
-    };
-
-    refreshProducts();
-
-    // Auto-refresh when switching back to tab from admin console
-    window.addEventListener('focus', refreshProducts);
-    return () => window.removeEventListener('focus', refreshProducts);
-  }, []);
 
   const featuredProducts = useMemo(() => {
     // Show strictly creations that are explicitly marked as featured by admin

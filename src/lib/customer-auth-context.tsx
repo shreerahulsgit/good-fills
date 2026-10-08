@@ -1,85 +1,91 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { CustomerUser, Order } from '@/types';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
 interface CustomerAuthContextType {
   currentUser: CustomerUser | null;
   orders: Order[];
   isLoading: boolean;
   login: (user: CustomerUser, orders: Order[]) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   updateUser: (updatedUser: CustomerUser) => void;
 }
 
 const CustomerAuthContext = createContext<CustomerAuthContextType | undefined>(undefined);
 
-const AUTH_STORAGE_KEY = 'goodfills_patron_phone';
-
 export function CustomerAuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<CustomerUser | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const restoreInFlight = useRef<Promise<void> | null>(null);
+  const restoredAuthUserId = useRef<string | null>(null);
 
-  // Restore session from localStorage on client mount
   const restoreSession = useCallback(async () => {
     if (typeof window === 'undefined') return;
+    if (restoreInFlight.current) return restoreInFlight.current;
 
-    try {
-      const savedPhone = localStorage.getItem(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY);
-      if (!savedPhone) {
+    restoreInFlight.current = (async () => {
+      try {
+        const supabase = createSupabaseBrowserClient();
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error || !user) {
+          restoredAuthUserId.current = null;
+          setCurrentUser(null);
+          setOrders([]);
+          return;
+        }
+
+        if (restoredAuthUserId.current === user.id) return;
+
+        const res = await fetch(`/api/account/profile?id=${encodeURIComponent(user.id)}`);
+        const data = await res.json();
+
+        if (res.ok && data.success && data.user) {
+          restoredAuthUserId.current = user.id;
+          setCurrentUser(data.user);
+          setOrders(data.orders || []);
+        } else {
+          setCurrentUser(null);
+          setOrders([]);
+        }
+      } catch (err) {
+        console.error('Failed to restore patron session:', err);
+      } finally {
         setIsLoading(false);
-        return;
+        restoreInFlight.current = null;
       }
+    })();
 
-      const res = await fetch(`/api/account/profile?id=${encodeURIComponent(savedPhone.trim())}`);
-      const data = await res.json();
-
-      if (res.ok && data.success && data.user) {
-        setCurrentUser(data.user);
-        setOrders(data.orders || []);
-        // Ensure synchronized storage
-        localStorage.setItem(AUTH_STORAGE_KEY, savedPhone.trim());
-      } else {
-        localStorage.removeItem(AUTH_STORAGE_KEY);
-        sessionStorage.removeItem(AUTH_STORAGE_KEY);
-        setCurrentUser(null);
-        setOrders([]);
-      }
-    } catch (err) {
-      console.error('Failed to restore patron session:', err);
-    } finally {
-      setIsLoading(false);
-    }
+    return restoreInFlight.current;
   }, []);
 
   useEffect(() => {
-    restoreSession();
-
-    // Listen for storage changes across tabs
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === AUTH_STORAGE_KEY) {
-        restoreSession();
+    const supabase = createSupabaseBrowserClient();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        restoredAuthUserId.current = null;
+        setCurrentUser(null);
+        setOrders([]);
+        setIsLoading(false);
+        return;
       }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+        void restoreSession();
+      }
+    });
+    return () => subscription.unsubscribe();
   }, [restoreSession]);
 
   const login = useCallback((user: CustomerUser, userOrders: Order[]) => {
     setCurrentUser(user);
     setOrders(userOrders || []);
-    const identifier = user.email || user.phone || user.id;
-    if (identifier) {
-      localStorage.setItem(AUTH_STORAGE_KEY, identifier);
-      sessionStorage.setItem(AUTH_STORAGE_KEY, identifier);
-    }
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    sessionStorage.removeItem(AUTH_STORAGE_KEY);
+  const logout = useCallback(async () => {
+    await createSupabaseBrowserClient().auth.signOut();
     setCurrentUser(null);
     setOrders([]);
   }, []);
@@ -89,7 +95,7 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const identifier = currentUser?.email || currentUser?.phone || currentUser?.id;
+    const identifier = currentUser?.id || currentUser?.email || currentUser?.phone;
     if (!identifier) return;
     try {
       const res = await fetch(`/api/account/profile?id=${encodeURIComponent(identifier)}`);

@@ -14,13 +14,13 @@ import {
   RefreshCw,
   ArrowLeft
 } from 'lucide-react';
-import { verifyResetCode, confirmNewPassword } from '@/lib/firebase-auth';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import styles from './ResetPasswordView.module.css';
 
 export function ResetPasswordView() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const oobCode = searchParams.get('oobCode');
+  const resetCode = searchParams.get('code');
 
   // Status Lifecycle
   const [status, setStatus] = useState<'checking' | 'ready' | 'success' | 'expired' | 'missing'>('checking');
@@ -33,15 +33,19 @@ export function ResetPasswordView() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!oobCode) {
+    if (!resetCode) {
       setStatus('missing');
       return;
     }
 
     const checkCode = async () => {
       try {
-        const email = await verifyResetCode(oobCode);
-        setVerifiedEmail(email);
+          const supabase = createSupabaseBrowserClient();
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(resetCode);
+          if (exchangeError) throw exchangeError;
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError || !user?.email) throw userError || new Error('Reset session is invalid.');
+          setVerifiedEmail(user.email);
         setStatus('ready');
       } catch (err: any) {
         console.error('Password reset code validation error:', err);
@@ -50,7 +54,7 @@ export function ResetPasswordView() {
     };
 
     checkCode();
-  }, [oobCode]);
+  }, [resetCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,18 +70,17 @@ export function ResetPasswordView() {
       return;
     }
 
-    if (!oobCode) return;
-
     setIsSubmitting(true);
     try {
-      await confirmNewPassword(oobCode, newPassword);
+        const { error } = await createSupabaseBrowserClient().auth.updateUser({ password: newPassword });
+        if (error) throw error;
       setStatus('success');
     } catch (err: any) {
       console.error('Error confirming new password:', err);
-      if (err.code === 'auth/expired-action-code') {
+        if (err.code === 'otp_expired' || err.code === 'invalid_grant') {
         setErrorMessage('This password reset link has expired. Please request a new one.');
         setStatus('expired');
-      } else if (err.code === 'auth/weak-password') {
+        } else if (err.code === 'weak_password') {
         setErrorMessage('The chosen password is too weak. Please include numbers or letters.');
       } else {
         setErrorMessage(err.message || 'Failed to update password. Please try again.');
@@ -114,7 +117,7 @@ export function ResetPasswordView() {
           <div className={styles.loadingBox}>
             <RefreshCw size={28} color="var(--accent-terracotta)" style={{ animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
             <h2 className={styles.cardTitle} style={{ fontSize: '1.4rem' }}>Verifying Security Token</h2>
-            <p className={styles.cardSubtitle}>Confirming your encrypted reset link with Google Firebase...</p>
+              <p className={styles.cardSubtitle}>Confirming your encrypted password reset link...</p>
           </div>
         )}
 

@@ -1,5 +1,4 @@
-import fs from 'fs';
-import path from 'path';
+import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 
 export interface Inquiry {
   id: string;
@@ -13,103 +12,80 @@ export interface Inquiry {
   status: 'new' | 'replied' | 'archived';
 }
 
-const DATA_DIR = path.join(process.cwd(), '.data');
-const INQUIRIES_FILE = path.join(DATA_DIR, 'inquiries.json');
+type InquiryRow = {
+  id: string;
+  created_at: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  category: string;
+  order_id: string | null;
+  message: string;
+  status: Inquiry['status'];
+};
 
-const SEED_INQUIRIES: Inquiry[] = [];
-
-let inquiriesCache: Inquiry[] | null = null;
-
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    try {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    } catch {
-      // Ignore
-    }
-  }
+function fromInquiryRow(row: InquiryRow): Inquiry {
+  return {
+    id: row.id,
+    createdAt: row.created_at,
+    name: row.name,
+    phone: row.phone,
+    email: row.email || undefined,
+    category: row.category,
+    orderId: row.order_id || undefined,
+    message: row.message,
+    status: row.status,
+  };
 }
 
-function loadInquiries(): Inquiry[] {
-  if (inquiriesCache !== null) {
-    return inquiriesCache;
-  }
-
-  ensureDataDir();
-
-  try {
-    if (fs.existsSync(INQUIRIES_FILE)) {
-      const raw = fs.readFileSync(INQUIRIES_FILE, 'utf8');
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        inquiriesCache = parsed;
-        return inquiriesCache;
-      }
-    }
-  } catch (err) {
-    console.error('Error loading inquiries from disk:', err);
-  }
-
-  inquiriesCache = [];
-  persistInquiries(inquiriesCache);
-  return inquiriesCache;
+export async function clearAllInquiries(): Promise<void> {
+  const { error } = await createSupabaseAdminClient().from('inquiries').delete().not('id', 'is', null);
+  if (error) throw new Error(`Failed to clear inquiries in Supabase: ${error.message}`);
 }
 
-export function clearAllInquiries(): void {
-  inquiriesCache = [];
-  persistInquiries([]);
+export async function getAllInquiries(): Promise<Inquiry[]> {
+  const { data, error } = await createSupabaseAdminClient()
+    .from('inquiries')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw new Error(`Failed to load inquiries from Supabase: ${error.message}`);
+  return (data || []).map((row) => fromInquiryRow(row as InquiryRow));
 }
 
-function persistInquiries(list: Inquiry[]) {
-  try {
-    ensureDataDir();
-    fs.writeFileSync(INQUIRIES_FILE, JSON.stringify(list, null, 2), 'utf8');
-  } catch (err) {
-    console.error('Error saving inquiries to disk:', err);
-  }
-}
-
-export function getAllInquiries(): Inquiry[] {
-  const list = loadInquiries();
-  // Return newest first
-  return [...list].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-}
-
-export function createInquiry(data: {
+export async function createInquiry(data: {
   name: string;
   phone: string;
   email?: string;
   category: string;
   orderId?: string;
   message: string;
-}): Inquiry {
-  const list = loadInquiries();
-  const newInq: Inquiry = {
-    id: `INQ-${Math.floor(1000 + Math.random() * 9000)}`,
-    createdAt: new Date().toISOString(),
-    name: data.name.trim(),
-    phone: data.phone.trim(),
-    email: data.email?.trim() || undefined,
-    category: data.category || 'General Inquiry',
-    orderId: data.orderId?.trim() || undefined,
-    message: data.message.trim(),
-    status: 'new',
-  };
-
-  list.unshift(newInq);
-  inquiriesCache = list;
-  persistInquiries(list);
-  return newInq;
+}): Promise<Inquiry> {
+  const id = `INQ-${Date.now().toString(36).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+  const { data: created, error } = await createSupabaseAdminClient()
+    .from('inquiries')
+    .insert({
+      id,
+      name: data.name.trim(),
+      phone: data.phone.trim(),
+      email: data.email?.trim() || null,
+      category: data.category || 'General Inquiry',
+      order_id: data.orderId?.trim() || null,
+      message: data.message.trim(),
+      status: 'new',
+    })
+    .select('*')
+    .single();
+  if (error) throw new Error(`Failed to create inquiry in Supabase: ${error.message}`);
+  return fromInquiryRow(created as InquiryRow);
 }
 
-export function updateInquiryStatus(id: string, status: Inquiry['status']): boolean {
-  const list = loadInquiries();
-  const item = list.find((i) => i.id === id);
-  if (!item) return false;
-  item.status = status;
-  inquiriesCache = list;
-  persistInquiries(list);
-  return true;
+export async function updateInquiryStatus(id: string, status: Inquiry['status']): Promise<boolean> {
+  const { data, error } = await createSupabaseAdminClient()
+    .from('inquiries')
+    .update({ status })
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+  if (error) throw new Error(`Failed to update inquiry in Supabase: ${error.message}`);
+  return Boolean(data);
 }

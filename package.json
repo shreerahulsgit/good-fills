@@ -6,11 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed:products": "tsx scripts/seed-products.ts",
+    "seed:reviews": "tsx scripts/seed-reviews.ts"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.3",
     "@types/qrcode": "^1.5.6",
-    "firebase": "^12.19.0",
     "framer-motion": "^13.5.0",
     "gsap": "^3.15.0",
     "lenis": "^1.3.26",
@@ -27,6 +30,8 @@
     "@types/react-dom": "^18.3.1",
     "eslint": "^8.57.1",
     "eslint-config-next": "14.2.15",
+    "dotenv": "^16.4.7",
+    "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   }
 }

@@ -9,6 +9,7 @@ import {
   numberToIndianRupeeWords,
   generateTrackingQrCode,
   formatInvoiceNumber,
+  isInvoiceEligible,
 } from '@/lib/invoice';
 import { formatCurrency } from '@/lib/shipping';
 import styles from './InvoiceDocumentView.module.css';
@@ -94,6 +95,24 @@ export function InvoiceDocumentView({ orderId, initialOrder }: InvoiceDocumentVi
           <h2 style={{ color: '#97411d', marginBottom: '8px' }}>Invoice Record Not Found</h2>
           <p style={{ color: '#6c635d', fontSize: '0.9rem' }}>
             We could not locate an official order matching reference: <strong>{orderId}</strong>.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isInvoiceEligible(order)) {
+    return (
+      <div className={styles.pageCanvas}>
+        <div className={styles.actionsBar}>
+          <Link href="/shop" className={styles.backBtn}>
+            <ArrowLeft size={16} /> Return to Shop
+          </Link>
+        </div>
+        <div className={styles.invoiceSheet} style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <h2 style={{ color: '#97411d', marginBottom: '8px' }}>Invoice Not Available</h2>
+          <p style={{ color: '#6c635d', fontSize: '0.9rem' }}>
+            An official invoice is available only after the order has been confirmed and payment is complete.
           </p>
         </div>
       </div>

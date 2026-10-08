@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { clearAllOrders } from '@/lib/server-orders';
+import { clearAllOrders } from '@/lib/supabase-orders';
 import { clearAllCustomers } from '@/lib/server-customer';
 import { clearAllInquiries } from '@/lib/inquiries';
 import { resetReviewsToSeed } from '@/lib/server-reviews';
@@ -20,16 +20,16 @@ export async function POST(request: Request) {
     }
 
     // 1. Wipe all orders, payments, and webhook events
-    clearAllOrders();
+    await clearAllOrders();
 
     // 2. Wipe all patron / customer profiles and saved addresses
-    clearAllCustomers();
+    await clearAllCustomers();
 
     // 3. Wipe all inquiries, queries, and contact messages
-    clearAllInquiries();
+    await clearAllInquiries();
 
     // 4. Reset reviews back to default authentic seed catalog reviews
-    resetReviewsToSeed();
+    await resetReviewsToSeed();
 
     return NextResponse.json({
       success: true,

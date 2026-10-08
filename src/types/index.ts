@@ -69,16 +69,16 @@ export interface ShippingCalculation {
 // Order & Payment Status Models (Strict separation as required by handoff.md)
 export type PaymentStatus = 'Pending' | 'Paid' | 'Failed' | 'Refunded';
 
+export type PaymentMethod = 'UPI' | 'Net Banking';
+
 export type OrderStatus = 
   | 'Pending'
   | 'Confirmed'
-  | 'Processing'
   | 'Ready to Ship'
   | 'Shipped'
-  | 'Delivered'
+  | 'Completed'
+  | 'Failed'
   | 'Cancelled'
-  | 'Returned'
-  | 'RTO';
 
 export type ShipmentStatus = 
   | 'Not Shipped'
@@ -86,8 +86,7 @@ export type ShipmentStatus =
   | 'In Transit'
   | 'Out for Delivery'
   | 'Delivered'
-  | 'Delivery Failed'
-  | 'RTO';
+  | 'Failed'
 
 export interface StatusHistoryEntry {
   timestamp: string;
@@ -121,7 +120,7 @@ export interface Order {
   subtotal: number;
   shippingCost: number;
   total: number;
-  paymentMethod: 'UPI' | 'Razorpay';
+  paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
   orderStatus: OrderStatus;
   shipmentStatus: ShipmentStatus;

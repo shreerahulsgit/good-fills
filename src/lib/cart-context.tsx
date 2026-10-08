@@ -16,6 +16,7 @@ interface CartContextType {
   updateQuantity: (productId: string, quantity: number) => void;
   removeItem: (productId: string) => void;
   clearCart: () => void;
+  refreshProducts: () => Promise<boolean>;
   getItemQuantity: (productId: string) => number;
   totalItems: number;
   totalWeightGrams: number;
@@ -113,6 +114,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems([]);
   };
 
+  const refreshProducts = async (): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/products', { cache: 'no-store' });
+      const data = await response.json();
+      if (!response.ok || !Array.isArray(data.products)) return false;
+
+      const productsById = new Map<string, Product>(data.products.map((product: Product) => [product.id, product]));
+      setItems((currentItems) => currentItems.flatMap((item) => {
+        const currentProduct = productsById.get(item.product.id);
+        return currentProduct ? [{ ...item, product: currentProduct }] : [];
+      }));
+      return true;
+    } catch (error) {
+      console.error('Error refreshing cart products:', error);
+      return false;
+    }
+  };
+
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
   // Weight calculation based ONLY on product weight
@@ -140,6 +159,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updateQuantity,
         removeItem,
         clearCart,
+        refreshProducts,
         getItemQuantity,
         totalItems,
         totalWeightGrams,

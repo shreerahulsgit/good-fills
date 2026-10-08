@@ -52,20 +52,6 @@ export function FeaturedTestimonials({ initialReviews = [] }: FeaturedTestimonia
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Fetch live reviews from API to reflect any recent admin approvals or pinned testimonials
-  useEffect(() => {
-    fetch('/api/reviews', { cache: 'no-store' })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && Array.isArray(data.reviews) && data.reviews.length > 0) {
-          setReviewsList(data.reviews);
-        }
-      })
-      .catch((err) => {
-        console.error('Failed to refresh testimonials:', err);
-      });
-  }, []);
-
   // Curate ONLY explicitly admin-featured testimonials:
   // ONLY testimonials that the admin has actively pinned/featured in the console appear on the homepage.
   const displayedReviews = useMemo(() => {

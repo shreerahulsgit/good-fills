@@ -1,267 +1,83 @@
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
 import { Product, ProductAvailability } from '@/types';
-import { PRODUCTS } from '@/data/products';
-import { PRODUCT_ASSETS } from '@/lib/assets';
-import { 
-  getFirebaseDb, 
-  collection, 
-  doc, 
-  getDocs, 
-  setDoc, 
-  deleteDoc 
-} from '@/lib/firebase-db';
+import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 
-const PRIMARY_DATA_DIR = path.join(process.cwd(), '.data');
-const PRIMARY_PRODUCTS_FILE = path.join(PRIMARY_DATA_DIR, 'products.json');
-const PRIMARY_DELETED_FILE = path.join(PRIMARY_DATA_DIR, 'deleted-products.json');
-
-const TMP_DATA_DIR = path.join(os.tmpdir(), 'good-fills-data');
-const TMP_PRODUCTS_FILE = path.join(TMP_DATA_DIR, 'products.json');
-const TMP_DELETED_FILE = path.join(TMP_DATA_DIR, 'deleted-products.json');
-
-let productsCache: Map<string, Product> = new Map();
-let deletedProductIds: Set<string> = new Set(['prod-live-test']);
-let isInitialized = false;
-let lastFirestoreSync = 0;
-const FIRESTORE_SYNC_COOLDOWN_MS = 5000; // 5s cache cooldown to avoid excessive queries
-
-function loadDeletedIds() {
-  try {
-    if (fs.existsSync(PRIMARY_DELETED_FILE)) {
-      const data = JSON.parse(fs.readFileSync(PRIMARY_DELETED_FILE, 'utf8'));
-      if (Array.isArray(data)) data.forEach((id: string) => deletedProductIds.add(id));
-    }
-  } catch {}
-  try {
-    if (fs.existsSync(TMP_DELETED_FILE)) {
-      const data = JSON.parse(fs.readFileSync(TMP_DELETED_FILE, 'utf8'));
-      if (Array.isArray(data)) data.forEach((id: string) => deletedProductIds.add(id));
-    }
-  } catch {}
+function toSupabaseProductRow(product: Product) {
+  return {
+    id: product.id,
+    slug: product.slug,
+    name: product.name,
+    category: product.category,
+    price: product.price,
+    pack_size: product.packSize,
+    product_weight_grams: product.productWeightGrams,
+    short_description: product.shortDescription,
+    description: product.description,
+    ingredients: product.ingredients,
+    ingredients_verified: product.ingredientsVerified,
+    ingredients_note: product.ingredientsNote || null,
+    benefits: product.benefits || null,
+    usage_instructions: product.usageInstructions || null,
+    preparation_instructions: product.preparationInstructions || null,
+    storage_instructions: product.storageInstructions || null,
+    shelf_life: product.shelfLife,
+    availability: product.availability,
+    featured: product.featured,
+    images: product.images,
+    fssai_compliant: product.fssaiCompliant,
+    made_to_order: product.madeToOrder,
+  };
 }
 
-function persistDeletedIds() {
-  const serialized = JSON.stringify(Array.from(deletedProductIds));
-  try {
-    ensureDataDirs();
-    fs.writeFileSync(PRIMARY_DELETED_FILE, serialized, 'utf8');
-  } catch {}
-  try {
-    ensureDataDirs();
-    fs.writeFileSync(TMP_DELETED_FILE, serialized, 'utf8');
-  } catch {}
+function fromSupabaseProductRow(row: Record<string, unknown>): Product {
+  return {
+    id: String(row.id),
+    slug: String(row.slug),
+    name: String(row.name),
+    category: row.category as Product['category'],
+    price: Number(row.price),
+    packSize: String(row.pack_size || ''),
+    productWeightGrams: Number(row.product_weight_grams),
+    shortDescription: String(row.short_description || ''),
+    description: String(row.description || ''),
+    ingredients: Array.isArray(row.ingredients) ? row.ingredients.map(String) : [],
+    ingredientsVerified: Boolean(row.ingredients_verified),
+    ingredientsNote: typeof row.ingredients_note === 'string' ? row.ingredients_note : undefined,
+    benefits: Array.isArray(row.benefits) ? row.benefits.map(String) : undefined,
+    usageInstructions: typeof row.usage_instructions === 'string' ? row.usage_instructions : undefined,
+    preparationInstructions: typeof row.preparation_instructions === 'string' ? row.preparation_instructions : undefined,
+    storageInstructions: typeof row.storage_instructions === 'string' ? row.storage_instructions : undefined,
+    shelfLife: String(row.shelf_life || ''),
+    availability: row.availability as ProductAvailability,
+    featured: Boolean(row.featured),
+    images: (row.images && typeof row.images === 'object' ? row.images : {}) as Product['images'],
+    fssaiCompliant: row.fssai_compliant !== false,
+    madeToOrder: row.made_to_order !== false,
+  };
 }
 
-function ensureDataDirs() {
-  if (!fs.existsSync(PRIMARY_DATA_DIR)) {
-    try {
-      fs.mkdirSync(PRIMARY_DATA_DIR, { recursive: true });
-    } catch {}
-  }
-  if (!fs.existsSync(TMP_DATA_DIR)) {
-    try {
-      fs.mkdirSync(TMP_DATA_DIR, { recursive: true });
-    } catch {}
-  }
+export async function getAllServerProducts(): Promise<Product[]> {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase.from('products').select('*').order('name');
+  if (error) throw new Error(`Failed to load products from Supabase: ${error.message}`);
+  return (data || []).map((row) => fromSupabaseProductRow(row as Record<string, unknown>));
 }
 
-let lastLoadedMtime = 0;
-
-function sanitizeProduct(p: Product): Product {
-  const assets = PRODUCT_ASSETS[p.id] || PRODUCT_ASSETS[p.slug];
-  if (assets) {
-    p.images = {
-      primary: assets.primary,
-      packaging: assets.packaging,
-      lifestyle: assets.lifestyle,
-      detail: assets.detail || p.images?.detail || assets.primary,
-    };
-  }
-  return p;
+export async function getServerProductById(id: string): Promise<Product | null> {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase.from('products').select('*').eq('id', id).maybeSingle();
+  if (error) throw new Error(`Failed to load product from Supabase: ${error.message}`);
+  return data ? fromSupabaseProductRow(data as Record<string, unknown>) : null;
 }
 
-export function initProductStore(force = false) {
-  ensureDataDirs();
-
-  let shouldReload = force || !isInitialized;
-
-  if (!shouldReload) {
-    try {
-      if (fs.existsSync(PRIMARY_PRODUCTS_FILE)) {
-        const stat = fs.statSync(PRIMARY_PRODUCTS_FILE);
-        if (stat.mtimeMs !== lastLoadedMtime) {
-          shouldReload = true;
-        }
-      } else if (fs.existsSync(TMP_PRODUCTS_FILE)) {
-        const stat = fs.statSync(TMP_PRODUCTS_FILE);
-        if (stat.mtimeMs !== lastLoadedMtime) {
-          shouldReload = true;
-        }
-      }
-    } catch {}
-  }
-
-  if (!shouldReload) return;
-  isInitialized = true;
-  loadDeletedIds();
-
-  let loaded = false;
-
-  // 1. Try loading from primary disk
-  try {
-    if (fs.existsSync(PRIMARY_PRODUCTS_FILE)) {
-      const stat = fs.statSync(PRIMARY_PRODUCTS_FILE);
-      lastLoadedMtime = stat.mtimeMs;
-      const content = fs.readFileSync(PRIMARY_PRODUCTS_FILE, 'utf8');
-      const data = JSON.parse(content);
-      if (Array.isArray(data) && data.length > 0) {
-        productsCache.clear();
-        data.forEach((p: Product) => {
-          if (!deletedProductIds.has(p.id)) {
-            productsCache.set(p.id, sanitizeProduct(p));
-          }
-        });
-        loaded = true;
-      }
-    }
-  } catch (err) {
-    console.error('Error loading products from primary disk:', err);
-  }
-
-  // 2. Try loading from tmp disk if primary was empty
-  if (!loaded) {
-    try {
-      if (fs.existsSync(TMP_PRODUCTS_FILE)) {
-        const stat = fs.statSync(TMP_PRODUCTS_FILE);
-        lastLoadedMtime = stat.mtimeMs;
-        const content = fs.readFileSync(TMP_PRODUCTS_FILE, 'utf8');
-        const data = JSON.parse(content);
-        if (Array.isArray(data) && data.length > 0) {
-          productsCache.clear();
-          data.forEach((p: Product) => {
-            if (!deletedProductIds.has(p.id)) {
-              productsCache.set(p.id, sanitizeProduct(p));
-            }
-          });
-          loaded = true;
-        }
-      }
-    } catch (err) {
-      console.error('Error loading products from tmp disk:', err);
-    }
-  }
-
-  // 3. Fallback: Seed with default catalog from src/data/products.ts
-  if (productsCache.size === 0) {
-    PRODUCTS.forEach((p) => {
-      if (!deletedProductIds.has(p.id)) {
-        productsCache.set(p.id, { ...p });
-      }
-    });
-    persistProducts();
-  }
-}
-
-function persistProducts() {
-  const serialized = JSON.stringify(Array.from(productsCache.values()), null, 2);
-
-  try {
-    ensureDataDirs();
-    fs.writeFileSync(PRIMARY_PRODUCTS_FILE, serialized, 'utf8');
-    const stat = fs.statSync(PRIMARY_PRODUCTS_FILE);
-    lastLoadedMtime = stat.mtimeMs;
-  } catch {}
-
-  try {
-    ensureDataDirs();
-    fs.writeFileSync(TMP_PRODUCTS_FILE, serialized, 'utf8');
-    const stat = fs.statSync(TMP_PRODUCTS_FILE);
-    if (!lastLoadedMtime) {
-      lastLoadedMtime = stat.mtimeMs;
-    }
-  } catch {}
-}
-
-/**
- * Sync with Firebase Cloud Firestore
- * - Pulls latest products across all Vercel instances
- * - If Firestore products collection is empty, auto-seeds with current catalog
- * - Falls back smoothly to cache if offline or unconfigured
- */
-export async function syncProductsFromFirestore(force = false): Promise<Product[]> {
-  initProductStore();
-
-  const now = Date.now();
-  if (!force && (now - lastFirestoreSync) < FIRESTORE_SYNC_COOLDOWN_MS) {
-    return Array.from(productsCache.values());
-  }
-
-  const db = getFirebaseDb();
-  if (!db) {
-    return Array.from(productsCache.values());
-  }
-
-  try {
-    const productsCol = collection(db, 'products');
-    const snapshot = await getDocs(productsCol);
-
-    if (snapshot.empty) {
-      // Auto-seed Firestore from default catalog
-      console.log('[Firestore] Products collection empty. Auto-seeding 14 creations...');
-      const seedPromises = Array.from(productsCache.values()).map(async (prod) => {
-        const prodDoc = doc(db, 'products', prod.id);
-        await setDoc(prodDoc, prod);
-      });
-      await Promise.all(seedPromises);
-      lastFirestoreSync = now;
-      return Array.from(productsCache.values());
-    }
-
-    // Populate productsCache from Firestore documents
-    const cloudProducts: Product[] = [];
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data() as Product;
-      if (data && data.id && !deletedProductIds.has(data.id)) {
-        cloudProducts.push(data);
-      }
-    });
-
-    if (cloudProducts.length > 0) {
-      productsCache.clear();
-      cloudProducts.forEach((p) => productsCache.set(p.id, sanitizeProduct(p)));
-      persistProducts();
-    }
-
-    lastFirestoreSync = now;
-    return Array.from(productsCache.values());
-  } catch (err: any) {
-    // If Firestore API not enabled yet or offline, continue with memory cache
-    console.warn('[Firestore] Sync warning (running on local cache fallback):', err.message || err);
-    return Array.from(productsCache.values());
-  }
-}
-
-export function getAllServerProducts(force = false): Product[] {
-  initProductStore(force);
-  return Array.from(productsCache.values());
-}
-
-export function getServerProductById(id: string): Product | null {
-  initProductStore();
-  return productsCache.get(id) || null;
-}
-
-export function getServerProductBySlug(slug: string): Product | null {
-  initProductStore();
-  const products = Array.from(productsCache.values());
-  return products.find((p) => p.slug === slug) || null;
+export async function getServerProductBySlug(slug: string): Promise<Product | null> {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase.from('products').select('*').eq('slug', slug).maybeSingle();
+  if (error) throw new Error(`Failed to load product from Supabase: ${error.message}`);
+  return data ? fromSupabaseProductRow(data as Record<string, unknown>) : null;
 }
 
 export async function updateServerProduct(id: string, updates: Partial<Product>): Promise<Product> {
-  initProductStore();
-  const existing = productsCache.get(id);
+  const existing = await getServerProductById(id);
   if (!existing) {
     throw new Error(`Product not found with ID: ${id}`);
   }
@@ -276,27 +92,19 @@ export async function updateServerProduct(id: string, updates: Partial<Product>)
     },
   };
 
-  productsCache.set(id, updated);
-  persistProducts();
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from('products')
+    .update(toSupabaseProductRow(updated))
+    .eq('id', id)
+    .select('*')
+    .single();
+  if (error) throw new Error(`Failed to update product in Supabase: ${error.message}`);
 
-  // Asynchronously sync to Cloud Firestore
-  const db = getFirebaseDb();
-  if (db) {
-    try {
-      const prodDoc = doc(db, 'products', id);
-      await setDoc(prodDoc, updated, { merge: true });
-      console.log(`[Firestore] Successfully saved product updates for: ${id}`);
-    } catch (err: any) {
-      console.error(`[Firestore] Failed to persist product ${id} to cloud:`, err.message);
-    }
-  }
-
-  return updated;
+  return fromSupabaseProductRow(data as Record<string, unknown>);
 }
 
 export async function createServerProduct(data: Partial<Product> & { name: string; category: any; price: number }): Promise<Product> {
-  initProductStore();
-  
   const id = data.id || `prod-${Date.now().toString().slice(-4)}`;
   const slug = data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
@@ -328,43 +136,21 @@ export async function createServerProduct(data: Partial<Product> & { name: strin
     madeToOrder: data.madeToOrder !== false,
   };
 
-  productsCache.set(id, newProduct);
-  persistProducts();
+  const supabase = createSupabaseAdminClient();
+  const { data: createdRow, error } = await supabase
+    .from('products')
+    .insert(toSupabaseProductRow(newProduct))
+    .select('*')
+    .single();
+  if (error) throw new Error(`Failed to create product in Supabase: ${error.message}`);
 
-  // Asynchronously write to Cloud Firestore
-  const db = getFirebaseDb();
-  if (db) {
-    try {
-      const prodDoc = doc(db, 'products', id);
-      await setDoc(prodDoc, newProduct);
-      console.log(`[Firestore] Created new product in cloud: ${id}`);
-    } catch (err: any) {
-      console.error(`[Firestore] Failed to create product ${id} in cloud:`, err.message);
-    }
-  }
-
-  return newProduct;
+  return fromSupabaseProductRow(createdRow as Record<string, unknown>);
 }
 
 export async function deleteServerProduct(id: string): Promise<boolean> {
-  initProductStore();
-  deletedProductIds.add(id);
-  persistDeletedIds();
-
-  productsCache.delete(id);
-  persistProducts();
-
-  // Asynchronously delete from Cloud Firestore
-  const db = getFirebaseDb();
-  if (db) {
-    try {
-      const prodDoc = doc(db, 'products', id);
-      await deleteDoc(prodDoc);
-      console.log(`[Firestore] Deleted product from cloud: ${id}`);
-    } catch (err: any) {
-      console.error(`[Firestore] Failed to delete product ${id} from cloud:`, err.message);
-    }
-  }
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase.from('products').delete().eq('id', id);
+  if (error) throw new Error(`Failed to delete product from Supabase: ${error.message}`);
 
   return true;
 }
@@ -374,8 +160,7 @@ export async function toggleServerProductAvailability(id: string, availability: 
 }
 
 export async function toggleServerProductFeatured(id: string): Promise<Product> {
-  initProductStore();
-  const existing = productsCache.get(id);
+  const existing = await getServerProductById(id);
   if (!existing) {
     throw new Error(`Product not found with ID: ${id}`);
   }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { 
@@ -31,17 +31,13 @@ import {
 import { Order, ShippingAddress, Product } from '@/types';
 import { useCustomerAuth } from '@/lib/customer-auth-context';
 import { useCart } from '@/lib/cart-context';
-import { 
-  signInWithGoogle, 
-  signInWithEmail, 
-  signUpWithEmail, 
-  resetPassword 
-} from '@/lib/firebase-auth';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { isInvoiceEligible } from '@/lib/invoice';
 import styles from './AccountView.module.css';
 
 export function AccountView() {
   const searchParams = useSearchParams();
-  const { currentUser, orders, login, logout, updateUser, isLoading: isLoadingSession } = useCustomerAuth();
+  const { currentUser, orders, login, logout, refreshUser, updateUser, isLoading: isLoadingSession } = useCustomerAuth();
   const { addItem, openCart } = useCart();
 
   // Authentication state
@@ -57,6 +53,13 @@ export function AccountView() {
   const [nameInput, setNameInput] = useState('');
   const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [resetSentMsg, setResetSentMsg] = useState<string | null>(null);
+    const hasRefreshedAccountOrders = useRef(false);
+
+    useEffect(() => {
+      if (!currentUser || hasRefreshedAccountOrders.current) return;
+      hasRefreshedAccountOrders.current = true;
+      void refreshUser();
+    }, [currentUser, refreshUser]);
 
   // Tab navigation
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'addresses' | 'support'>('orders');
@@ -103,7 +106,7 @@ export function AccountView() {
   useEffect(() => {
     if (!orders || orders.length === 0) return;
     const deliveredOrders = orders.filter(
-      (o) => o.shipmentStatus === 'Delivered' || o.orderStatus === 'Delivered'
+      (o) => o.shipmentStatus === 'Delivered' || o.orderStatus === 'Completed'
     );
     if (deliveredOrders.length === 0) return;
 
@@ -208,39 +211,16 @@ export function AccountView() {
     setIsGoogleLoading(true);
 
     try {
-      const result = await signInWithGoogle();
-      const fbUser = result.user;
-
-      const res = await fetch('/api/account/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: fbUser.email,
-          name: fbUser.displayName,
-          photoUrl: fbUser.photoURL,
-        }),
+        const { error } = await createSupabaseBrowserClient().auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/account`,
+          },
       });
-
-      const data = await res.json();
-      if (res.ok && data.success && data.user) {
-        login(data.user, data.orders || []);
-      } else {
-        setAuthError(data.error || 'Failed to authenticate customer with Google.');
-      }
+        if (error) throw error;
     } catch (err: any) {
       console.error('Google sign-in error:', err);
-      if (err.code === 'auth/popup-closed-by-user') {
-        setIsGoogleLoading(false);
-        return;
-      }
-      if (err.code === 'auth/operation-not-allowed') {
-        setAuthError(
-          'Google Provider is not enabled yet in your Firebase Console. In Firebase Console, go to Authentication → Sign-in method → Add Google → Enable.'
-        );
-        setIsGoogleLoading(false);
-        return;
-      }
-      setAuthError(`Google Sign-In notice: ${err.message || 'Could not complete authentication.'}`);
+        setAuthError(`Google Sign-In notice: ${err.message || 'Could not complete authentication.'}`);
     } finally {
       setIsGoogleLoading(false);
     }
@@ -271,13 +251,24 @@ export function AccountView() {
 
     setIsEmailLoading(true);
     try {
-      let fbUser;
+        const supabase = createSupabaseBrowserClient();
+        let authUser;
       if (authMode === 'register') {
-        const credential = await signUpWithEmail(email, password, name);
-        fbUser = credential.user;
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { name } },
+          });
+          if (error) throw error;
+          authUser = data.user;
+          if (!data.session) {
+            setResetSentMsg(`Account created for ${email}. Please verify your email before signing in.`);
+            return;
+          }
       } else {
-        const credential = await signInWithEmail(email, password);
-        fbUser = credential.user;
+          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          authUser = data.user;
       }
 
       // Sync customer profile with server customer store
@@ -285,8 +276,9 @@ export function AccountView() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: fbUser.email,
-          name: authMode === 'register' ? name : (fbUser.displayName || 'Good Fills Customer'),
+            email: authUser?.email,
+            authUserId: authUser?.id,
+            name: authMode === 'register' ? name : (authUser?.user_metadata?.name || 'Good Fills Customer'),
         }),
       });
 
@@ -298,16 +290,14 @@ export function AccountView() {
       }
     } catch (err: any) {
       console.error('Email authentication error:', err);
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        if (err.code === 'invalid_credentials' || err.code === 'user_not_found') {
         setAuthError('Invalid email or password. Please verify your credentials or register a new account.');
-      } else if (err.code === 'auth/email-already-in-use') {
+        } else if (err.code === 'user_already_exists') {
         setAuthError('An account with this email already exists. Please switch to Sign In.');
-      } else if (err.code === 'auth/weak-password') {
+        } else if (err.code === 'weak_password') {
         setAuthError('Password is too weak. Please use at least 6 characters.');
-      } else if (err.code === 'auth/operation-not-allowed') {
-        setAuthError(
-          'Email/Password provider is not enabled yet in your Firebase Console. Go to Authentication → Sign-in method → Add Email/Password → Enable.'
-        );
+        } else if (err.code === 'email_not_confirmed') {
+          setAuthError('Please verify your email address before signing in.');
       } else {
         setAuthError(`Authentication notice: ${err.message || 'Could not complete login.'}`);
       }
@@ -325,7 +315,10 @@ export function AccountView() {
     setAuthError(null);
     setResetSentMsg(null);
     try {
-      await resetPassword(email);
+        const { error } = await createSupabaseBrowserClient().auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/account/reset-password`,
+        });
+        if (error) throw error;
       setResetSentMsg(`Password reset link sent to ${email}. Please check your inbox.`);
     } catch (err: any) {
       console.error('Password reset error:', err);
@@ -536,20 +529,30 @@ export function AccountView() {
   const getStatusBadge = (order: Order) => {
     const status = order.orderStatus;
     const shipment = order.shipmentStatus;
+    const payment = order.paymentStatus;
 
+    if (payment === 'Failed' || status === 'Failed') {
+      return <span className={`${styles.statusPill} ${styles.pillFailed}`}>Failed</span>;
+    }
     if (status === 'Cancelled') {
       return <span className={`${styles.statusPill} ${styles.pillCancelled}`}>Cancelled</span>;
     }
-    if (status === 'Delivered' || shipment === 'Delivered') {
+    if (payment === 'Pending' || status === 'Pending') {
+      return <span className={`${styles.statusPill} ${styles.pillPending}`}>Pending</span>;
+    }
+    if (status === 'Completed' || shipment === 'Delivered') {
       return <span className={`${styles.statusPill} ${styles.pillDelivered}`}>Delivered</span>;
     }
     if (shipment === 'Out for Delivery') {
-      return <span className={`${styles.statusPill} ${styles.pillShipped}`}>Out for Delivery</span>;
+      return <span className={`${styles.statusPill} ${styles.pillInTransit}`}>Out for Delivery</span>;
     }
-    if (shipment === 'In Transit' || shipment === 'Handed Over' || status === 'Shipped') {
-      return <span className={`${styles.statusPill} ${styles.pillShipped}`}>In Transit</span>;
+    if (status === 'Shipped') {
+      return <span className={`${styles.statusPill} ${styles.pillShipped}`}>Dispatched</span>;
     }
-    if (status === 'Processing' || status === 'Ready to Ship') {
+    if (shipment === 'In Transit') {
+      return <span className={`${styles.statusPill} ${styles.pillInTransit}`}>In Transit</span>;
+    }
+    if (status === 'Ready to Ship' || shipment === 'Handed Over') {
       return <span className={`${styles.statusPill} ${styles.pillProcessing}`}>Prepared &amp; Packed</span>;
     }
     return <span className={`${styles.statusPill} ${styles.pillConfirmed}`}>Order Confirmed</span>;
@@ -921,7 +924,7 @@ export function AccountView() {
                           {/* Products List */}
                           <div className={styles.productsCol}>
                             {order.items.map((item, idx) => {
-                              const isDelivered = order.shipmentStatus === 'Delivered' || order.orderStatus === 'Delivered';
+                              const isDelivered = order.shipmentStatus === 'Delivered' || order.orderStatus === 'Completed';
                               const pId = (item.product?.id || (item as any).productId || '').toLowerCase();
                               const isItemReviewed = reviewedItems.has(`${order.id}_${pId}`);
 
@@ -1007,14 +1010,16 @@ export function AccountView() {
                               </Link>
 
                               <div className={styles.secondaryActionsGroup}>
-                                <Link 
-                                  href={`/invoice/${order.id}`} 
-                                  className={styles.invoiceActionBtn}
-                                  title="View & Download Official Tax Invoice"
-                                >
-                                  <FileText size={13} />
-                                  <span>Tax Invoice</span>
-                                </Link>
+                                {isInvoiceEligible(order) && (
+                                  <Link
+                                    href={`/invoice/${order.id}`}
+                                    className={styles.invoiceActionBtn}
+                                    title="View & Download Official Tax Invoice"
+                                  >
+                                    <FileText size={13} />
+                                    <span>Tax Invoice</span>
+                                  </Link>
+                                )}
 
                                 <button
                                   type="button"
@@ -1040,8 +1045,8 @@ export function AccountView() {
                             {/* Delivery Address Note */}
                             {order.shippingAddress && (
                               <div className={styles.deliveryAddressNote}>
-                                <strong>Delivered to:</strong> {order.shippingAddress.fullName},{' '}
-                                {order.shippingAddress.addressLine1}, {order.shippingAddress.city} - {order.shippingAddress.pincode}
+                                <strong>Delivery to:</strong> {order.shippingAddress.fullName},{' '}
+                                {order.shippingAddress.addressLine1}, {order.shippingAddress.addressLine2}, {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}
                               </div>
                             )}
                           </div>

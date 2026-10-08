@@ -4,7 +4,7 @@ import { loginOrRegisterCustomer } from '@/lib/server-customer';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, name } = body;
+    const { email, name, authUserId } = body;
 
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       return NextResponse.json(
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = loginOrRegisterCustomer({ email, name });
+    const result = await loginOrRegisterCustomer({ email, name, authUserId });
     if (!result) {
       return NextResponse.json(
         { error: 'Failed to authenticate patron session.' },

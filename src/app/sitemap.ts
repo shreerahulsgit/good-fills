@@ -3,9 +3,9 @@ import { getAllServerProducts } from '@/lib/server-products';
 
 export const dynamic = 'force-dynamic';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://goodfills.in';
-  const products = getAllServerProducts();
+  const products = await getAllServerProducts();
 
   // Dynamic product URLs
   const productUrls: MetadataRoute.Sitemap = products

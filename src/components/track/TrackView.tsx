@@ -520,7 +520,7 @@ export function TrackView() {
                     <Package size={18} color="var(--accent-terracotta)" />
                   </h3>
 
-                  {(activeOrder.shipmentStatus === 'Delivered' || activeOrder.orderStatus === 'Delivered') && (
+                  {(activeOrder.shipmentStatus === 'Delivered' || activeOrder.orderStatus === 'Completed') && (
                     <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '10px 14px', marginBottom: '12px', fontSize: '0.82rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                       <div style={{ color: '#166534', fontWeight: 600 }}>
                         ✓ Order Delivered! You can rate each item in your account.
@@ -634,6 +634,44 @@ export function TrackView() {
                 Enter your Order ID (from your confirmation SMS or email) or your 10-digit mobile number above.
               </p>
 
+              {/* 4 Simple Steps with Staggered Entrance */}
+              <div className={styles.logisticsProcessGrid}>
+                {[
+                  {
+                    step: 'STEP 1',
+                    title: 'Order Received',
+                    desc: 'Grains are soaked and sprouted for 24 hours for tender infant digestion.',
+                  },
+                  {
+                    step: 'STEP 2',
+                    title: 'Preparation & Packaging',
+                    desc: 'Carefully prepared and packed in airtight pouches to preserve natural nutrients.',
+                  },
+                  {
+                    step: 'STEP 3',
+                    title: 'Foil Sealed',
+                    desc: 'Sealed immediately in airtight pouches with zero preservatives.',
+                  },
+                  {
+                    step: 'STEP 4',
+                    title: 'Doorstep Delivery',
+                    desc: 'Dispatched via express courier straight to your doorstep with live tracking.',
+                  },
+                ].map((item, idx) => (
+                  <motion.div 
+                    key={item.step}
+                    className={styles.processStepCard}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, ease: luxuryEase, delay: idx * 0.08 }}
+                    whileHover={{ y: -3 }}
+                  >
+                    <span className={styles.stepNum}>{item.step}</span>
+                    <h4 className={styles.stepTitle}>{item.title}</h4>
+                    <p className={styles.stepDesc}>{item.desc}</p>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </motion.section>
         )}

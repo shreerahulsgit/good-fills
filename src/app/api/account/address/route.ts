@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const updatedUser = manageCustomerAddress(identifier, action, address, addressIndex);
+    const updatedUser = await manageCustomerAddress(identifier, action, address, addressIndex);
     if (!updatedUser) {
       return NextResponse.json(
         { error: 'Customer profile not found.' },

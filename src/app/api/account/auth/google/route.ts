@@ -4,7 +4,7 @@ import { loginOrRegisterWithGoogle } from '@/lib/server-customer';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, name, photoUrl } = body;
+    const { email, name, photoUrl, authUserId } = body;
 
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       return NextResponse.json(
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = loginOrRegisterWithGoogle({ email, name, photoUrl });
+    const result = await loginOrRegisterWithGoogle({ email, name, photoUrl, authUserId });
     if (!result) {
       return NextResponse.json(
         { error: 'Failed to authenticate patron with Google.' },

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -39,6 +39,7 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
   const [selectedCategory, setSelectedCategory] = useState<'all' | ProductCategory>(initialCategory);
   const [sortBy, setSortBy] = useState<SortOption>('featured');
   const [addedId, setAddedId] = useState<string | null>(null);
+  const hasRevalidatedProducts = useRef(false);
 
   // Sync if initialCategory changes from route
   useEffect(() => {
@@ -47,6 +48,9 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
 
   // Revalidate live products from server API
   useEffect(() => {
+    if (hasRevalidatedProducts.current) return;
+    hasRevalidatedProducts.current = true;
+
     fetch('/api/products', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {

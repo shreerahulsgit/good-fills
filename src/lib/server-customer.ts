@@ -1,334 +1,263 @@
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
 import { CustomerUser, Order, ShippingAddress } from '@/types';
-import { getAllServerOrders } from '@/lib/server-orders';
+import { getAllServerOrdersAsync } from '@/lib/supabase-orders';
+import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 
-const PRIMARY_DATA_DIR = path.join(process.cwd(), '.data');
-const PRIMARY_ORDERS_FILE = path.join(PRIMARY_DATA_DIR, 'server-orders.json');
-const PRIMARY_CUSTOMERS_FILE = path.join(PRIMARY_DATA_DIR, 'customers.json');
+type CustomerRow = {
+  id: string;
+  auth_user_id: string | null;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  role: 'customer';
+  addresses: ShippingAddress[] | null;
+  created_at: string;
+};
 
-const TMP_DATA_DIR = path.join(os.tmpdir(), 'good-fills-data');
-const TMP_ORDERS_FILE = path.join(TMP_DATA_DIR, 'server-orders.json');
-const TMP_CUSTOMERS_FILE = path.join(TMP_DATA_DIR, 'customers.json');
+function fromCustomerRow(row: CustomerRow): CustomerUser {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email || '',
+    phone: row.phone || '',
+    role: 'customer',
+    addresses: Array.isArray(row.addresses) ? row.addresses : [],
+    createdAt: row.created_at,
+  };
+}
 
-function ensureDataDirs() {
-  if (!fs.existsSync(PRIMARY_DATA_DIR)) {
-    try {
-      fs.mkdirSync(PRIMARY_DATA_DIR, { recursive: true });
-    } catch {}
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+async function findCustomer(identifier: string): Promise<CustomerRow | null> {
+  const clean = identifier.trim().toLowerCase();
+  if (!clean) return null;
+
+  const supabase = createSupabaseAdminClient();
+  if (isUuid(clean)) {
+    const { data, error } = await supabase
+      .from('customers')
+      .select('*')
+      .or(`id.eq.${clean},auth_user_id.eq.${clean}`)
+      .maybeSingle();
+    if (error) throw new Error(`Failed to load customer from Supabase: ${error.message}`);
+    if (data) return data as CustomerRow;
   }
-  if (!fs.existsSync(TMP_DATA_DIR)) {
-    try {
-      fs.mkdirSync(TMP_DATA_DIR, { recursive: true });
-    } catch {}
+
+  if (clean.includes('@')) {
+    const { data, error } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('email', clean)
+      .limit(1);
+    if (error) throw new Error(`Failed to search customer email in Supabase: ${error.message}`);
+    return data?.[0] ? data[0] as CustomerRow : null;
   }
+
+  const cleanPhone = clean.replace(/\D/g, '').slice(-10);
+  if (cleanPhone.length < 8) return null;
+
+  const { data, error } = await supabase
+    .from('customers')
+    .select('*')
+    .ilike('phone', `%${cleanPhone}`)
+    .limit(1);
+  if (error) throw new Error(`Failed to search customer phone in Supabase: ${error.message}`);
+  return data?.[0] ? data[0] as CustomerRow : null;
 }
 
-function loadOrders(): Order[] {
-  try {
-    const list = getAllServerOrders();
-    if (Array.isArray(list) && list.length > 0) return list;
-  } catch {}
-
-  const ordersMap = new Map<string, Order>();
-  try {
-    if (fs.existsSync(PRIMARY_ORDERS_FILE)) {
-      const data = JSON.parse(fs.readFileSync(PRIMARY_ORDERS_FILE, 'utf8'));
-      if (Array.isArray(data)) data.forEach((o: Order) => ordersMap.set(o.id, o));
-    }
-  } catch {}
-
-  try {
-    if (fs.existsSync(TMP_ORDERS_FILE)) {
-      const data = JSON.parse(fs.readFileSync(TMP_ORDERS_FILE, 'utf8'));
-      if (Array.isArray(data)) data.forEach((o: Order) => ordersMap.set(o.id, o));
-    }
-  } catch {}
-
-  return Array.from(ordersMap.values()).sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+async function createCustomer(user: Omit<CustomerUser, 'id'>, authUserId?: string): Promise<CustomerUser> {
+  const { data, error } = await createSupabaseAdminClient()
+    .from('customers')
+    .insert({
+      auth_user_id: authUserId || null,
+      name: user.name,
+      email: user.email || null,
+      phone: user.phone || null,
+      role: 'customer',
+      addresses: user.addresses,
+    })
+    .select('*')
+    .single();
+  if (error) throw new Error(`Failed to create customer in Supabase: ${error.message}`);
+  return fromCustomerRow(data as CustomerRow);
 }
 
-function loadCustomers(): Record<string, CustomerUser> {
-  const map: Record<string, CustomerUser> = {};
-  try {
-    if (fs.existsSync(PRIMARY_CUSTOMERS_FILE)) {
-      const data = JSON.parse(fs.readFileSync(PRIMARY_CUSTOMERS_FILE, 'utf8'));
-      if (data && typeof data === 'object') Object.assign(map, data);
-    }
-  } catch {}
-
-  try {
-    if (fs.existsSync(TMP_CUSTOMERS_FILE)) {
-      const data = JSON.parse(fs.readFileSync(TMP_CUSTOMERS_FILE, 'utf8'));
-      if (data && typeof data === 'object') Object.assign(map, data);
-    }
-  } catch {}
-
-  return map;
+async function updateCustomer(id: string, updates: Record<string, unknown>): Promise<CustomerUser> {
+  const { data, error } = await createSupabaseAdminClient()
+    .from('customers')
+    .update(updates)
+    .eq('id', id)
+    .select('*')
+    .single();
+  if (error) throw new Error(`Failed to update customer in Supabase: ${error.message}`);
+  return fromCustomerRow(data as CustomerRow);
 }
 
-function saveCustomers(customers: Record<string, CustomerUser>) {
-  const serialized = JSON.stringify(customers, null, 2);
-  ensureDataDirs();
-  try {
-    fs.writeFileSync(PRIMARY_CUSTOMERS_FILE, serialized, 'utf8');
-  } catch {}
-  try {
-    fs.writeFileSync(TMP_CUSTOMERS_FILE, serialized, 'utf8');
-  } catch {}
+export async function clearAllCustomers(): Promise<void> {
+  const { error } = await createSupabaseAdminClient().from('customers').delete().not('id', 'is', null);
+  if (error) throw new Error(`Failed to clear customers in Supabase: ${error.message}`);
 }
 
-export function clearAllCustomers(): void {
-  saveCustomers({});
-}
-
-/**
- * Finds all orders matching either email or 10-digit mobile phone number
- */
-export function findCustomerOrders(allOrders: Order[], email?: string, phone?: string): Order[] {
+export function findCustomerOrders(allOrders: Order[], email?: string, phone?: string, customerId?: string): Order[] {
   const cleanEmail = (email || '').trim().toLowerCase();
   const cleanPhone = (phone || '').replace(/\D/g, '').slice(-10);
 
   return allOrders
-    .filter((o) => {
-      const oEmail = (o.customerEmail || o.shippingAddress?.email || '').trim().toLowerCase();
-      if (cleanEmail && oEmail && oEmail === cleanEmail) {
-        return true;
-      }
-      const oPhone = (o.customerPhone || o.shippingAddress?.phone || '').replace(/\D/g, '').slice(-10);
-      if (cleanPhone && cleanPhone.length >= 8 && oPhone && oPhone.length >= 8) {
-        if (oPhone.endsWith(cleanPhone) || cleanPhone.endsWith(oPhone)) {
-          return true;
-        }
-      }
-      return false;
+    .filter((order) => {
+      if (customerId && order.customerId === customerId) return true;
+      const orderEmail = (order.customerEmail || order.shippingAddress?.email || '').trim().toLowerCase();
+      if (cleanEmail && orderEmail === cleanEmail) return true;
+
+      const orderPhone = (order.customerPhone || order.shippingAddress?.phone || '').replace(/\D/g, '').slice(-10);
+      return cleanPhone.length >= 8 && orderPhone.length >= 8 &&
+        (orderPhone.endsWith(cleanPhone) || cleanPhone.endsWith(orderPhone));
     })
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
-/**
- * Retrieves a customer profile by email, phone number, or user ID, along with their past orders.
- */
-export function getCustomerProfile(identifier: string): { user: CustomerUser; orders: Order[] } | null {
+function addressesFromOrders(orders: Order[]): ShippingAddress[] {
+  const addresses: ShippingAddress[] = [];
+  for (const order of orders) {
+    const address = order.shippingAddress;
+    if (!address?.addressLine1) continue;
+    const duplicate = addresses.some(
+      (existing) => existing.addressLine1 === address.addressLine1 && existing.pincode === address.pincode
+    );
+    if (!duplicate) addresses.push(address);
+  }
+  return addresses;
+}
+
+export async function getCustomerProfile(identifier: string): Promise<{ user: CustomerUser; orders: Order[] } | null> {
   const clean = identifier.trim().toLowerCase();
   if (!clean) return null;
 
-  const allOrders = loadOrders();
-  const savedCustomers = loadCustomers();
+  const allOrders = await getAllServerOrdersAsync();
+  let row = await findCustomer(clean);
+  if (!row && isUuid(clean)) {
+    const { data: authData, error: authError } = await createSupabaseAdminClient().auth.admin.getUserById(clean);
+    if (authError) throw new Error(`Failed to load Supabase Auth user: ${authError.message}`);
+    if (authData.user?.email) {
+      row = await findCustomer(authData.user.email);
+      if (row) {
+        const { data: linked, error: linkError } = await createSupabaseAdminClient()
+          .from('customers')
+          .update({ auth_user_id: clean })
+          .eq('id', row.id)
+          .select('*')
+          .single();
+        if (linkError) throw new Error(`Failed to link customer to Supabase Auth: ${linkError.message}`);
+        row = linked as CustomerRow;
+      } else {
+        const created = await createCustomer({
+          name: authData.user.user_metadata?.name || authData.user.user_metadata?.full_name || 'Good Fills Customer',
+          email: authData.user.email,
+          phone: authData.user.user_metadata?.phone || '',
+          role: 'customer',
+          addresses: [],
+          createdAt: new Date().toISOString(),
+        }, clean);
+        row = await findCustomer(created.id);
+      }
+    }
+  }
+  let user = row ? fromCustomerRow(row) : null;
+  const customerOrders = findCustomerOrders(
+    allOrders,
+    user?.email || (clean.includes('@') ? clean : undefined),
+    user?.phone || clean,
+    user?.id
+  );
 
-  const isEmail = clean.includes('@');
-  const cleanPhone = clean.replace(/\D/g, '').slice(-10);
-
-  // 1. Check saved customer file by email key, phone key, or direct property match
-  let user: CustomerUser | undefined =
-    savedCustomers[`email_${clean}`] ||
-    savedCustomers[`phone_${cleanPhone}`] ||
-    Object.values(savedCustomers).find(
-      (u) =>
-        (u.email && u.email.toLowerCase() === clean) ||
-        (cleanPhone.length >= 8 && u.phone && u.phone.replace(/\D/g, '').endsWith(cleanPhone)) ||
-        u.id === clean
-    );
-
-  // 2. Fetch all matching orders by email or phone
-  const searchEmail = isEmail ? clean : user?.email;
-  const searchPhone = cleanPhone.length >= 8 ? cleanPhone : user?.phone;
-  const customerOrders = findCustomerOrders(allOrders, searchEmail, searchPhone);
-
-  // 3. Synthesize customer profile from previous orders if not explicitly registered
   if (!user && customerOrders.length > 0) {
     const latestOrder = customerOrders[0];
-    const addresses: ShippingAddress[] = [];
-
-    customerOrders.forEach((o) => {
-      if (o.shippingAddress && o.shippingAddress.addressLine1) {
-        const isDuplicate = addresses.some(
-          (a) => a.addressLine1 === o.shippingAddress.addressLine1 && a.pincode === o.shippingAddress.pincode
-        );
-        if (!isDuplicate) {
-          addresses.push(o.shippingAddress);
-        }
-      }
-    });
-
-    user = {
-      id: latestOrder.customerId || `CUST-${Date.now().toString().slice(-6)}`,
+    user = await createCustomer({
       name: latestOrder.customerName || 'Good Fills Customer',
-      email: latestOrder.customerEmail || (isEmail ? clean : ''),
-      phone: latestOrder.customerPhone || cleanPhone,
+      email: latestOrder.customerEmail || (clean.includes('@') ? clean : ''),
+      phone: latestOrder.customerPhone || clean.replace(/\D/g, '').slice(-10),
       role: 'customer',
-      addresses,
+      addresses: addressesFromOrders(customerOrders),
       createdAt: customerOrders[customerOrders.length - 1].createdAt || new Date().toISOString(),
-    };
-
-    const customerKey = isEmail ? `email_${clean}` : `phone_${cleanPhone}`;
-    savedCustomers[customerKey] = user;
-    saveCustomers(savedCustomers);
+    });
   }
 
   if (!user) return null;
 
-  // 4. Enrich missing phone/email if found from orders
-  if (customerOrders.length > 0) {
-    let changed = false;
-    if (!user.phone && customerOrders[0].customerPhone) {
-      user.phone = customerOrders[0].customerPhone;
-      changed = true;
-    }
-    if (!user.email && customerOrders[0].customerEmail) {
-      user.email = customerOrders[0].customerEmail;
-      changed = true;
-    }
-    if (changed) {
-      const key = user.email ? `email_${user.email.toLowerCase()}` : `phone_${user.phone.replace(/\D/g, '').slice(-10)}`;
-      savedCustomers[key] = user;
-      saveCustomers(savedCustomers);
-    }
-  }
+  const updates: Record<string, unknown> = {};
+  if (!user.phone && customerOrders[0]?.customerPhone) updates.phone = customerOrders[0].customerPhone;
+  if (!user.email && customerOrders[0]?.customerEmail) updates.email = customerOrders[0].customerEmail;
+  if (Object.keys(updates).length > 0) user = await updateCustomer(user.id, updates);
 
-  return {
-    user,
-    orders: customerOrders,
-  };
+  return { user, orders: customerOrders };
 }
 
-/**
- * Updates customer profile information (Name, Email, Phone)
- */
-export function updateCustomerProfile(
+export async function updateCustomerProfile(
   identifier: string,
   updates: { name?: string; email?: string; phone?: string }
-): CustomerUser | null {
-  const profile = getCustomerProfile(identifier);
+): Promise<CustomerUser | null> {
+  const profile = await getCustomerProfile(identifier);
   if (!profile) return null;
 
-  const clean = identifier.trim().toLowerCase();
-  const customerKey = `email_${clean}`;
+  const customerUpdates: Record<string, unknown> = {};
+  if (updates.name?.trim()) customerUpdates.name = updates.name.trim();
+  if (updates.email?.trim()) customerUpdates.email = updates.email.trim().toLowerCase();
+  if (updates.phone !== undefined) customerUpdates.phone = updates.phone.trim();
+  if (Object.keys(customerUpdates).length === 0) return profile.user;
 
-  const savedCustomers = loadCustomers();
-  let user = savedCustomers[customerKey] || profile.user;
-
-  if (updates.name && updates.name.trim()) {
-    user.name = updates.name.trim();
-  }
-  if (updates.email && updates.email.trim()) {
-    user.email = updates.email.trim().toLowerCase();
-  }
-  if (updates.phone !== undefined) {
-    user.phone = updates.phone.trim();
-  }
-
-  savedCustomers[customerKey] = user;
-  saveCustomers(savedCustomers);
-  return user;
+  return updateCustomer(profile.user.id, customerUpdates);
 }
 
-/**
- * Manages customer shipping addresses: add, edit, delete, or setDefault
- */
-export function manageCustomerAddress(
+export async function manageCustomerAddress(
   identifier: string,
   action: 'add' | 'edit' | 'delete' | 'setDefault',
   address?: ShippingAddress,
   addressIndex?: number
-): CustomerUser | null {
-  const profile = getCustomerProfile(identifier);
+): Promise<CustomerUser | null> {
+  const profile = await getCustomerProfile(identifier);
   if (!profile) return null;
 
-  const savedCustomers = loadCustomers();
-  const existingEntry = Object.entries(savedCustomers).find(([, candidate]) => candidate.id === profile.user.id);
-  const fallbackKey = profile.user.email
-    ? `email_${profile.user.email.trim().toLowerCase()}`
-    : `phone_${(profile.user.phone || identifier).replace(/\D/g, '').slice(-10)}`;
-  const customerKey = existingEntry?.[0] || fallbackKey;
-  let user = savedCustomers[customerKey] || profile.user;
-  user.addresses = user.addresses || [];
-
+  const addresses = [...(profile.user.addresses || [])];
   if (action === 'add' && address) {
-    user.addresses.unshift(address);
-  } else if (action === 'edit' && address && addressIndex !== undefined && addressIndex >= 0) {
-    if (addressIndex < user.addresses.length) {
-      user.addresses[addressIndex] = address;
-    }
-  } else if (action === 'delete' && addressIndex !== undefined && addressIndex >= 0) {
-    if (addressIndex < user.addresses.length) {
-      user.addresses.splice(addressIndex, 1);
-    }
-  } else if (action === 'setDefault' && addressIndex !== undefined && addressIndex >= 0) {
-    if (addressIndex < user.addresses.length) {
-      const selected = user.addresses.splice(addressIndex, 1)[0];
-      user.addresses.unshift(selected);
-    }
+    addresses.unshift(address);
+  } else if (action === 'edit' && address && addressIndex !== undefined && addressIndex >= 0 && addressIndex < addresses.length) {
+    addresses[addressIndex] = address;
+  } else if (action === 'delete' && addressIndex !== undefined && addressIndex >= 0 && addressIndex < addresses.length) {
+    addresses.splice(addressIndex, 1);
+  } else if (action === 'setDefault' && addressIndex !== undefined && addressIndex >= 0 && addressIndex < addresses.length) {
+    const selected = addresses.splice(addressIndex, 1)[0];
+    addresses.unshift(selected);
   }
 
-  savedCustomers[customerKey] = user;
-  saveCustomers(savedCustomers);
-  return user;
+  return updateCustomer(profile.user.id, { addresses });
 }
 
-/**
- * Handles seamless 1-click Google authentication
- */
-export function loginOrRegisterWithGoogle(googleData: {
+export async function loginOrRegisterWithGoogle(googleData: {
   email: string;
   name?: string;
   photoUrl?: string;
-}): { user: CustomerUser; orders: Order[] } | null {
+  authUserId?: string;
+}): Promise<{ user: CustomerUser; orders: Order[] } | null> {
   const email = (googleData.email || '').trim().toLowerCase();
   if (!email || !email.includes('@')) return null;
 
-  const allOrders = loadOrders();
-  const savedCustomers = loadCustomers();
-
-  const customerKey = `email_${email}`;
-  let user = savedCustomers[customerKey];
-
+  const row = await findCustomer(email);
+  let user = row ? fromCustomerRow(row) : null;
+  const allOrders = await getAllServerOrdersAsync();
   const customerOrders = findCustomerOrders(allOrders, email, user?.phone);
 
-  if (!user && customerOrders.length > 0) {
+  if (!user) {
     const latestOrder = customerOrders[0];
-    const addresses: ShippingAddress[] = [];
-    customerOrders.forEach((o) => {
-      if (o.shippingAddress && o.shippingAddress.addressLine1) {
-        const isDuplicate = addresses.some(
-          (a) => a.addressLine1 === o.shippingAddress.addressLine1 && a.pincode === o.shippingAddress.pincode
-        );
-        if (!isDuplicate) addresses.push(o.shippingAddress);
-      }
-    });
-
-    user = {
-      id: latestOrder.customerId || `CUST-${Date.now().toString().slice(-6)}`,
-      name: googleData.name || latestOrder.customerName || 'Good Fills Customer',
+    user = await createCustomer({
+      name: googleData.name || latestOrder?.customerName || 'Good Fills Customer',
       email,
-      phone: latestOrder.customerPhone || '',
+      phone: latestOrder?.customerPhone || '',
       role: 'customer',
-      addresses,
-      createdAt: customerOrders[customerOrders.length - 1].createdAt || new Date().toISOString(),
-    };
-    savedCustomers[customerKey] = user;
-    saveCustomers(savedCustomers);
-  } else if (!user) {
-    user = {
-      id: `CUST-${Date.now().toString().slice(-6)}`,
-      name: googleData.name || 'Good Fills Customer',
-      email,
-      phone: '',
-      role: 'customer',
-      addresses: [],
-      createdAt: new Date().toISOString(),
-    };
-    savedCustomers[customerKey] = user;
-    saveCustomers(savedCustomers);
-  } else {
-    if (googleData.name && (!user.name || user.name === 'Good Fills Customer' || user.name === 'New Customer')) {
-      user.name = googleData.name;
-      savedCustomers[customerKey] = user;
-      saveCustomers(savedCustomers);
-    }
+      addresses: latestOrder ? addressesFromOrders(customerOrders) : [],
+      createdAt: latestOrder?.createdAt || new Date().toISOString(),
+    }, googleData.authUserId);
+  } else if (googleData.name && (!user.name || user.name === 'Good Fills Customer' || user.name === 'New Customer')) {
+    user = await updateCustomer(user.id, { name: googleData.name });
   }
 
   return { user, orders: customerOrders };

@@ -1,8 +1,5 @@
-import fs from 'fs';
-import path from 'path';
 import { Order, ShippingAddress } from '@/types';
-import { PRODUCTS } from '@/data/products';
-import { getAllServerOrders, getAllServerOrdersAsync } from '@/lib/server-orders';
+import { getAllServerOrdersAsync } from '@/lib/supabase-orders';
 
 export type MilestoneStatus = 'completed' | 'in_progress' | 'pending';
 
@@ -85,12 +82,6 @@ export interface DtdcTrackingResponse {
   AdditionalInfo?: string;
 }
 
-import os from 'os';
-
-const DATA_DIR = path.join(process.cwd(), '.data');
-const ORDERS_FILE = path.join(DATA_DIR, 'server-orders.json');
-const TMP_ORDERS_FILE = path.join(os.tmpdir(), 'good-fills-data', 'server-orders.json');
-
 function maskPhoneNumber(phone?: string): string {
   if (!phone) return '+91 ••••• •••••';
   const clean = phone.replace(/\D/g, '');
@@ -102,36 +93,11 @@ function maskPhoneNumber(phone?: string): string {
   return phone;
 }
 
-function loadOrdersFromDisk(): Order[] {
-  const map = new Map<string, Order>();
-  try {
-    if (fs.existsSync(ORDERS_FILE)) {
-      const raw = fs.readFileSync(ORDERS_FILE, 'utf8');
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        parsed.forEach((o: Order) => map.set(o.id, o));
-      }
-    }
-  } catch (err) {}
-
-  try {
-    if (fs.existsSync(TMP_ORDERS_FILE)) {
-      const raw = fs.readFileSync(TMP_ORDERS_FILE, 'utf8');
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        parsed.forEach((o: Order) => map.set(o.id, o));
-      }
-    }
-  } catch (err) {}
-
-  return Array.from(map.values());
-}
-
 /**
  * Derives the active milestone stage (1 to 5) directly from the order data
  */
 export function deriveActiveStage(order: Order): number {
-  if (order.shipmentStatus === 'Delivered' || order.orderStatus === 'Delivered') {
+  if (order.shipmentStatus === 'Delivered' || order.orderStatus === 'Completed') {
     return 5;
   }
   if (order.shipmentStatus === 'Out for Delivery') {
@@ -144,7 +110,7 @@ export function deriveActiveStage(order: Order): number {
   ) {
     return 3;
   }
-  if (order.orderStatus === 'Processing' || order.orderStatus === 'Ready to Ship') {
+  if (order.orderStatus === 'Ready to Ship') {
     return 2;
   }
   return 1;
@@ -315,20 +281,14 @@ export function buildTrackingTelemetry(order: Order, forcedStage?: number): Trac
   };
 
   const items = (order.items || []).map((it) => {
-    const matchedProduct = PRODUCTS.find(
-      (p) => p.id === it.product?.id || p.slug === it.product?.slug || p.name.toLowerCase() === (it.product?.name || '').toLowerCase()
-    );
     return {
-      id: it.product?.id || matchedProduct?.id || 'prod-01',
-      name: it.product?.name || matchedProduct?.name || 'Artisanal Porridge Flour',
-      packSize: it.product?.packSize || matchedProduct?.packSize || '250g',
+      id: it.product?.id || 'unknown-product',
+      name: it.product?.name || 'Artisanal Product',
+      packSize: it.product?.packSize || '250g',
       quantity: it.quantity || 1,
-      price: it.product?.price || matchedProduct?.price || 225,
-      imagePrimary:
-        matchedProduct?.images?.primary ||
-        it.product?.images?.primary ||
-        '/images/products/kids-nutrition-powder.png',
-      productWeightGrams: it.product?.productWeightGrams || matchedProduct?.productWeightGrams || 250,
+      price: it.product?.price || 0,
+      imagePrimary: it.product?.images?.primary || '/logo.png',
+      productWeightGrams: it.product?.productWeightGrams || 0,
     };
   });
 
@@ -375,19 +335,7 @@ export async function searchTrackingOrder(query: string): Promise<TrackingTeleme
   if (!rawQuery) return null;
   const cleanQuery = rawQuery.toUpperCase();
 
-  // Combine loaded disk orders + in-memory cached orders
-  const diskOrders = loadOrdersFromDisk();
-  let serverOrders: Order[] = [];
-  try {
-    serverOrders = getAllServerOrders();
-  } catch {}
-
-  const ordersMap = new Map<string, Order>();
-  diskOrders.forEach((o) => ordersMap.set(o.id, o));
-  serverOrders.forEach((o) => ordersMap.set(o.id, o));
-  let orders = Array.from(ordersMap.values()).sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  const orders = await getAllServerOrdersAsync();
 
   const findMatch = (list: Order[]) => {
     // 1. Direct match by Order ID (e.g. "ORD-5616" or "5616")
@@ -432,14 +380,5 @@ export async function searchTrackingOrder(query: string): Promise<TrackingTeleme
     return null;
   };
 
-  let result = findMatch(orders);
-  if (!result) {
-    // Check live Razorpay cloud orders
-    try {
-      const cloudOrders = await getAllServerOrdersAsync();
-      result = findMatch(cloudOrders);
-    } catch {}
-  }
-
-  return result;
+  return findMatch(orders);
 }

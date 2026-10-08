@@ -22,8 +22,8 @@ interface ShopPageProps {
   };
 }
 
-export default function ShopPage({ searchParams }: ShopPageProps) {
-  const products = getAllServerProducts();
+export default async function ShopPage({ searchParams }: ShopPageProps) {
+  const products = await getAllServerProducts();
   const category = (searchParams?.category as ProductCategory) || 'all';
 
   return (

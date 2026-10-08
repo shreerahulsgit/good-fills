@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { updateOrderAdmin, getServerOrderById } from '@/lib/server-orders';
+import { updateOrderAdmin, getServerOrderById } from '@/lib/supabase-orders';
 import { OrderStatus, ShipmentStatus } from '@/types';
 
 export async function POST(request: Request) {
@@ -21,12 +21,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
     }
 
-    const existing = getServerOrderById(orderId);
+    const existing = await getServerOrderById(orderId);
     if (!existing) {
       return NextResponse.json({ error: `Order ${orderId} not found.` }, { status: 404 });
     }
 
-    const updated = updateOrderAdmin({
+    const updated = await updateOrderAdmin({
       orderId,
       orderStatus: orderStatus as OrderStatus,
       shipmentStatus: shipmentStatus as ShipmentStatus,

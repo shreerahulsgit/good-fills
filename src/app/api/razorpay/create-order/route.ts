@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getRazorpayClient, isRazorpayConfigured, isSandboxAllowed, isProduction } from '@/lib/razorpay';
-import { createPendingOrder, linkRazorpayOrderId } from '@/lib/server-orders';
+import { createPendingOrder, linkRazorpayOrderId } from '@/lib/supabase-orders';
 
 export async function POST(request: Request) {
   try {
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 
     // 1. Authoritative Server Calculation & Internal Order Creation
     // (Never trust any clientTotal or clientPrice)
-    const { order, authoritativeTotal, totalWeightGrams } = createPendingOrder({
+    const { order, authoritativeTotal, totalWeightGrams } = await createPendingOrder({
       customerName: customer.fullName,
       customerEmail: customer.email,
       customerPhone: customer.phone,
@@ -42,6 +42,7 @@ export async function POST(request: Request) {
         country: 'India',
       },
       clientItems: items,
+      paymentMethod: 'UPI',
     });
 
     const amountInPaise = Math.round(authoritativeTotal * 100);
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
       });
 
       // Maintain authoritative Server ↔ Razorpay mapping
-      linkRazorpayOrderId(order.id, rzpOrder.id);
+      await linkRazorpayOrderId(order.id, rzpOrder.id);
 
       return NextResponse.json({
         success: true,
@@ -100,7 +101,7 @@ export async function POST(request: Request) {
     // 4. Atelier Sandbox Mode (STRICTLY DEVELOPMENT ONLY)
     if (isSandboxAllowed()) {
       const simulatedOrderId = `order_sim_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
-      linkRazorpayOrderId(order.id, simulatedOrderId);
+      await linkRazorpayOrderId(order.id, simulatedOrderId);
 
       return NextResponse.json({
         success: true,

@@ -11,9 +11,9 @@ import { getAllReviews } from '@/lib/server-reviews';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default function HomePage() {
-  const products = getAllServerProducts(true);
-  const reviews = getAllReviews();
+export default async function HomePage() {
+  const products = await getAllServerProducts();
+  const reviews = await getAllReviews();
 
   return (
     <main>

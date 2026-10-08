@@ -592,6 +592,12 @@
 }
 
 .pillShipped {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.pillInTransit {
   background-color: #eafaf1;
   color: #229954;
   border: 1px solid rgba(34, 153, 84, 0.3);
@@ -607,6 +613,18 @@
   background-color: #fbeee6;
   color: #a04000;
   border: 1px solid rgba(160, 64, 0, 0.3);
+}
+
+.pillPending {
+  background-color: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.pillFailed {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
 }
 
 .orderCardBody {

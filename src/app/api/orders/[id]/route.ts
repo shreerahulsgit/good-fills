@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getServerOrderById, resolveOrderById } from '@/lib/server-orders';
+import { getServerOrderById, resolveOrderById } from '@/lib/supabase-orders';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +16,7 @@ export async function GET(
       );
     }
 
-    let order = getServerOrderById(orderId);
+    let order = await getServerOrderById(orderId);
     if (!order) {
       order = await resolveOrderById(orderId);
     }

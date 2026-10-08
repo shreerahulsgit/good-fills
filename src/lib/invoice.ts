@@ -16,6 +16,16 @@ export const ATELIER_INFO = {
   panIndiaCourier: 'DTDC Domestic Express Doorstep Courier',
 };
 
+export function isInvoiceEligible(order: Pick<Order, 'orderStatus' | 'paymentStatus'>): boolean {
+  return (
+    order.orderStatus !== 'Pending' &&
+    order.orderStatus !== 'Failed' &&
+    order.orderStatus !== 'Cancelled' &&
+    order.paymentStatus !== 'Pending' &&
+    order.paymentStatus !== 'Failed'
+  );
+}
+
 /**
  * Converts a numerical amount in INR to formal Indian Rupee Words
  * e.g., 1 -> "Rupees One Only", 450 -> "Rupees Four Hundred Fifty Only"

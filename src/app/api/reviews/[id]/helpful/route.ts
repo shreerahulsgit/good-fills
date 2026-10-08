@@ -13,7 +13,7 @@ export async function POST(
       return NextResponse.json({ success: false, error: 'Review ID required' }, { status: 400 });
     }
 
-    const helpfulCount = voteReviewHelpful(id);
+    const helpfulCount = await voteReviewHelpful(id);
     return NextResponse.json({ success: true, helpfulCount });
   } catch (error: any) {
     console.error('Error voting review helpful:', error);

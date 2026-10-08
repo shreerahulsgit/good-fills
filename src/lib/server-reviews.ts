@@ -1,6 +1,5 @@
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+import { createSupabaseAdminClient } from '@/lib/supabase/admin';
+import { getServerProductBySlug } from '@/lib/server-products';
 
 export interface Review {
   id: string;
@@ -38,12 +37,6 @@ export interface ProductReviewSummary {
   };
   reviews: Review[];
 }
-
-const PRIMARY_DATA_DIR = path.join(process.cwd(), '.data');
-const PRIMARY_REVIEWS_FILE = path.join(PRIMARY_DATA_DIR, 'reviews.json');
-
-const TMP_DATA_DIR = path.join(os.tmpdir(), 'good-fills-data');
-const TMP_REVIEWS_FILE = path.join(TMP_DATA_DIR, 'reviews.json');
 
 // Authentic, verified foundational parent & patron reviews for all 13 creations
 const INITIAL_REVIEWS: Review[] = [
@@ -552,106 +545,6 @@ const INITIAL_REVIEWS: Review[] = [
   },
 ];
 
-let reviewsCache: Map<string, Review> = new Map();
-let isInitialized = false;
-let lastReviewsMtime = 0;
-
-function ensureDataDirs() {
-  if (!fs.existsSync(PRIMARY_DATA_DIR)) {
-    try {
-      fs.mkdirSync(PRIMARY_DATA_DIR, { recursive: true });
-    } catch {}
-  }
-  if (!fs.existsSync(TMP_DATA_DIR)) {
-    try {
-      fs.mkdirSync(TMP_DATA_DIR, { recursive: true });
-    } catch {}
-  }
-}
-
-function initReviewsStore(force = false) {
-  ensureDataDirs();
-
-  let shouldReload = force || !isInitialized;
-
-  if (!shouldReload) {
-    try {
-      if (fs.existsSync(PRIMARY_REVIEWS_FILE)) {
-        const stat = fs.statSync(PRIMARY_REVIEWS_FILE);
-        if (stat.mtimeMs > lastReviewsMtime) {
-          shouldReload = true;
-        }
-      } else if (fs.existsSync(TMP_REVIEWS_FILE)) {
-        const stat = fs.statSync(TMP_REVIEWS_FILE);
-        if (stat.mtimeMs > lastReviewsMtime) {
-          shouldReload = true;
-        }
-      }
-    } catch {}
-  }
-
-  if (!shouldReload && reviewsCache.size > 0) return;
-  isInitialized = true;
-
-  reviewsCache.clear();
-
-  // 1. Try primary storage
-  let loaded = false;
-  try {
-    if (fs.existsSync(PRIMARY_REVIEWS_FILE)) {
-      const stat = fs.statSync(PRIMARY_REVIEWS_FILE);
-      lastReviewsMtime = stat.mtimeMs;
-      const data = JSON.parse(fs.readFileSync(PRIMARY_REVIEWS_FILE, 'utf8'));
-      if (Array.isArray(data) && data.length > 0) {
-        data.forEach((r: Review) => reviewsCache.set(r.id, r));
-        loaded = true;
-      }
-    }
-  } catch {}
-
-  // 2. Try temp storage fallback
-  if (!loaded) {
-    try {
-      if (fs.existsSync(TMP_REVIEWS_FILE)) {
-        const stat = fs.statSync(TMP_REVIEWS_FILE);
-        lastReviewsMtime = stat.mtimeMs;
-        const data = JSON.parse(fs.readFileSync(TMP_REVIEWS_FILE, 'utf8'));
-        if (Array.isArray(data) && data.length > 0) {
-          data.forEach((r: Review) => reviewsCache.set(r.id, r));
-          loaded = true;
-        }
-      }
-    } catch {}
-  }
-
-  // 3. Populate initial authentic reviews if store is fresh
-  if (!loaded || reviewsCache.size === 0) {
-    INITIAL_REVIEWS.forEach((r) => reviewsCache.set(r.id, r));
-    persistReviews();
-  }
-}
-
-function persistReviews() {
-  const arr = Array.from(reviewsCache.values());
-  const serialized = JSON.stringify(arr, null, 2);
-
-  ensureDataDirs();
-
-  try {
-    fs.writeFileSync(PRIMARY_REVIEWS_FILE, serialized, 'utf8');
-    const stat = fs.statSync(PRIMARY_REVIEWS_FILE);
-    lastReviewsMtime = stat.mtimeMs;
-  } catch {}
-
-  try {
-    fs.writeFileSync(TMP_REVIEWS_FILE, serialized, 'utf8');
-    const stat = fs.statSync(TMP_REVIEWS_FILE);
-    if (!lastReviewsMtime) {
-      lastReviewsMtime = stat.mtimeMs;
-    }
-  } catch {}
-}
-
 /**
  * Normalizes identifier to match product id or slug
  */
@@ -679,26 +572,95 @@ function normalizeProductId(productIdOrSlug: string): string {
 /**
  * Returns all reviews
  */
-export function getAllReviews(): Review[] {
-  initReviewsStore();
-  return Array.from(reviewsCache.values()).sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+type ReviewRow = {
+  id: string;
+  order_id: string | null;
+  product_id: string;
+  product_name: string;
+  rating: number;
+  title: string;
+  comment: string;
+  author_name: string;
+  location: string;
+  child_age: string | null;
+  is_verified_buyer: boolean;
+  helpful_count: number;
+  created_at: string;
+  is_featured: boolean;
+  status: Review['status'];
+  testimonial_image: string | null;
+  founder_reply: Review['founderReply'] | null;
+};
+
+function fromReviewRow(row: ReviewRow): Review {
+  return {
+    id: row.id,
+    orderId: row.order_id || undefined,
+    productId: row.product_id,
+    productName: row.product_name,
+    rating: row.rating,
+    title: row.title,
+    comment: row.comment,
+    authorName: row.author_name,
+    location: row.location,
+    childAge: row.child_age || undefined,
+    isVerifiedBuyer: row.is_verified_buyer,
+    helpfulCount: row.helpful_count,
+    createdAt: row.created_at,
+    isFeatured: row.is_featured,
+    status: row.status,
+    testimonialImage: row.testimonial_image || undefined,
+    founderReply: row.founder_reply || undefined,
+  };
+}
+
+function toReviewRow(review: Review) {
+  return {
+    id: review.id,
+    order_id: review.orderId || null,
+    product_id: review.productId,
+    product_name: review.productName,
+    rating: review.rating,
+    title: review.title,
+    comment: review.comment,
+    author_name: review.authorName,
+    location: review.location,
+    child_age: review.childAge || null,
+    is_verified_buyer: review.isVerifiedBuyer,
+    helpful_count: review.helpfulCount,
+    created_at: review.createdAt,
+    is_featured: Boolean(review.isFeatured),
+    status: review.status || 'published',
+    testimonial_image: review.testimonialImage || null,
+    founder_reply: review.founderReply || null,
+  };
+}
+
+export async function getAllReviews(): Promise<Review[]> {
+  const { data, error } = await createSupabaseAdminClient()
+    .from('reviews')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw new Error(`Failed to load reviews from Supabase: ${error.message}`);
+  return (data || []).map((row) => fromReviewRow(row as ReviewRow));
 }
 
 /**
  * Returns review summary and list for a specific product
  */
-export function getProductReviewSummary(productIdOrSlug: string): ProductReviewSummary {
-  initReviewsStore();
-  const targetId = normalizeProductId(productIdOrSlug);
-
-  const matched = Array.from(reviewsCache.values()).filter(
-    (r) =>
-      r.status !== 'hidden' &&
-      (r.productId.toLowerCase() === targetId ||
-        r.productId.toLowerCase() === productIdOrSlug.toLowerCase())
-  );
+export async function getProductReviewSummary(productIdOrSlug: string): Promise<ProductReviewSummary> {
+  const product = productIdOrSlug.startsWith('prod-')
+    ? null
+    : await getServerProductBySlug(productIdOrSlug);
+  const targetId = (product?.id || normalizeProductId(productIdOrSlug)).toLowerCase();
+  const { data, error } = await createSupabaseAdminClient()
+    .from('reviews')
+    .select('*')
+    .eq('product_id', targetId)
+    .neq('status', 'hidden')
+    .order('created_at', { ascending: false });
+  if (error) throw new Error(`Failed to load product reviews from Supabase: ${error.message}`);
+  const matched = (data || []).map((row) => fromReviewRow(row as ReviewRow));
 
   matched.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -740,18 +702,20 @@ export function getProductReviewSummary(productIdOrSlug: string): ProductReviewS
 /**
  * Returns all reviews for a specific verified order
  */
-export function getReviewsByOrderId(orderId: string): Review[] {
-  initReviewsStore();
-  const cleanId = orderId.trim().toLowerCase();
-  return Array.from(reviewsCache.values()).filter(
-    (r) => r.orderId && r.orderId.trim().toLowerCase() === cleanId
-  );
+export async function getReviewsByOrderId(orderId: string): Promise<Review[]> {
+  const { data, error } = await createSupabaseAdminClient()
+    .from('reviews')
+    .select('*')
+    .eq('order_id', orderId.trim())
+    .order('created_at', { ascending: false });
+  if (error) throw new Error(`Failed to load order reviews from Supabase: ${error.message}`);
+  return (data || []).map((row) => fromReviewRow(row as ReviewRow));
 }
 
 /**
  * Adds a new verified customer review strictly tied to an order
  */
-export function addCustomerReview(data: {
+export async function addCustomerReview(data: {
   orderId: string;
   productId: string;
   productName: string;
@@ -761,8 +725,7 @@ export function addCustomerReview(data: {
   authorName: string;
   location?: string;
   childAge?: string;
-}): Review {
-  initReviewsStore();
+}): Promise<Review> {
   const normalizedId = normalizeProductId(data.productId);
 
   const newReview: Review = {
@@ -781,89 +744,119 @@ export function addCustomerReview(data: {
     createdAt: new Date().toISOString(),
   };
 
-  reviewsCache.set(newReview.id, newReview);
-  persistReviews();
-
-  return newReview;
+  const { data: created, error } = await createSupabaseAdminClient()
+    .from('reviews')
+    .insert(toReviewRow(newReview))
+    .select('*')
+    .single();
+  if (error) throw new Error(`Failed to create review in Supabase: ${error.message}`);
+  return fromReviewRow(created as ReviewRow);
 }
 
 /**
  * Increments helpful count for a review
  */
-export function voteReviewHelpful(reviewId: string): number {
-  initReviewsStore();
-  const r = reviewsCache.get(reviewId);
-  if (r) {
-    r.helpfulCount = (r.helpfulCount || 0) + 1;
-    persistReviews();
-    return r.helpfulCount;
-  }
-  return 0;
+export async function voteReviewHelpful(reviewId: string): Promise<number> {
+  const { data: review, error: loadError } = await createSupabaseAdminClient()
+    .from('reviews')
+    .select('helpful_count')
+    .eq('id', reviewId)
+    .maybeSingle();
+  if (loadError) throw new Error(`Failed to load review in Supabase: ${loadError.message}`);
+  if (!review) return 0;
+
+  const helpfulCount = Number(review.helpful_count || 0) + 1;
+  const { error } = await createSupabaseAdminClient()
+    .from('reviews')
+    .update({ helpful_count: helpfulCount })
+    .eq('id', reviewId);
+  if (error) throw new Error(`Failed to update review helpful count: ${error.message}`);
+  return helpfulCount;
 }
 
 /**
  * Deletes a review by ID
  */
-export function deleteReview(reviewId: string): boolean {
-  initReviewsStore();
-  const existed = reviewsCache.delete(reviewId);
-  if (existed) {
-    persistReviews();
-  }
-  return existed;
+export async function deleteReview(reviewId: string): Promise<boolean> {
+  const { data, error } = await createSupabaseAdminClient()
+    .from('reviews')
+    .delete()
+    .eq('id', reviewId)
+    .select('id')
+    .maybeSingle();
+  if (error) throw new Error(`Failed to delete review from Supabase: ${error.message}`);
+  return Boolean(data);
 }
 
 /**
  * Toggles featured status for top testimonials
  */
-export function toggleFeaturedReview(reviewId: string): boolean {
-  initReviewsStore();
-  const r = reviewsCache.get(reviewId);
-  if (r) {
-    r.isFeatured = !r.isFeatured;
-    persistReviews();
-    return Boolean(r.isFeatured);
-  }
-  return false;
+export async function toggleFeaturedReview(reviewId: string): Promise<boolean> {
+  const { data: review, error: loadError } = await createSupabaseAdminClient()
+    .from('reviews')
+    .select('is_featured')
+    .eq('id', reviewId)
+    .maybeSingle();
+  if (loadError) throw new Error(`Failed to load review in Supabase: ${loadError.message}`);
+  if (!review) return false;
+
+  const isFeatured = !Boolean(review.is_featured);
+  const { error } = await createSupabaseAdminClient().from('reviews').update({ is_featured: isFeatured }).eq('id', reviewId);
+  if (error) throw new Error(`Failed to update review featured status: ${error.message}`);
+  return isFeatured;
 }
 
 /**
  * Toggles review visibility between published and hidden
  */
-export function toggleReviewVisibility(reviewId: string, forcedStatus?: 'published' | 'hidden'): Review | null {
-  initReviewsStore();
-  const r = reviewsCache.get(reviewId);
-  if (r) {
-    r.status = forcedStatus || (r.status === 'hidden' ? 'published' : 'hidden');
-    persistReviews();
-    return r;
-  }
-  return null;
+export async function toggleReviewVisibility(reviewId: string, forcedStatus?: 'published' | 'hidden'): Promise<Review | null> {
+  const { data: review, error: loadError } = await createSupabaseAdminClient()
+    .from('reviews')
+    .select('status')
+    .eq('id', reviewId)
+    .maybeSingle();
+  if (loadError) throw new Error(`Failed to load review in Supabase: ${loadError.message}`);
+  if (!review) return null;
+
+  const status = forcedStatus || (review.status === 'hidden' ? 'published' : 'hidden');
+  const { data, error } = await createSupabaseAdminClient()
+    .from('reviews')
+    .update({ status })
+    .eq('id', reviewId)
+    .select('*')
+    .single();
+  if (error) throw new Error(`Failed to update review visibility: ${error.message}`);
+  return fromReviewRow(data as ReviewRow);
 }
 
 /**
  * Adds or updates a founder/kitchen response note
  */
-export function addFounderReply(reviewId: string, message: string): Review | null {
-  initReviewsStore();
-  const r = reviewsCache.get(reviewId);
-  if (r) {
-    r.founderReply = {
-      message: message.trim(),
-      repliedAt: new Date().toISOString(),
-    };
-    persistReviews();
-    return r;
-  }
-  return null;
+export async function addFounderReply(reviewId: string, message: string): Promise<Review | null> {
+  const founderReply = {
+    message: message.trim(),
+    repliedAt: new Date().toISOString(),
+  };
+  const { data, error } = await createSupabaseAdminClient()
+    .from('reviews')
+    .update({ founder_reply: founderReply })
+    .eq('id', reviewId)
+    .select('*')
+    .maybeSingle();
+  if (error) throw new Error(`Failed to save founder reply: ${error.message}`);
+  return data ? fromReviewRow(data as ReviewRow) : null;
 }
 
 /**
  * Resets reviews store back to original authentic seed reviews
  */
-export function resetReviewsToSeed(): void {
-  initReviewsStore();
-  reviewsCache.clear();
-  INITIAL_REVIEWS.forEach((rev) => reviewsCache.set(rev.id, { ...rev }));
-  persistReviews();
+export async function resetReviewsToSeed(): Promise<void> {
+  const supabase = createSupabaseAdminClient();
+  const { error: deleteError } = await supabase.from('reviews').delete().not('id', 'is', null);
+  if (deleteError) throw new Error(`Failed to clear reviews in Supabase: ${deleteError.message}`);
+
+  const { error: insertError } = await supabase
+    .from('reviews')
+    .insert(INITIAL_REVIEWS.map((review) => toReviewRow({ ...review })));
+  if (insertError) throw new Error(`Failed to seed reviews in Supabase: ${insertError.message}`);
 }

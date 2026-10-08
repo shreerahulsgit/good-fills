@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -38,17 +38,6 @@ const cardVariants = {
 
 export function CategoryPortals({ initialProducts }: CategoryPortalsProps) {
   const [productsList, setProductsList] = useState<Product[]>(initialProducts || PRODUCTS);
-
-  useEffect(() => {
-    fetch('/api/products', { cache: 'no-store' })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
-          setProductsList(data.products);
-        }
-      })
-      .catch((err) => console.error('Error fetching category counts:', err));
-  }, []);
 
   const categoriesWithCounts = useMemo(() => {
     return CATEGORIES.map((cat, idx) => {

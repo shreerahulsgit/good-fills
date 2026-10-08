@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -60,7 +60,7 @@ type OrderDateTab = 'all' | 'today' | 'yesterday' | 'week' | 'month';
 type ManifestLayout = 'table' | 'cards';
 type SortOption = 'newest' | 'oldest' | 'highest' | 'lowest' | 'name';
 
-export type UnifiedStatus = 'Confirmed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled' | 'Payment Pending';
+export type UnifiedStatus = 'Confirmed' | 'Processing' | 'Shipped' | 'In Transit' | 'Out for Delivery' | 'Delivered' | 'Cancelled' | 'Pending' | 'Failed';
 
 interface Toast {
   id: string;
@@ -73,12 +73,14 @@ export const getUnifiedStatus = (
   shipmentStatus?: ShipmentStatus, 
   paymentStatus?: PaymentStatus
 ): UnifiedStatus => {
-  if (paymentStatus === 'Failed' || orderStatus === 'Cancelled') return 'Cancelled';
-  if (paymentStatus === 'Pending' || orderStatus === 'Pending') return 'Payment Pending';
-  if (orderStatus === 'Delivered' || shipmentStatus === 'Delivered') return 'Delivered';
+  if (paymentStatus === 'Failed' || orderStatus === 'Failed') return 'Failed';
+  if (orderStatus === 'Cancelled') return 'Cancelled';
+  if (paymentStatus === 'Pending' || orderStatus === 'Pending') return 'Pending';
+  if (orderStatus === 'Completed' || shipmentStatus === 'Delivered') return 'Delivered';
   if (shipmentStatus === 'Out for Delivery') return 'Out for Delivery';
-  if (shipmentStatus === 'In Transit' || shipmentStatus === 'Handed Over' || orderStatus === 'Shipped') return 'Shipped';
-  if (orderStatus === 'Processing' || orderStatus === 'Ready to Ship') return 'Processing';
+  if (shipmentStatus === 'In Transit') return 'In Transit';
+  if (shipmentStatus === 'Handed Over' && orderStatus === 'Shipped') return 'Shipped';
+  if (orderStatus === 'Ready to Ship') return 'Processing';
   return 'Confirmed';
 };
 
@@ -89,69 +91,25 @@ export const getUnifiedStatusLabel = (
 ): string => {
   const s = getUnifiedStatus(orderStatus, shipmentStatus, paymentStatus);
   switch (s) {
-    case 'Payment Pending':
-      return 'Payment Pending (Unpaid)';
+    case 'Failed':
+      return 'Failed';
+    case 'Pending':
+      return 'Pending';
     case 'Processing':
-      return 'Prepared & Packed';
+      return 'Packed';
     case 'Shipped':
+      return 'Shipped';
+    case 'In Transit':
       return 'In Transit';
     case 'Out for Delivery':
       return 'Out for Delivery';
     case 'Delivered':
       return 'Delivered';
     case 'Cancelled':
-      return 'Cancelled / Failed';
+      return 'Cancelled';
     case 'Confirmed':
     default:
-      return 'Order Confirmed (Paid)';
-  }
-};
-
-const getNextStatusConfig = (current: UnifiedStatus): {
-  nextStatus: UnifiedStatus;
-  label: string;
-  shortLabel: string;
-  icon: string;
-  colorScheme: 'amber' | 'blue' | 'green' | 'gray';
-} | null => {
-  switch (current) {
-    case 'Confirmed':
-      return {
-        nextStatus: 'Processing',
-        label: 'Mark Packed 📦',
-        shortLabel: 'Pack 📦',
-        icon: '📦',
-        colorScheme: 'amber',
-      };
-    case 'Processing':
-      return {
-        nextStatus: 'Shipped',
-        label: 'Dispatch Order 🚚',
-        shortLabel: 'Dispatch 🚚',
-        icon: '🚚',
-        colorScheme: 'blue',
-      };
-    case 'Shipped':
-    case 'Out for Delivery':
-      return {
-        nextStatus: 'Delivered',
-        label: 'Mark Delivered ✅',
-        shortLabel: 'Deliver ✅',
-        icon: '✅',
-        colorScheme: 'green',
-      };
-    case 'Cancelled':
-      return {
-        nextStatus: 'Confirmed',
-        label: 'Reopen Order 🔄',
-        shortLabel: 'Reopen',
-        icon: '🔄',
-        colorScheme: 'gray',
-      };
-    case 'Payment Pending':
-    case 'Delivered':
-    default:
-      return null;
+      return 'Confirmed';
   }
 };
 
@@ -163,6 +121,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
   const [pin, setPin] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const hasBootstrappedAdminSession = useRef(false);
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -174,9 +133,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
   useEffect(() => {
     if (initialTab) {
       setActiveSidebarTab(initialTab);
-      if (initialTab === 'products') {
-        fetchProducts();
-      }
     }
   }, [initialTab]);
 
@@ -273,9 +229,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
     }).length;
   }, [orders]);
 
-  // Popover state for individual status selectors
-  const [openStatusMenuId, setOpenStatusMenuId] = useState<string | null>(null);
-
   // Form states for AWB inputs
   const [editStates, setEditStates] = useState<
     Record<
@@ -307,20 +260,11 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
     setSearchTerm(orderId);
   }, []);
 
-  // Close status popover when clicking outside
-  useEffect(() => {
-    const handleGlobalClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest(`.${styles.statusPopoverContainer}`)) {
-        setOpenStatusMenuId(null);
-      }
-    };
-    document.addEventListener('click', handleGlobalClick);
-    return () => document.removeEventListener('click', handleGlobalClick);
-  }, []);
-
   // Check saved session PIN or URL query parameter on mount
   useEffect(() => {
+      if (hasBootstrappedAdminSession.current) return;
+      hasBootstrappedAdminSession.current = true;
+
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const urlPin = urlParams.get('pin');
@@ -802,19 +746,19 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
         newShipmentStatus = 'Not Shipped';
         break;
       case 'Processing':
-        newOrderStatus = 'Processing';
+        newOrderStatus = 'Ready to Ship';
         newShipmentStatus = 'Not Shipped';
         break;
       case 'Shipped':
         newOrderStatus = 'Shipped';
-        newShipmentStatus = 'In Transit';
+        newShipmentStatus = 'Handed Over';
         break;
       case 'Out for Delivery':
         newOrderStatus = 'Shipped';
         newShipmentStatus = 'Out for Delivery';
         break;
       case 'Delivered':
-        newOrderStatus = 'Delivered';
+        newOrderStatus = 'Completed';
         newShipmentStatus = 'Delivered';
         break;
       case 'Cancelled':
@@ -844,7 +788,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
       },
     }));
 
-    setOpenStatusMenuId(null);
     showToast(`Order #${orderId} marked as ${getUnifiedStatusLabel(newOrderStatus, newShipmentStatus, 'Paid')}`, 'success');
 
     // Call backend
@@ -892,6 +835,9 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
   const handleAwbSave = async (orderId: string, awbValue: string) => {
     const trimmed = (awbValue || '').trim();
     const existing = orders.find((o) => o.id === orderId);
+    if (existing && getUnifiedStatus(existing.orderStatus, existing.shipmentStatus, existing.paymentStatus) === 'Failed') {
+      return;
+    }
     if (existing?.trackingNumber === trimmed && trimmed.length > 0) {
       setEditStates((prev) => ({
         ...prev,
@@ -934,9 +880,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setOrders((prev) =>
-          prev.map((o) => (o.id === orderId ? { ...o, trackingNumber: trimmed } : o))
-        );
+          setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, ...data.order } : o)));
         setEditStates((prev) => ({
           ...prev,
           [orderId]: { ...prev[orderId], isSaving: false, justSaved: true },
@@ -955,23 +899,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
         [orderId]: { ...prev[orderId], isSaving: false },
       }));
     }
-  };
-
-  // Bulk Status Update
-  const handleBulkUpdate = async (targetStatus: UnifiedStatus) => {
-    if (selectedOrderIds.length === 0) return;
-
-    const ids = [...selectedOrderIds];
-    showToast(`Updating ${ids.length} orders to ${targetStatus}...`, 'info');
-
-    let successCount = 0;
-    for (const orderId of ids) {
-      await handleQuickAdvance(orderId, targetStatus);
-      successCount++;
-    }
-
-    setSelectedOrderIds([]);
-    showToast(`Successfully updated ${successCount} orders to ${targetStatus}!`, 'success');
   };
 
   // WhatsApp concierge generator
@@ -1042,7 +969,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
       if (statusFilter !== 'all') {
         const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
         if (statusFilter === 'Shipped') {
-          if (u !== 'Shipped' && u !== 'Out for Delivery') return false;
+          if (u !== 'Shipped' && u !== 'In Transit' && u !== 'Out for Delivery') return false;
         } else if (u !== statusFilter) {
           return false;
         }
@@ -1148,10 +1075,10 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
 
     const confirmedCount = paidSubset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) === 'Confirmed').length;
     const processingCount = paidSubset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) === 'Processing').length;
-    const shippedCount = paidSubset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) === 'Shipped' || getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) === 'Out for Delivery').length;
+    const shippedCount = paidSubset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) === 'Shipped' || 'In Transit' || getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) === 'Out for Delivery').length;
     const deliveredCount = paidSubset.filter((o) => getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) === 'Delivered').length;
 
-    const shippedTotal = paidSubset.filter((o) => o.orderStatus === 'Shipped' || o.orderStatus === 'Delivered').length;
+    const shippedTotal = paidSubset.filter((o) => o.orderStatus === 'Shipped' || o.orderStatus === 'Completed').length;
     const assignedAwbCount = paidSubset.filter((o) => o.trackingNumber && o.trackingNumber.trim().length > 0).length;
     const awbRate = shippedTotal > 0 ? Math.round((assignedAwbCount / shippedTotal) * 100) : 100;
 
@@ -1615,7 +1542,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
             {/* Overview Header with Date */}
             <div className={styles.overviewHeaderRow}>
               <div>
-                <h1 className={styles.overviewTitle}>Overview</h1>
+                <h1 className={styles.overviewTitle}>Dashboard Overview</h1>
                 <p className={styles.overviewDateText}>{todayFormatted}</p>
               </div>
 
@@ -1957,7 +1884,10 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                 <div className={styles.panelHeaderRow}>
                   <div className={styles.chartTitle}>Dispatch Queue</div>
                   <span className={styles.panelBadgeSmall}>
-                    {orders.filter((o) => o.paymentStatus === 'Paid' && getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) !== 'Delivered').length} Actionable
+                    {orders.filter((o) => {
+                      const status = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
+                      return o.paymentStatus === 'Paid' && ['Confirmed', 'Processing', 'Shipped'].includes(status);
+                    }).length} In Progress
                   </span>
                 </div>
 
@@ -1968,23 +1898,27 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                         <th>Order</th>
                         <th>Customer</th>
                         <th>Status</th>
-                        <th>Quick Action</th>
+                        <th>Shipping Address</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {orders.filter((o) => o.paymentStatus === 'Paid' && getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) !== 'Delivered').length === 0 ? (
+                      {orders.filter((o) => {
+                        const status = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
+                        return o.paymentStatus === 'Paid' && ['Confirmed', 'Processing', 'Shipped'].includes(status);
+                      }).length === 0 ? (
                         <tr>
                           <td colSpan={4} style={{ textAlign: 'center', padding: '32px 16px', color: '#9CA3AF', fontSize: '0.82rem' }}>
-                            No actionable orders in the queue. All orders are fulfilled or pending placement.
+                            No in-progress orders in the queue. All orders are fulfilled or pending placement.
                           </td>
                         </tr>
                       ) : (
                         orders
-                          .filter((o) => o.paymentStatus === 'Paid' && getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus) !== 'Delivered')
-                          .slice(0, 3)
+                          .filter((o) => {
+                            const status = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
+                            return o.paymentStatus === 'Paid' && ['Confirmed', 'Processing', 'Shipped'].includes(status);
+                          })
                           .map((o) => {
                             const u = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
-                            const next = getNextStatusConfig(u);
                             return (
                               <tr key={o.id}>
                                 <td>
@@ -2011,24 +1945,16 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                                   </span>
                                 </td>
                                 <td>
-                                  {next ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleQuickAdvance(o.id, next.nextStatus)}
-                                      className={`${styles.oneClickNextBtn} ${
-                                        next.colorScheme === 'amber'
-                                          ? styles.nextBtnAmber
-                                          : next.colorScheme === 'blue'
-                                          ? styles.nextBtnBlue
-                                          : styles.nextBtnGreen
-                                      }`}
-                                      style={{ padding: '4px 9px', fontSize: '0.7rem' }}
-                                    >
-                                      <span>{next.label}</span>
-                                    </button>
-                                  ) : (
-                                    <span style={{ fontSize: '0.72rem', color: '#065F46', fontWeight: 700 }}>✓ Done</span>
-                                  )}
+                                  <div style={{ fontSize: '0.72rem', color: '#475569', lineHeight: 1.45 }}>
+                                    <div>
+                                      {o.shippingAddress?.addressLine1}
+                                      {o.shippingAddress?.addressLine2 && `, ${o.shippingAddress.addressLine2}`}
+                                    </div>
+                                    <div>
+                                      {o.shippingAddress?.city}, {o.shippingAddress?.state} - {o.shippingAddress?.pincode}
+                                    </div>
+                                    <div>{o.shippingAddress?.country}</div>
+                                  </div>
                                 </td>
                               </tr>
                             );
@@ -2277,10 +2203,8 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                           justSaved: false,
                         };
                         const uStatus = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
-                        const nextConfig = getNextStatusConfig(uStatus);
                         const relativeAge = getRelativeDateLabel(o.createdAt);
                         const isSelected = selectedOrderIds.includes(o.id);
-                        const isStatusOpen = openStatusMenuId === o.id;
 
                         return (
                           <tr key={o.id} className={`${styles.manifestRow} ${isSelected ? styles.manifestRowSelected : ''}`}>
@@ -2351,73 +2275,26 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                             </td>
 
                             <td>
-                              <div className={styles.statusPopoverContainer}>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenStatusMenuId(isStatusOpen ? null : o.id);
-                                  }}
-                                  className={`${styles.statusInteractivePill} ${
-                                    uStatus === 'Delivered'
-                                      ? styles.pillDelivered
-                                      : uStatus === 'Shipped' || uStatus === 'Out for Delivery'
-                                      ? styles.pillShipped
-                                      : uStatus === 'Processing'
-                                      ? styles.pillProcessing
-                                      : uStatus === 'Cancelled'
-                                      ? styles.pillCancelled
-                                      : uStatus === 'Payment Pending'
-                                      ? styles.pillPending
-                                      : styles.pillConfirmed
-                                  }`}
-                                  title="Click to jump to any status"
-                                >
+                                <div className={styles.statusPopoverContainer}>
+                                  <span className={`${styles.statusInteractivePill} ${
+                                      uStatus === 'Delivered'
+                                        ? styles.pillDelivered
+                                        : uStatus === 'Shipped' || uStatus === 'Out for Delivery'
+                                        ? styles.pillShipped
+                                        : uStatus === 'Processing'
+                                        ? styles.pillProcessing
+                                        : uStatus === 'In Transit'
+                                        ? styles.pillInTransit
+                                        : uStatus === 'Cancelled'
+                                        ? styles.pillCancelled
+                                        : uStatus === 'Failed'
+                                        ? styles.pillFailed
+                                        : uStatus === 'Pending'
+                                        ? styles.pillPending
+                                        : styles.pillConfirmed
+                                    }`}>
                                   <span>{getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus, o.paymentStatus)}</span>
-                                  <ChevronDown size={11} />
-                                </button>
-
-                                {isStatusOpen && (
-                                  <div className={styles.statusDropdownMenu}>
-                                    <div className={styles.dropdownHeader}>Select Status</div>
-                                    <button
-                                      type="button"
-                                      className={styles.statusOptionBtn}
-                                      onClick={() => handleQuickAdvance(o.id, 'Confirmed')}
-                                    >
-                                      <span>Order Confirmed</span>
-                                    </button>
-                                    <button
-                                      type="button"
-                                      className={styles.statusOptionBtn}
-                                      onClick={() => handleQuickAdvance(o.id, 'Processing')}
-                                    >
-                                      <span>Prepared &amp; Packed</span>
-                                    </button>
-                                    <button
-                                      type="button"
-                                      className={styles.statusOptionBtn}
-                                      onClick={() => handleQuickAdvance(o.id, 'Shipped')}
-                                    >
-                                      <span>In Transit</span>
-                                    </button>
-                                    <button
-                                      type="button"
-                                      className={styles.statusOptionBtn}
-                                      onClick={() => handleQuickAdvance(o.id, 'Delivered')}
-                                    >
-                                      <span>Delivered</span>
-                                    </button>
-                                    <div className={styles.dropdownDivider} />
-                                    <button
-                                      type="button"
-                                      className={`${styles.statusOptionBtn} ${styles.statusOptionCancel}`}
-                                      onClick={() => handleQuickAdvance(o.id, 'Cancelled')}
-                                    >
-                                      <span>Mark Cancelled</span>
-                                    </button>
-                                  </div>
-                                )}
+                                  </span>
                               </div>
                             </td>
 
@@ -2428,6 +2305,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                                   className={`${styles.tableAwbInput} ${edit.justSaved ? styles.awbSavedPulse : ''}`}
                                   placeholder="e.g. D12345678"
                                   value={edit.trackingNumber}
+                                  disabled={uStatus === 'Failed'}
                                   onChange={(e) =>
                                     setEditStates((prev) => ({
                                       ...prev,
@@ -2446,7 +2324,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                                 <button
                                   type="button"
                                   onClick={() => handleAwbSave(o.id, edit.trackingNumber)}
-                                  disabled={edit.isSaving}
+                                  disabled={edit.isSaving || uStatus === 'Failed'}
                                   className={`${styles.awbSaveBtn} ${edit.justSaved ? styles.awbSaveBtnSaved : ''}`}
                                   title="Save Consignment Number"
                                 >
@@ -2512,13 +2390,12 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                       justSaved: false,
                     };
                     const uStatus = getUnifiedStatus(o.orderStatus, o.shipmentStatus, o.paymentStatus);
-                    const nextConfig = getNextStatusConfig(uStatus);
                     const relativeAge = getRelativeDateLabel(o.createdAt);
                     const isSelected = selectedOrderIds.includes(o.id);
 
                     const statusOrder: UnifiedStatus[] = ['Confirmed', 'Processing', 'Shipped', 'Delivered'];
                     const currentStageIndex = statusOrder.indexOf(
-                      uStatus === 'Out for Delivery' ? 'Shipped' : uStatus
+                              uStatus === 'In Transit' || uStatus === 'Out for Delivery' ? 'Shipped' : uStatus
                     );
 
                     return (
@@ -2547,9 +2424,13 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                                 ? styles.pillShippedSmall
                                 : uStatus === 'Processing'
                                 ? styles.pillProcessingSmall
+                                : uStatus === 'In Transit'
+                                ? styles.pillInTransitSmall
                                 : uStatus === 'Cancelled'
                                 ? styles.pillCancelledSmall
-                                : uStatus === 'Payment Pending'
+                                : uStatus === 'Failed'
+                                ? styles.pillFailedSmall
+                                : uStatus === 'Pending'
                                 ? styles.pillPendingSmall
                                 : styles.pillConfirmedSmall
                             }
@@ -2600,34 +2481,8 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                             })}
                           </div>
 
-                          {/* 1-Click Fast Progression Button */}
-                          <div className={styles.mobileAdvanceSection}>
-                            {nextConfig ? (
-                              <motion.button
-                                type="button"
-                                onClick={() => handleQuickAdvance(o.id, nextConfig.nextStatus)}
-                                disabled={edit.isSaving}
-                                className={`${styles.mobileBigAdvanceBtn} ${
-                                  nextConfig.colorScheme === 'amber'
-                                    ? styles.nextBtnAmber
-                                    : nextConfig.colorScheme === 'blue'
-                                    ? styles.nextBtnBlue
-                                    : nextConfig.colorScheme === 'green'
-                                    ? styles.nextBtnGreen
-                                    : styles.nextBtnGray
-                                }`}
-                                whileTap={{ scale: 0.98 }}
-                              >
-                                {edit.isSaving ? (
-                                  <span>Advancing...</span>
-                                ) : (
-                                  <>
-                                    <span>{nextConfig.label}</span>
-                                    <ArrowRight size={13} />
-                                  </>
-                                )}
-                              </motion.button>
-                            ) : uStatus === 'Payment Pending' ? (
+                            <div className={styles.mobileAdvanceSection}>
+                              {uStatus === 'Pending' ? (
                               <div className={styles.unpaidAlertBadgeMobile}>
                                 <span>Awaiting Payment — Do Not Pack</span>
                               </div>
@@ -2653,6 +2508,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                                   className={`${styles.mobileAwbInput} ${edit.justSaved ? styles.awbSavedPulse : ''}`}
                                   placeholder="Consignment / AWB No."
                                   value={edit.trackingNumber}
+                                  disabled={uStatus === 'Failed'}
                                   onChange={(e) =>
                                     setEditStates((prev) => ({
                                       ...prev,
@@ -2672,7 +2528,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                               <button
                                 type="button"
                                 onClick={() => handleAwbSave(o.id, edit.trackingNumber)}
-                                disabled={edit.isSaving}
+                                disabled={edit.isSaving || uStatus === 'Failed'}
                                 className={`${styles.mobileAwbSaveBtn} ${edit.justSaved ? styles.awbSaveBtnSaved : ''}`}
                                 title="Save Consignment"
                               >
@@ -2783,7 +2639,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
             {inquiries.length === 0 ? (
               <div style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
                 <MessageCircle size={32} color="#9CA3AF" style={{ margin: '0 auto 12px' }} />
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#111827', margin: '0 0 4px' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#111827', margin: '0 0 10px' }}>
                   No Inquiries Recorded Yet
                 </h3>
                 <p style={{ fontSize: '0.8rem', color: '#6B7280', margin: 0 }}>
@@ -3172,24 +3028,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
               </div>
 
               <div className={styles.bulkActionsGroup}>
-                <button
-                  type="button"
-                  onClick={() => handleBulkUpdate('Processing')}
-                  className={styles.bulkActionBtn}
-                >
-                  <Package size={13} />
-                  <span>Mark as Packed</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleBulkUpdate('Shipped')}
-                  className={styles.bulkActionBtn}
-                >
-                  <Truck size={13} />
-                  <span>Mark as In Transit</span>
-                </button>
-
                 <button
                   type="button"
                   onClick={exportManifestCSV}

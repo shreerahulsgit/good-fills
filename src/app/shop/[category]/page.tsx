@@ -45,14 +45,14 @@ export function generateMetadata({ params }: CategoryPageProps): Metadata {
   };
 }
 
-export default function CategoryPage({ params }: CategoryPageProps) {
+export default async function CategoryPage({ params }: CategoryPageProps) {
   const category = params.category as ProductCategory;
 
   if (!VALID_CATEGORIES.includes(category)) {
     notFound();
   }
 
-  const products = getAllServerProducts();
+  const products = await getAllServerProducts();
 
   return (
     <main>

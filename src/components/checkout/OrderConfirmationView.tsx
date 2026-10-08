@@ -15,8 +15,8 @@ import {
   FileText,
 } from 'lucide-react';
 import { Order } from '@/types';
-import { getOrderById, saveOrder } from '@/lib/orders';
 import { formatCurrency } from '@/lib/shipping';
+import { isInvoiceEligible } from '@/lib/invoice';
 import styles from './OrderConfirmationView.module.css';
 
 interface OrderConfirmationViewProps {
@@ -36,21 +36,12 @@ export function OrderConfirmationView({ orderId }: OrderConfirmationViewProps) {
         return;
       }
 
-      // 1. Try local storage first for instant rendering
-      const localFound = getOrderById(orderId);
-      if (localFound && isMounted) {
-        setOrder(localFound);
-        setIsLoaded(true);
-      }
-
-      // 2. Fetch authoritative order from server
       try {
         const res = await fetch(`/api/orders/${encodeURIComponent(orderId)}`);
         if (res.ok) {
           const data = await res.json();
           if (data.success && data.order && isMounted) {
             setOrder(data.order);
-            saveOrder(data.order);
           }
         }
       } catch (err) {
@@ -204,7 +195,7 @@ export function OrderConfirmationView({ orderId }: OrderConfirmationViewProps) {
                     Payment Method
                   </span>
                   <div className={styles.infoBlockContent}>
-                    <strong>{order.paymentMethod === 'Razorpay' ? 'Razorpay Instant Gateway' : 'Direct UPI Payment'}</strong>
+                    <strong>{order.paymentMethod}</strong>
                     <br />
                     Status: <span style={{ color: '#16a34a', fontWeight: 600 }}>{order.paymentStatus}</span>
                     {order.razorpayPaymentId && (
@@ -280,14 +271,16 @@ export function OrderConfirmationView({ orderId }: OrderConfirmationViewProps) {
 
           {/* Action CTAs */}
           <div className={styles.actionsRow}>
-            <Link
-              href={`/invoice/${encodeURIComponent(order ? order.id : orderId)}`}
-              target="_blank"
-              className={styles.invoiceBtn}
-            >
-              <FileText size={16} />
-              <span>Download Official Invoice (PDF)</span>
-            </Link>
+            {order && isInvoiceEligible(order) && (
+              <Link
+                href={`/invoice/${encodeURIComponent(order.id)}`}
+                target="_blank"
+                className={styles.invoiceBtn}
+              >
+                <FileText size={16} />
+                <span>Download Official Invoice (PDF)</span>
+              </Link>
+            )}
 
             <a
               href={`https://wa.me/91${atelierPhone}?text=${waText}`}

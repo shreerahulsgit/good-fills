@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProductReviewSummary, getAllReviews, addCustomerReview, getReviewsByOrderId } from '@/lib/server-reviews';
-import { resolveOrderById } from '@/lib/server-orders';
+import { resolveOrderById } from '@/lib/supabase-orders';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     const productId = searchParams.get('productId');
 
     if (orderId) {
-      const reviews = getReviewsByOrderId(orderId);
+      const reviews = await getReviewsByOrderId(orderId);
       return NextResponse.json(
         { success: true, reviews },
         {
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (productId) {
-      const summary = getProductReviewSummary(productId);
+      const summary = await getProductReviewSummary(productId);
       return NextResponse.json(
         { success: true, summary },
         {
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const reviews = getAllReviews();
+    const reviews = await getAllReviews();
     return NextResponse.json(
       { success: true, reviews },
       {
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
     // 3. Verify order is Delivered
     const isDelivered =
       order.shipmentStatus === 'Delivered' ||
-      order.orderStatus === 'Delivered';
+      order.orderStatus === 'Completed';
 
     if (!isDelivered) {
       return NextResponse.json(
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 5. Prevent duplicate reviews for the same product in the same order
-    const existingForOrder = getReviewsByOrderId(order.id);
+    const existingForOrder = await getReviewsByOrderId(order.id);
     const alreadyReviewed = existingForOrder.some((r) => {
       return r.productId.toLowerCase() === cleanProductId;
     });
@@ -173,7 +173,7 @@ export async function POST(req: NextRequest) {
       ? location.trim()
       : (order.shippingAddress?.city ? `${order.shippingAddress.city}, ${order.shippingAddress.state || 'Karnataka'}` : 'Bengaluru, Karnataka');
 
-    const newReview = addCustomerReview({
+    const newReview = await addCustomerReview({
       orderId: order.id,
       productId,
       productName: productName || 'Traditional Creation',

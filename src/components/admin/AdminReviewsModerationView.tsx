@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import {
   Star,
@@ -44,6 +44,7 @@ export function AdminReviewsModerationView({ showToast, onNavigateToOrder }: Adm
   const [stats, setStats] = useState<ReviewStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const hasLoadedInitialReviews = useRef(false);
 
   // Filters
   const [ratingFilter, setRatingFilter] = useState<'all' | number>('all');
@@ -78,8 +79,10 @@ export function AdminReviewsModerationView({ showToast, onNavigateToOrder }: Adm
   }, [showToast]);
 
   useEffect(() => {
-    loadReviews(true);
-  }, []); // Run on initial mount only
+    if (hasLoadedInitialReviews.current) return;
+    hasLoadedInitialReviews.current = true;
+    void loadReviews(true);
+  }, [loadReviews]);
 
   // Unique products present in the reviews list for filter dropdown
   const uniqueProducts = useMemo(() => {
@@ -276,7 +279,7 @@ export function AdminReviewsModerationView({ showToast, onNavigateToOrder }: Adm
             title="Refresh customer reviews list"
           >
             <RefreshCw size={14} className={isRefreshing ? styles.spin : ''} />
-            <span>{isRefreshing ? 'Refreshing...' : 'Refresh Reviews'}</span>
+            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
       </header>

@@ -48,7 +48,7 @@ export function ProductReviewsSection({ product, initialSummary }: ProductReview
     const targetSlug = (product.slug || '').toLowerCase();
 
     return orders.find((o) => {
-      const isDelivered = o.shipmentStatus === 'Delivered' || o.orderStatus === 'Delivered';
+      const isDelivered = o.shipmentStatus === 'Delivered' || o.orderStatus === 'Completed';
       if (!isDelivered) return false;
       return o.items && o.items.some((item) => {
         const pId = (item.product?.id || (item as any).productId || '').toLowerCase();

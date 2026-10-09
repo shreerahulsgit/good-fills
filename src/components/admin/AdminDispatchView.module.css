@@ -2363,6 +2363,194 @@
   background-color: #DBEAFE;
 }
 
+/* Inquiries Search & Controls */
+.inquiriesControlsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.inquirySearchInputWrapper {
+  position: relative;
+  flex: 1;
+  max-width: 580px;
+  display: flex;
+  align-items: center;
+}
+
+.inquirySearchIcon {
+  position: absolute;
+  left: 12px;
+  color: #9CA3AF;
+  pointer-events: none;
+}
+
+.inquirySearchInput {
+  width: 100%;
+  padding: 10px 36px 10px 36px;
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 0;
+  font-size: 0.82rem;
+  color: #111827;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.inquirySearchInput:focus {
+  border-color: #111827;
+  box-shadow: 0 0 0 1px #111827;
+}
+
+.inquirySearchClearBtn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: #9CA3AF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.inquirySearchClearBtn:hover {
+  color: #111827;
+}
+
+.inquirySearchCountTag {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #6B7280;
+  background-color: #F3F4F6;
+  padding: 6px 10px;
+  border: 1px solid #E5E7EB;
+}
+
+/* Inquiry Card Ref Badge & Title */
+.inquiryTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inquiryRefBadgeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #FAF5F0;
+  border: 1px dashed #D6C2B0;
+  color: #8C442A;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.15s ease;
+}
+
+.inquiryRefBadgeBtn:hover {
+  background-color: #8C442A;
+  color: #FFFFFF;
+  border-color: #8C442A;
+}
+
+/* Delete Button */
+.inquiryDeleteBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background-color: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #DC2626;
+  padding: 6px 11px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.15s ease;
+}
+
+.inquiryDeleteBtn:hover:not(:disabled) {
+  background-color: #DC2626;
+  color: #FFFFFF;
+  border-color: #DC2626;
+}
+
+.inquiryDeleteBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.inquiryConfirmDeleteBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #DC2626;
+  border: 1px solid #DC2626;
+  color: #FFFFFF;
+  padding: 6px 10px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.15s ease;
+}
+
+.inquiryConfirmDeleteBtn:hover {
+  background-color: #B91C1C;
+}
+
+.inquiryCancelDeleteBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F3F4F6;
+  border: 1px solid #D1D5DB;
+  color: #4B5563;
+  padding: 6px 7px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.15s ease;
+}
+
+.inquiryCancelDeleteBtn:hover {
+  background-color: #E5E7EB;
+  color: #111827;
+}
+
+
+/* Empty Search Results */
+.inquiryEmptyResults {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  padding: 48px 24px;
+  text-align: center;
+  border-radius: 0;
+}
+
+.clearSearchBtn {
+  background-color: #111827;
+  color: #FFFFFF;
+  border: 1px solid #111827;
+  padding: 7px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.15s ease;
+}
+
+.clearSearchBtn:hover {
+  background-color: #374151;
+}
+
 .inquiryStatusBadgeNew {
   background-color: #FEF3C7;
   color: #92400E;
@@ -2383,22 +2571,8 @@
   text-transform: uppercase;
 }
 
-.inquiryToggleBtn {
-  background: transparent;
-  border: 1px solid #D1D5DB;
-  color: #4B5563;
-  padding: 9px 12px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-  border-radius: 0;
-  transition: all 0.15s ease;
-}
 
-.inquiryToggleBtn:hover {
-  background-color: #F3F4F6;
-  color: #111827;
-}
+
 
 /* ==========================================================================
    9. BULK ACTIONS & TOAST

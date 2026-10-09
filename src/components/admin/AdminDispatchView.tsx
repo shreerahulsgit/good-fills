@@ -149,6 +149,12 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
           if (last === 'products') {
             fetchProducts();
           }
+          if (last === 'inquiries') {
+            setHasViewedInquiries(true);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('goodfills_inquiries_viewed', 'true');
+            }
+          }
         } else if (last === 'console') {
           setActiveSidebarTab('dashboard');
         }
@@ -163,6 +169,13 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
     setIsMobileDrawerOpen(false);
     if (tab === 'products') {
       fetchProducts();
+    }
+    if (tab === 'inquiries') {
+      setHasViewedInquiries(true);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('goodfills_inquiries_viewed', 'true');
+        localStorage.setItem('goodfills_inquiries_seen_count', inquiries.length.toString());
+      }
     }
     if (typeof window !== 'undefined') {
       const targetUrl = tab === 'dashboard' ? '/console/dashboard' : `/console/${tab}`;
@@ -188,6 +201,64 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
   const [isLoadingInquiries, setIsLoadingInquiries] = useState(false);
   const [inquiryFilter, setInquiryFilter] = useState<'all' | 'new' | 'replied'>('all');
   const [isResettingData, setIsResettingData] = useState(false);
+  const [inquirySearch, setInquirySearch] = useState('');
+  const [deletingInquiryId, setDeletingInquiryId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [copiedInquiryId, setCopiedInquiryId] = useState<string | null>(null);
+  const [hasViewedInquiries, setHasViewedInquiries] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('goodfills_inquiries_viewed') === 'true' || initialTab === 'inquiries';
+    }
+    return initialTab === 'inquiries';
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (activeSidebarTab === 'inquiries' || initialTab === 'inquiries') {
+        setHasViewedInquiries(true);
+        localStorage.setItem('goodfills_inquiries_viewed', 'true');
+        localStorage.setItem('goodfills_inquiries_seen_count', inquiries.length.toString());
+      } else {
+        const isViewed = localStorage.getItem('goodfills_inquiries_viewed');
+        if (isViewed === 'true') {
+          setHasViewedInquiries(true);
+        }
+      }
+    }
+  }, [activeSidebarTab, initialTab, inquiries.length]);
+
+  const unseenInquiriesCount = useMemo(() => {
+    // If admin is currently on inquiries tab or has visited it, badge count is strictly 0
+    if (activeSidebarTab === 'inquiries' || hasViewedInquiries) return 0;
+    if (typeof window !== 'undefined') {
+      const isViewed = localStorage.getItem('goodfills_inquiries_viewed');
+      if (isViewed === 'true') return 0;
+      const seenCount = parseInt(localStorage.getItem('goodfills_inquiries_seen_count') || '0', 10);
+      return Math.max(0, inquiries.length - seenCount);
+    }
+    return 0;
+  }, [inquiries.length, hasViewedInquiries, activeSidebarTab]);
+
+  const filteredInquiries = useMemo(() => {
+    let result = inquiries;
+    if (inquiryFilter !== 'all') {
+      result = result.filter((inquiry) => inquiry.status === inquiryFilter);
+    }
+    if (inquirySearch.trim()) {
+      const q = inquirySearch.trim().toLowerCase();
+      result = result.filter((inq) => {
+        const idMatch = (inq.id || '').toLowerCase().includes(q);
+        const nameMatch = (inq.name || '').toLowerCase().includes(q);
+        const phoneMatch = (inq.phone || '').toLowerCase().includes(q);
+        const emailMatch = (inq.email || '').toLowerCase().includes(q);
+        const categoryMatch = (inq.category || '').toLowerCase().includes(q);
+        const orderMatch = (inq.orderId || '').toLowerCase().includes(q);
+        const msgMatch = (inq.message || '').toLowerCase().includes(q);
+        return idMatch || nameMatch || phoneMatch || emailMatch || categoryMatch || orderMatch || msgMatch;
+      });
+    }
+    return result;
+  }, [inquiries, inquiryFilter, inquirySearch]);
 
   // Products Management State
   const [products, setProducts] = useState<Product[]>([]);
@@ -351,22 +422,41 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
     }
   };
 
-  const handleToggleInquiryStatus = async (inqId: string, currentStatus: Inquiry['status']) => {
-    const nextStatus: Inquiry['status'] = currentStatus === 'new' ? 'replied' : 'new';
+  const executeDeleteInquiry = async (inqId: string) => {
+    setDeletingInquiryId(inqId);
+    setConfirmDeleteId(null);
+
+    // Optimistic UI update: instantly remove from list
+    const previousInquiries = [...inquiries];
+    setInquiries((prev) => prev.filter((i) => i.id !== inqId));
+    showToast('Inquiry deleted successfully', 'success');
+
     try {
-      const res = await fetch('/api/inquiries', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: inqId, status: nextStatus }),
+      const res = await fetch(`/api/inquiries?id=${encodeURIComponent(inqId)}`, {
+        method: 'DELETE',
       });
-      if (res.ok) {
-        setInquiries((prev) =>
-          prev.map((i) => (i.id === inqId ? { ...i, status: nextStatus } : i))
-        );
-        showToast(`Inquiry marked as ${nextStatus}!`, 'success');
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        // Rollback on server failure
+        setInquiries(previousInquiries);
+        showToast(data.error || 'Failed to delete inquiry on server', 'error');
       }
-    } catch {
-      showToast('Failed to update inquiry status', 'error');
+    } catch (err) {
+      console.error('Delete inquiry error:', err);
+      // Rollback on network failure
+      setInquiries(previousInquiries);
+      showToast('Network error while deleting inquiry', 'error');
+    } finally {
+      setDeletingInquiryId(null);
+    }
+  };
+
+  const handleCopyInquiryRef = (inqId: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(inqId);
+      setCopiedInquiryId(inqId);
+      showToast(`Ref #${inqId} copied to clipboard!`, 'info');
+      setTimeout(() => setCopiedInquiryId(null), 2000);
     }
   };
 
@@ -722,10 +812,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
     });
   }, [products, productSearch, productCategoryFilter, productAvailabilityFilter, productFeaturedFilter]);
 
-  const filteredInquiries = useMemo(() => {
-    if (inquiryFilter === 'all') return inquiries;
-    return inquiries.filter((inquiry) => inquiry.status === inquiryFilter);
-  }, [inquiries, inquiryFilter]);
 
   const handleLogout = () => {
     void fetch('/api/admin/auth/logout', { method: 'POST' }).finally(() => {
@@ -1425,7 +1511,9 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
             >
               <MessageCircle size={18} />
               <span>Inquiries</span>
-              <span className={styles.navCountBadge}>{inquiries.length}</span>
+              {unseenInquiriesCount > 0 && (
+                <span className={styles.navCountBadge}>{unseenInquiriesCount}</span>
+              )}
               {activeSidebarTab === 'inquiries' && <div className={styles.activePillMarker} />}
             </button>
           </nav>
@@ -1542,7 +1630,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
             onClick={() => handleTabChange('inquiries')}
           >
             <MessageCircle size={14} />
-            <span>Inquiries ({inquiries.length})</span>
+            <span>Inquiries{unseenInquiriesCount > 0 ? ` (${unseenInquiriesCount})` : ''}</span>
           </button>
         </div>
 
@@ -2647,52 +2735,69 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
               </div>
             </div>
 
-            <div className={styles.inquirySummaryGrid}>
-              <button
-                type="button"
-                className={`${styles.inquirySummaryCard} ${inquiryFilter === 'all' ? styles.inquirySummaryCardActive : ''}`}
-                onClick={() => setInquiryFilter('all')}
-              >
-                <span className={styles.inquirySummaryLabel}>All messages</span>
-                <strong>{inquiries.length}</strong>
-              </button>
-              <button
-                type="button"
-                className={`${styles.inquirySummaryCard} ${inquiryFilter === 'new' ? styles.inquirySummaryCardActive : ''}`}
-                onClick={() => setInquiryFilter('new')}
-              >
-                <span className={styles.inquirySummaryLabel}>Needs reply</span>
-                <strong>{inquiries.filter((inquiry) => inquiry.status === 'new').length}</strong>
-              </button>
-              <button
-                type="button"
-                className={`${styles.inquirySummaryCard} ${inquiryFilter === 'replied' ? styles.inquirySummaryCardActive : ''}`}
-                onClick={() => setInquiryFilter('replied')}
-              >
-                <span className={styles.inquirySummaryLabel}>Replied</span>
-                <strong>{inquiries.filter((inquiry) => inquiry.status === 'replied').length}</strong>
-              </button>
-            </div>
+            {/* Inquiries Live Search Filter */}
+            {inquiries.length > 0 && (
+              <div className={styles.inquiriesControlsRow}>
+                <div className={styles.inquirySearchInputWrapper}>
+                  <Search size={15} className={styles.inquirySearchIcon} />
+                  <input
+                    type="text"
+                    value={inquirySearch}
+                    onChange={(e) => setInquirySearch(e.target.value)}
+                    placeholder="Search by Ref Code (e.g. INQ-6471), Name, Phone, Email, Message, or Order ID..."
+                    className={styles.inquirySearchInput}
+                  />
+                  {inquirySearch && (
+                    <button
+                      type="button"
+                      onClick={() => setInquirySearch('')}
+                      className={styles.inquirySearchClearBtn}
+                      title="Clear search"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
 
-            {isLoadingInquiries && inquiries.length === 0 ? (
-              <div className={styles.inquiryEmptyState}>
-                <RefreshCw size={24} className={styles.spinningIcon} />
-                <h3>Loading inquiries</h3>
-                <p>Syncing messages from the Atelier desk.</p>
+                {inquirySearch.trim() && (
+                  <div className={styles.inquirySearchCountTag}>
+                    Showing {filteredInquiries.length} of {inquiries.length}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {inquiries.length === 0 ? (
+              <div style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
+                <MessageCircle size={32} color="#9CA3AF" style={{ margin: '0 auto 12px' }} />
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#111827', margin: '0 0 10px' }}>
+                  No Inquiries Recorded Yet
+                </h3>
+                <p style={{ fontSize: '0.8rem', color: '#6B7280', margin: 0 }}>
+                  Customer messages submitted from the Contact page will automatically appear here.
+                </p>
               </div>
             ) : filteredInquiries.length === 0 ? (
-              <div className={styles.inquiryEmptyState}>
-                <MessageCircle size={28} />
-                <h3>{inquiries.length === 0 ? 'No inquiries recorded yet' : 'No messages in this view'}</h3>
-                <p>
-                  {inquiries.length === 0
-                    ? 'Customer messages submitted from the Contact page will appear here.'
-                    : 'Try another status filter to see more messages.'}
+              <div className={styles.inquiryEmptyResults}>
+                <Search size={28} color="#9CA3AF" style={{ margin: '0 auto 10px' }} />
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#111827', margin: '0 0 6px' }}>
+                  No inquiries match &ldquo;{inquirySearch}&rdquo;
+                </h3>
+                <p style={{ fontSize: '0.8rem', color: '#6B7280', margin: 0 }}>
+                  Check the Reference Code, customer name, mobile number, or message keyword.
                 </p>
+                <button
+                  type="button"
+                  onClick={() => setInquirySearch('')}
+                  className={styles.clearSearchBtn}
+                >
+                  Clear Search Filter
+                </button>
               </div>
             ) : (
               <div className={styles.inquiriesListGrid}>
                 {filteredInquiries.map((inq) => {
+
                   const rawPhone = (inq.phone || '').replace(/[^0-9]/g, '');
                   const cleanPhone = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
                   const firstName = inq.name ? inq.name.split(' ')[0] : 'Patron';
@@ -2715,23 +2820,28 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                       className={`${styles.inquiryCard} ${inq.status === 'new' ? styles.inquiryCardNew : ''}`}
                     >
                       <div className={styles.inquiryHeader}>
-                        <div className={styles.inquiryIdentity}>
-                          <strong className={styles.inquiryName}>{inq.name}</strong>
-                          <div className={styles.inquiryContact}>
-                            {inq.phone}
-                            {inq.email && `, ${inq.email}`}
+                        <div>
+                          <div className={styles.inquiryTitleRow}>
+                            <strong className={styles.inquiryName}>{inq.name}</strong>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyInquiryRef(inq.id)}
+                              className={styles.inquiryRefBadgeBtn}
+                              title="Click to copy Reference Code"
+                            >
+                              <span>#{inq.id}</span>
+                              {copiedInquiryId === inq.id ? (
+                                <Check size={11} color="#059669" />
+                              ) : (
+                                <Copy size={11} />
+                              )}
+                            </button>
+                          </div>
+                          <div className={styles.inquiryPhone}>
+                            {inq.phone} {inq.email ? `• ${inq.email}` : ''}
                           </div>
                         </div>
                         <div className={styles.inquiryMetaRow}>
-                          <span
-                            className={
-                              inq.status === 'replied'
-                                ? styles.inquiryStatusBadgeReplied
-                                : styles.inquiryStatusBadgeNew
-                            }
-                          >
-                            {inq.status === 'replied' ? 'Replied' : 'Not Replied'}
-                          </span>
                           <span className={styles.inquiryBadge}>{inq.category}</span>
                         </div>
                       </div>
@@ -2760,15 +2870,40 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
 
                       <div className={styles.inquiryFooter}>
                         <span className={styles.inquiryTime}>{timeFormatted}</span>
-                        <div className={styles.inquiryActionGroup}>
-                          <button
-                            type="button"
-                            onClick={() => handleToggleInquiryStatus(inq.id, inq.status)}
-                            className={styles.inquiryToggleBtn}
-                            title="Toggle status"
-                          >
-                            {inq.status === 'replied' ? 'Mark Pending' : 'Mark Solved'}
-                          </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {confirmDeleteId === inq.id ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <button
+                                type="button"
+                                onClick={() => executeDeleteInquiry(inq.id)}
+                                disabled={deletingInquiryId === inq.id}
+                                className={styles.inquiryConfirmDeleteBtn}
+                                title="Confirm permanent deletion"
+                              >
+                                <Trash2 size={13} />
+                                <span>{deletingInquiryId === inq.id ? 'Deleting...' : 'Confirm?'}</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setConfirmDeleteId(null)}
+                                className={styles.inquiryCancelDeleteBtn}
+                                title="Cancel deletion"
+                              >
+                                <X size={13} />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDeleteId(inq.id)}
+                              className={styles.inquiryDeleteBtn}
+                              title="Delete this inquiry permanently"
+                            >
+                              <Trash2 size={13} />
+                              <span>Delete</span>
+                            </button>
+                          )}
+
                           <a
                             href={waUrl}
                             target="_blank"

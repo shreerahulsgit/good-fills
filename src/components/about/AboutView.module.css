@@ -13,217 +13,34 @@
 }
 
 /* ========================================================
-/* ========================================================
-   HERO SECTION: HIGH-FASHION EDITORIAL BANNER (IMAGE TWO STYLE)
+   CHAPTER 01: OUR STORY — FOUNDER & PRESS EXHIBIT
+   Architectural Luxury Editorial Frame & Focused Narrative
    ======================================================== */
-.heroSection {
+.storyHeroSection {
   position: relative;
-  padding: var(--space-8) 0 var(--space-12);
+  padding: clamp(48px, 6vw, 84px) 0 clamp(56px, 7vw, 96px);
   background-color: var(--bg-canvas);
   border-bottom: 1px solid var(--border-hairline);
 }
 
-.heroHeaderRow {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-6);
-  margin-bottom: var(--space-6);
-}
-
-.heroBrandLogo {
-  height: clamp(68px, 10vw, 120px);
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
-  display: block;
-}
-
-.heroAsideBox {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  text-align: right;
-  gap: 12px;
-  margin-bottom: 8px;
-  flex-shrink: 0;
-}
-
-.heroTagline {
-  font-family: var(--font-sans);
-  font-size: clamp(0.85rem, 1.1vw, 0.98rem);
-  color: var(--text-secondary);
-  line-height: 1.5;
-  max-width: 320px;
-  margin: 0;
-}
-
-.heroShopCta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 24px;
-  background-color: transparent;
-  border: 1px solid var(--text-primary);
-  border-radius: 0;
-  color: var(--text-primary);
-  text-decoration: none;
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  transition: all var(--transition-fast);
-}
-
-.heroShopCta:hover {
-  background-color: var(--text-primary);
-  color: var(--bg-surface);
-}
-
-.heroImageWrapper {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  max-height: 640px;
-  margin: 0;
-  position: relative;
-  overflow: hidden;
-  border-radius: 0;
-  box-shadow: 0 16px 40px rgba(34, 24, 19, 0.05);
-  border: 1px solid var(--border-hairline);
-  background-color: var(--bg-subtle);
-}
-
-.heroBannerImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 38%;
-  display: block;
-  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.heroImageWrapper:hover .heroBannerImage {
-  transform: scale(1.02);
-}
-
-/* Metric Strip (Architectural Minimal Grid Below Image) */
-.statsRow {
+.storyHeroGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0;
-  width: 100%;
-  background-color: #FFFFFF;
-  border: 1px solid var(--border-medium);
-  border-radius: 0;
-  box-shadow: 0 8px 24px rgba(34, 24, 19, 0.04);
-}
-
-.statItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: var(--space-5) var(--space-4);
-  position: relative;
-  transition: background-color 0.25s ease;
-}
-
-.statItem:hover {
-  background-color: #FAF7F2;
-}
-
-.statItem:not(:last-child) {
-  border-right: 1px solid var(--border-hairline);
-}
-
-.statValue {
-  font-family: var(--font-serif);
-  font-size: 2.2rem;
-  font-weight: 600;
-  color: var(--accent-terracotta);
-  line-height: 1;
-  margin-bottom: 6px;
-  letter-spacing: -0.02em;
-}
-
-.statLabel {
-  font-family: var(--font-sans);
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-@media (max-width: 768px) {
-  .heroHeaderRow {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: var(--space-4);
-  }
-
-  .heroBrandMark {
-    font-size: clamp(3rem, 13vw, 4.4rem);
-  }
-
-  .heroAsideBox {
-    align-items: flex-start;
-    text-align: left;
-    margin-bottom: 0;
-  }
-
-  .heroTagline {
-    max-width: 100%;
-  }
-
-  .heroImageWrapper {
-    aspect-ratio: 16 / 10;
-    max-height: 400px;
-    margin-bottom: var(--space-5);
-  }
-
-  .statsRow {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .statItem:nth-child(2) {
-    border-right: none;
-  }
-
-  .statItem:nth-child(1),
-  .statItem:nth-child(2) {
-    border-bottom: 1px solid var(--border-hairline);
-  }
-}
-
-/* ========================================================
-   CHAPTER 01: THE GENESIS (FOUNDER STORY)
-   ======================================================== */
-.genesisSection {
-  padding: var(--space-24) 0;
-  border-bottom: 1px solid var(--border-hairline);
-  position: relative;
-}
-
-.genesisGrid {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: var(--space-16);
+  grid-template-columns: 1fr 1.08fr;
+  gap: clamp(36px, 5.5vw, 72px);
   align-items: center;
 }
 
 @media (max-width: 992px) {
-  .genesisGrid {
+  .storyHeroGrid {
     grid-template-columns: 1fr;
     gap: var(--space-10);
   }
 }
 
-.genesisNarrative {
+.storyNarrativeCol {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
 .sectionEyebrow {
@@ -242,8 +59,18 @@
   font-weight: 400;
   line-height: 1.18;
   color: var(--text-primary);
-  margin-bottom: var(--space-3);
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-2);
   letter-spacing: -0.015em;
+}
+
+.narrativeLead {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin: 0;
 }
 
 .narrativeText {
@@ -259,79 +86,142 @@
   border-left: 3px solid var(--accent-terracotta);
   border-radius: 0;
   padding: var(--space-6);
-  margin: var(--space-4) 0;
+  margin: var(--space-2) 0;
   font-family: var(--font-serif);
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-style: italic;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--text-primary);
   box-shadow: 0 4px 20px rgba(34, 24, 19, 0.02);
 }
 
-/* Genesis Visual Frame: Square Architectural Cut */
-.genesisVisualFrame {
-  position: relative;
-  border-radius: 0;
-  overflow: hidden;
-  box-shadow: 0 24px 60px rgba(34, 24, 19, 0.12);
-  border: 1px solid rgba(151, 65, 29, 0.3);
-  background-color: #EFE8DC;
-  outline: 8px solid #FAF9F5;
-  outline-offset: -12px;
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  max-width: 520px;
-  margin: 0 auto;
-}
-
-.genesisPhoto {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
+.quoteAuthor {
   display: block;
-  border-radius: 0;
-  transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-terracotta);
+  margin-top: 10px;
+  font-style: normal;
 }
 
-.genesisVisualFrame:hover .genesisPhoto {
-  transform: scale(1.03);
-}
-
-.artisanBadgeOverlay {
-  position: absolute;
-  bottom: 24px;
-  left: 24px;
-  right: 24px;
-  background: rgba(250, 249, 245, 0.96);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(151, 65, 29, 0.25);
-  border-radius: 0;
-  padding: 16px 20px;
+.heroActionRow {
   display: flex;
   align-items: center;
-  gap: 14px;
-  box-shadow: 0 10px 30px rgba(34, 24, 19, 0.08);
+  gap: 16px;
+  margin-top: var(--space-2);
 }
 
-.artisanIconBox {
-  width: 40px;
-  height: 40px;
+.heroShopCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 32px;
+  background-color: var(--text-primary);
+  border: 1px solid var(--text-primary);
   border-radius: 0;
-  background-color: var(--accent-terracotta);
   color: #FAF9F5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.artisanText {
+  text-decoration: none;
   font-family: var(--font-sans);
   font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.heroShopCta:hover {
+  background-color: var(--accent-terracotta);
+  border-color: var(--accent-terracotta);
+  color: #FAF9F5;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(151, 65, 29, 0.2);
+}
+
+/* ========================================================
+   RIGHT COLUMN: FULL NEWSPAPER EXHIBIT FRAME
+   Square-Cut Heritage Archival Paper Mount (Zero Cropping)
+   ======================================================== */
+.newspaperExhibitCol {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.newspaperCard {
+  position: relative;
+  width: 100%;
+  max-width: 530px;
+  background-color: #FFFFFF;
+  border: 1px solid rgba(151, 65, 29, 0.22);
+  padding: 16px 16px 18px 16px;
+  border-radius: 0;
+  box-shadow: 0 24px 60px rgba(34, 24, 19, 0.09), 0 4px 16px rgba(34, 24, 19, 0.04);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.newspaperCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 30px 70px rgba(34, 24, 19, 0.12), 0 6px 20px rgba(34, 24, 19, 0.06);
+}
+
+.newspaperHeaderBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 4px 12px 4px;
+  border-bottom: 1px solid var(--border-hairline);
+  margin-bottom: 14px;
+}
+
+.newspaperHeaderTag {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-terracotta);
+}
+
+.newspaperHeaderMeta {
+  font-family: var(--font-sans);
+  font-size: 0.70rem;
   font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.newspaperImageWrapper {
+  position: relative;
+  width: 100%;
+  background-color: #FAF9F5;
+  border: 1px solid rgba(34, 24, 19, 0.06);
+  overflow: hidden;
+}
+
+.newspaperFullImage {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 762 / 958;
+  object-fit: contain;
+  display: block;
+  border-radius: 0;
+}
+
+.newspaperCaption {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 14px;
+  margin-bottom: 0;
+  text-align: center;
+  padding: 0 4px;
 }
 
 /* ========================================================
@@ -890,14 +780,14 @@
    ======================================================== */
 
 @media (max-width: 768px) {
-  .genesisSection,
+  .storyHeroSection,
   .ritualsSection,
   .comparisonSection,
   .ingredientSection {
     padding: var(--space-16) 0;
   }
 
-  .genesisGrid {
+  .storyHeroGrid {
     grid-template-columns: 1fr;
     gap: var(--space-8);
   }
@@ -914,48 +804,51 @@
 }
 
 @media (max-width: 640px) {
-  .heroSection {
-    padding: var(--space-6) 0 var(--space-8);
+  .storyHeroSection {
+    padding: var(--space-8) 0 var(--space-12);
   }
 
-  .heroHeaderRow {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: var(--space-4);
+  .sectionHeading {
+    font-size: 2rem;
+    line-height: 1.2;
+    margin-bottom: var(--space-2);
   }
 
-  .heroBrandLogo {
-    height: clamp(50px, 13vw, 76px);
+  .narrativeLead,
+  .narrativeText {
+    font-size: 0.96rem;
+    line-height: 1.7;
   }
 
-  .heroAsideBox {
-    align-items: flex-start;
-    text-align: left;
-    gap: 12px;
+  .calloutQuote {
+    font-size: 1.1rem;
+    line-height: 1.5;
+    padding: 16px 18px;
+    margin: 14px 0;
   }
 
-  .heroTagline {
-    font-size: 0.92rem;
-    line-height: 1.55;
-    max-width: 100%;
+  .heroActionRow {
+    width: 100%;
   }
 
   .heroShopCta {
-    padding: 10px 26px;
-    min-height: 44px;
-    font-size: 0.8rem;
-    font-weight: 700;
+    width: 100%;
+    justify-content: center;
+    padding: 13px 24px;
   }
 
-  .heroImageWrapper {
-    aspect-ratio: 16 / 10;
-    max-height: 340px;
-    box-shadow: 0 10px 28px rgba(34, 24, 19, 0.05);
+  .newspaperCard {
+    max-width: 100%;
+    padding: 12px 12px 14px 12px;
+    box-shadow: 0 16px 36px rgba(34, 24, 19, 0.08);
+  }
+
+  .newspaperHeaderBar {
+    padding-bottom: 10px;
+    margin-bottom: 10px;
   }
 
   /* Section Spacing */
-  .genesisSection,
   .ritualsSection,
   .comparisonSection,
   .ingredientSection {
@@ -969,43 +862,6 @@
   .sectionEyebrow {
     font-size: 0.72rem;
     letter-spacing: 0.16em;
-  }
-
-  .sectionHeading {
-    font-size: 1.85rem;
-    line-height: 1.2;
-    margin-bottom: var(--space-2);
-  }
-
-  .narrativeText {
-    font-size: 0.94rem;
-    line-height: 1.7;
-  }
-
-  .calloutQuote {
-    font-size: 1.15rem;
-    line-height: 1.5;
-    padding: 16px 18px;
-    margin: 16px 0;
-  }
-
-  .genesisVisualFrame {
-    max-width: 100%;
-    outline: 5px solid #FAF9F5;
-    outline-offset: -8px;
-  }
-
-  .artisanBadgeOverlay {
-    bottom: 12px;
-    left: 12px;
-    right: 12px;
-    padding: 12px 14px;
-    gap: 10px;
-  }
-
-  .artisanText {
-    font-size: 0.76rem;
-    line-height: 1.35;
   }
 
   /* 4 Traditional Steps — Symmetrical 2x2 Tabs */

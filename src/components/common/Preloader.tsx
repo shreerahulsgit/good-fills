@@ -100,7 +100,7 @@ export function Preloader() {
           transition={{ duration: 1.0, delay: 0.2 }}
           className="preloader-eyebrow"
         >
-          BENGALURU • EST. 2024
+          BENGALURU • EST. 2020
         </motion.span>
         <motion.span 
           initial={{ opacity: 0, y: -10 }}

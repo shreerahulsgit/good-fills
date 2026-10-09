@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  MessageCircle,
   Phone,
   Mail,
   MapPin,
@@ -19,6 +18,24 @@ import {
   Sparkles,
 } from 'lucide-react';
 import styles from './ContactView.module.css';
+
+// Official WhatsApp vector icon from Simple Icons (https://simpleicons.org/icons/whatsapp)
+function WhatsAppIcon({ size = 15, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      role="img"
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M17.472 14.382c-.301-.15-1.78-.877-2.056-.977-.276-.101-.477-.15-.678.15-.2.3-.778.977-.954 1.178-.175.2-.351.226-.652.075-.301-.15-1.27-.468-2.42-1.493-.895-.798-1.5-1.783-1.676-2.083-.175-.301-.019-.464.132-.614.136-.135.301-.351.452-.527.15-.175.201-.3.301-.501.101-.2.05-.376-.025-.526-.075-.15-.677-1.631-.928-2.233-.244-.587-.492-.507-.677-.517-.175-.01-.376-.01-.577-.01-.201 0-.527.075-.802.376-.276.301-1.054 1.028-1.054 2.508 0 1.48 1.079 2.909 1.23 3.109.15.2 2.124 3.243 5.145 4.545.719.31 1.28.496 1.718.635.722.23 1.378.197 1.9.12.581-.086 1.78-.727 2.03-1.43.25-.702.25-1.303.175-1.43-.075-.126-.276-.226-.577-.376zm-5.467 6.438a9.426 9.426 0 0 1-4.814-1.32l-.345-.205-3.58.939.955-3.489-.225-.358a9.434 9.434 0 0 1-1.447-4.992c0-5.213 4.241-9.454 9.459-9.454 2.527 0 4.902.984 6.69 2.772a9.422 9.422 0 0 1 2.768 6.685c0 5.216-4.242 9.457-9.456 9.457zm7.842-17.298A11.018 11.018 0 0 0 12.005 0C5.939 0 1.002 4.937 1.002 11.003c0 1.939.505 3.832 1.464 5.494L.548 24l7.697-2.019a10.985 10.985 0 0 0 5.76 1.623h.005c6.066 0 11.003-4.937 11.003-11.003 0-2.94-1.144-5.704-3.227-7.787z" />
+    </svg>
+  );
+}
 
 const luxuryEase = [0.16, 1, 0.3, 1] as const;
 
@@ -93,6 +110,7 @@ export function ContactView() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRef, setSubmittedRef] = useState<string | null>(null);
+  const [submittedWhatsappUrl, setSubmittedWhatsappUrl] = useState<string | null>(null);
   const [copiedRef, setCopiedRef] = useState(false);
   const [openFaq, setOpenFaq] = useState<string | null>('faq-1');
 
@@ -105,6 +123,28 @@ export function ContactView() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const createWhatsAppUrl = (refCode: string) => {
+    const lines: string[] = [
+      'Hello Good Fills Kitchen! 🌿',
+      'I just submitted an inquiry on your website:',
+      '',
+      `*Inquiry Ref:* ${refCode}`,
+      `*Name:* ${formData.name}`,
+      `*Phone:* ${formData.phone}`,
+      `*Email:* ${formData.email}`,
+      `*Category:* ${selectedCategory}`,
+    ];
+
+    if (formData.orderId?.trim()) {
+      lines.push(`*Order ID:* ${formData.orderId.trim()}`);
+    }
+
+    lines.push('', '*Message:*', formData.message.trim(), '', 'Thank you!');
+
+    const fullText = lines.join('\n');
+    return `https://wa.me/919742068899?text=${encodeURIComponent(fullText)}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -126,16 +166,38 @@ export function ContactView() {
       });
 
       const data = await res.json();
-      if (res.ok && data.success) {
-        setSubmittedRef(data.refNumber || `INQ-${Math.floor(100000 + Math.random() * 900000)}`);
-      } else {
-        const fallbackRef = `INQ-${Math.floor(100000 + Math.random() * 900000)}`;
-        setSubmittedRef(fallbackRef);
+      const refCode =
+        res.ok && data.success && data.refNumber
+          ? data.refNumber
+          : `INQ-${Math.floor(100000 + Math.random() * 900000)}`;
+
+      setSubmittedRef(refCode);
+
+      const waUrl = createWhatsAppUrl(refCode);
+      setSubmittedWhatsappUrl(waUrl);
+
+      // Open WhatsApp for the customer
+      if (typeof window !== 'undefined') {
+        const opened = window.open(waUrl, '_blank');
+        if (!opened) {
+          window.location.href = waUrl;
+        }
       }
+
     } catch (err) {
       console.error('Inquiry submission error:', err);
       const fallbackRef = `INQ-${Math.floor(100000 + Math.random() * 900000)}`;
       setSubmittedRef(fallbackRef);
+
+      const waUrl = createWhatsAppUrl(fallbackRef);
+      setSubmittedWhatsappUrl(waUrl);
+
+      if (typeof window !== 'undefined') {
+        const opened = window.open(waUrl, '_blank');
+        if (!opened) {
+          window.location.href = waUrl;
+        }
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -183,7 +245,7 @@ export function ContactView() {
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 400, damping: 22 }}
             >
-              <MessageCircle size={16} />
+              <WhatsAppIcon size={15} />
               <span>WhatsApp Direct</span>
               <motion.span
                 whileHover={{ x: 3, y: -3 }}
@@ -244,7 +306,7 @@ export function ContactView() {
                   </motion.div>
                   <h3 className={styles.successTitle}>Note Received</h3>
                   <p className={styles.successText}>
-                    Thank you, {formData.name || 'friend'}. We have queued your note directly for our Bengaluru kitchen concierge.
+                    Thank you, {formData.name || 'friend'}. We have queued your note directly in our kitchen log and opened WhatsApp so you can continue the conversation with us directly.
                   </p>
                   
                   <div className={styles.successRefBadge}>
@@ -252,18 +314,7 @@ export function ContactView() {
                     <button
                       type="button"
                       onClick={handleCopyRef}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        padding: 0,
-                        cursor: 'pointer',
-                        color: 'inherit',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 3,
-                        fontSize: '0.76rem',
-                        textDecoration: 'underline',
-                      }}
+                      className={styles.copyBtn}
                       title="Copy Reference Code"
                     >
                       <Copy size={12} />
@@ -271,14 +322,28 @@ export function ContactView() {
                     </button>
                   </div>
 
+                  {submittedWhatsappUrl && (
+                    <motion.a
+                      href={submittedWhatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.successWhatsappBtn}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.97 }}
+                    >
+                      <WhatsAppIcon size={16} />
+                      <span>Continue in WhatsApp</span>
+                    </motion.a>
+                  )}
+
                   <motion.button
                     type="button"
                     onClick={() => {
                       setSubmittedRef(null);
+                      setSubmittedWhatsappUrl(null);
                       setFormData({ name: '', phone: '', email: '', orderId: '', message: '' });
                     }}
-                    className="btn btn-outline"
-                    style={{ borderRadius: 0, padding: '9px 20px', fontSize: '0.8rem', marginTop: 12 }}
+                    className={styles.sendAnotherBtn}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
                   >

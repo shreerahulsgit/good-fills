@@ -362,6 +362,68 @@
   margin-top: 4px;
 }
 
+.copyBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.76rem;
+  text-decoration: underline;
+}
+
+.successWhatsappBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--text-primary, #221813);
+  border: 1px solid var(--text-primary, #221813);
+  color: #FAF9F5;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  border-radius: 0;
+  text-decoration: none;
+  margin-top: 10px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(34, 24, 19, 0.16);
+}
+
+.successWhatsappBtn:hover {
+  background-color: var(--accent-terracotta, #97411D);
+  border-color: var(--accent-terracotta, #97411D);
+  color: #FAF9F5;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(151, 65, 29, 0.24);
+}
+
+.sendAnotherBtn {
+  background: transparent;
+  border: 1px solid var(--border-medium);
+  border-radius: 0;
+  padding: 9px 20px;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.2s ease;
+}
+
+.sendAnotherBtn:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  background-color: #FFFFFF;
+}
+
 /* RIGHT COLUMN: DIRECT COORDINATES & ACCORDION */
 .infoPane {
   display: flex;

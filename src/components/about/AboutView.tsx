@@ -156,146 +156,88 @@ export function AboutView() {
   return (
     <div className={styles.aboutPageWrapper}>
       {/* ========================================================
-          SECTION 1: HERO (HIGH-FASHION EDITORIAL BANNER)
+          CHAPTER 01: OUR STORY — ALANKRUTHA & GOOD FILLS
           ======================================================== */}
-      <section className={styles.heroSection}>
+      <section className={styles.storyHeroSection}>
         <div className="container">
-          {/* Top Brand Title & Editorial Tagline Row (Matching Image 2) */}
-          <div className={styles.heroHeaderRow}>
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.75, ease: luxuryEase }}
-            >
-              <img
-                src="/logo.png"
-                alt="Good Fills Homemade Products"
-                className={styles.heroBrandLogo}
-              />
-            </motion.div>
-
-            <motion.div
-              className={styles.heroAsideBox}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.75, ease: luxuryEase, delay: 0.12 }}
-            >
-              <p className={styles.heroTagline}>
-                The traditional blend of homemade care and ancestral nutrition,
-                crafted fresh for wholesome daily nourishment.
-              </p>
-              <Link href="/shop" className={styles.heroShopCta}>
-                <span>Shop now</span>
-              </Link>
-            </motion.div>
-          </div>
-
-          {/* Cinematic Editorial Widescreen Hero Banner Image */}
-          <motion.div
-            className={styles.heroImageWrapper}
-            initial={{ opacity: 0, y: 22, scale: 0.99 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.85, ease: luxuryEase, delay: 0.2 }}
-          >
-            <img
-              src="/images/story/about-hero-editorial.jpg"
-              alt="Good Fills ancestral kitchen ingredients, loving hands, sprouted grains, and mountain honey"
-              className={styles.heroBannerImage}
-            />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ========================================================
-          SECTION 2: OUR STORY — WHY WE STARTED
-          ======================================================== */}
-      <section className={styles.genesisSection}>
-        <div className="container">
-          <div className={styles.genesisGrid}>
-            {/* Left Column: Simple Story Narrative */}
-            <div className={styles.genesisNarrative}>
+          <div className={styles.storyHeroGrid}>
+            {/* Left Column: Focused, Clean Narrative */}
+            <div className={styles.storyNarrativeCol}>
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: luxuryEase }}
               >
-                <span className={styles.sectionEyebrow}>OUR STORY</span>
-                <h2 className={styles.sectionHeading}>
-                  Why We Walked Away from Supermarket Shelves.
-                </h2>
+                <span className={styles.sectionEyebrow}>OUR STORY • EST. 2016 • BENGALURU</span>
+                <h1 className={styles.sectionHeading}>
+                  Alankrutha: A Pioneer in Homemade Food.
+                </h1>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, ease: luxuryEase, delay: 0.15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: luxuryEase, delay: 0.12 }}
               >
-                <p className={styles.narrativeText}>
-                  Walk into any supermarket today, and you will see shelves full of baby cereals and health powders
-                  loaded with chemical preservatives, artificial thickeners, and refined sugars. They are manufactured
-                  in mass factories specifically designed to sit inside boxes for up to 2 years.
-                </p>
-                <p className={styles.narrativeText} style={{ marginTop: 12 }}>
-                  We asked ourselves a simple question: <em>Why should our children eat factory-made food made months ago?</em>
+                <p className={styles.narrativeLead}>
+                  In an era when supermarket shelves filled with mass-manufactured cereals loaded with chemical preservatives and artificial additives, Alankrutha founded Good Fills in Bengaluru—reviving the time-honored, wholesome kitchen foods grandmothers once lovingly prepared for newborn babies and young children.
                 </p>
               </motion.div>
 
+              {/* Founder's Authentic Quote */}
               <motion.div
                 className={styles.calloutQuote}
                 initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, ease: luxuryEase, delay: 0.28 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: luxuryEase, delay: 0.22 }}
               >
-                &ldquo;If a recipe requires ingredients you cannot find in your grandmother’s kitchen, it does not belong in your home.&rdquo;
+                &ldquo;When my daughter was young, I looked everywhere for genuinely pure baby products. Finding none, I asked myself: &lsquo;Why shouldn’t I prepare them myself?&rsquo; That simple thought began Good Fills.&rdquo;
+                <span className={styles.quoteAuthor}>— Alankrutha, Founder</span>
               </motion.div>
 
-              <motion.p
-                className={styles.narrativeText}
+              <motion.div
+                className={styles.heroActionRow}
                 initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, ease: luxuryEase, delay: 0.38 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: luxuryEase, delay: 0.3 }}
               >
-                That simple thought started Good Fills. In our Bengaluru kitchen, we do things the way families always have.
-                We keep zero old stock sitting in warehouses. When you place an order, we wash the grains, sprout the ragi,
-                slow-roast them in small batches, and pack every pouch fresh after milling.
-              </motion.p>
+                <Link href="/shop" className={styles.heroShopCta}>
+                  <span>Explore Kitchen Preparations</span>
+                  <ArrowRight size={15} />
+                </Link>
+              </motion.div>
             </div>
 
-            {/* Right Column: Visual Frame */}
+            {/* Right Column: Full Newspaper Exhibit Frame */}
             <motion.div
-              className={styles.genesisVisualFrame}
-              initial={{ opacity: 0, scale: 0.96 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.75, ease: luxuryEase, delay: 0.2 }}
+              className={styles.newspaperExhibitCol}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.75, ease: luxuryEase, delay: 0.18 }}
             >
-              <img
-                src="/images/story/genesis-kitchen.jpg"
-                alt="Traditional Bengaluru kitchen with earthen pots and freshly milled grains"
-                className={styles.genesisPhoto}
-              />
-              <motion.div
-                className={styles.artisanBadgeOverlay}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                <span className={styles.artisanText}>
-                  Prepared fresh in small batches following strict FSSAI hygiene standards
-                </span>
-              </motion.div>
+              <div className={styles.newspaperCard}>
+                <div className={styles.newspaperHeaderBar}>
+                  <span className={styles.newspaperHeaderTag}>REGIONAL PRESS ARCHIVE</span>
+                  <span className={styles.newspaperHeaderMeta}>BENGALURU • EST. 2016</span>
+                </div>
+                <div className={styles.newspaperImageWrapper}>
+                  <img
+                    src="/images/story/about-hero-editorial.jpg"
+                    alt="Alankrutha featured in regional press - Pioneer in homemade food"
+                    className={styles.newspaperFullImage}
+                  />
+                </div>
+                <p className={styles.newspaperCaption}>
+                  Original regional press article featuring founder Alankrutha and Good Fills&apos; homemade philosophy.
+                </p>
+              </div>
             </motion.div>
           </div>
         </div>
       </section>
 
       {/* ========================================================
-          SECTION 3: THE 4 TRADITIONAL STEPS
+          CHAPTER 02: THE 4 TRADITIONAL STEPS
           ======================================================== */}
       <section
         ref={ritualsSectionRef}

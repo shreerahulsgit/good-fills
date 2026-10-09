@@ -89,3 +89,12 @@ export async function updateInquiryStatus(id: string, status: Inquiry['status'])
   if (error) throw new Error(`Failed to update inquiry in Supabase: ${error.message}`);
   return Boolean(data);
 }
+
+export async function deleteInquiry(id: string): Promise<boolean> {
+  const { error } = await createSupabaseAdminClient()
+    .from('inquiries')
+    .delete()
+    .eq('id', id);
+  if (error) throw new Error(`Failed to delete inquiry from Supabase: ${error.message}`);
+  return true;
+}

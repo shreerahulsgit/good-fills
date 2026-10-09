@@ -38,7 +38,7 @@ import styles from './AccountView.module.css';
 export function AccountView() {
   const searchParams = useSearchParams();
   const { currentUser, orders, login, logout, refreshUser, updateUser, isLoading: isLoadingSession } = useCustomerAuth();
-  const { addItem, openCart } = useCart();
+  const { addItem, openCart, dismissToast } = useCart();
 
   // Authentication state
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -592,10 +592,11 @@ export function AccountView() {
 
   const handleReorder = (order: Order) => {
     setReorderingOrderId(order.id);
+    dismissToast();
     let itemsAdded = 0;
     order.items.forEach((item) => {
       if (item.product) {
-        addItem(item.product, item.quantity);
+        addItem(item.product, item.quantity, { suppressToast: true });
         itemsAdded++;
       }
     });

@@ -158,7 +158,12 @@ export async function calculateAuthoritativeCart(
 }
 
 export function generateOrderId(): string {
-  return `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+  return `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
+}
+
+function isDuplicateOrderIdError(error: { code?: string; details?: string | null; message?: string }): boolean {
+  const errorText = `${error.message || ''} ${error.details || ''}`;
+  return error.code === '23505' && /orders_pkey|Key \(id\)=/i.test(errorText);
 }
 
 async function resolveCustomerId(
@@ -220,36 +225,45 @@ export async function createPendingOrder({
   const calculation = await calculateAuthoritativeCart(clientItems);
   const now = new Date().toISOString();
   const customerId = await resolveCustomerId(customerName, customerEmail, customerPhone, shippingAddress);
-  const order: Order = {
-    id: generateOrderId(),
-    createdAt: now,
-    customerId,
-    customerName: customerName.trim(),
-    customerEmail: customerEmail.trim(),
-    customerPhone: customerPhone.trim(),
-    shippingAddress,
-    items: calculation.validatedItems,
-    subtotal: calculation.subtotal,
-    shippingCost: calculation.shippingCost,
-    total: calculation.grandTotal,
-    paymentMethod,
-    paymentStatus: 'Pending',
-    orderStatus: 'Pending',
-    shipmentStatus: 'Not Shipped',
-    courier: 'DTDC',
-    weightGrams: calculation.totalWeightGrams,
-    statusHistory: [],
-    estimatedDelivery: '2–4 days',
-  };
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const order: Order = {
+      id: generateOrderId(),
+      createdAt: now,
+      customerId,
+      customerName: customerName.trim(),
+      customerEmail: customerEmail.trim(),
+      customerPhone: customerPhone.trim(),
+      shippingAddress,
+      items: calculation.validatedItems,
+      subtotal: calculation.subtotal,
+      shippingCost: calculation.shippingCost,
+      total: calculation.grandTotal,
+      paymentMethod,
+      paymentStatus: 'Pending',
+      orderStatus: 'Pending',
+      shipmentStatus: 'Not Shipped',
+      courier: 'DTDC',
+      weightGrams: calculation.totalWeightGrams,
+      statusHistory: [],
+      estimatedDelivery: '2–4 days',
+    };
+    const { error } = await createSupabaseAdminClient().from('orders').insert(toSupabaseOrderRow(order));
 
-  const { error } = await createSupabaseAdminClient().from('orders').insert(toSupabaseOrderRow(order));
-  if (error) throw new Error(`Failed to create order in Supabase: ${error.message}`);
+    if (!error) {
+      return {
+        order,
+        authoritativeTotal: calculation.grandTotal,
+        totalWeightGrams: calculation.totalWeightGrams,
+      };
+    }
 
-  return {
-    order,
-    authoritativeTotal: calculation.grandTotal,
-    totalWeightGrams: calculation.totalWeightGrams,
-  };
+    if (!isDuplicateOrderIdError(error) || attempt === maxAttempts) {
+      throw new Error(`Failed to create order in Supabase: ${error.message}`);
+    }
+  }
+
+  throw new Error('Failed to create order in Supabase after retrying duplicate order IDs.');
 }
 
 export async function linkRazorpayOrderId(internalOrderId: string, razorpayOrderId: string): Promise<void> {

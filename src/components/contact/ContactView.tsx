@@ -127,14 +127,14 @@ export function ContactView() {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setSubmittedRef(data.refNumber || `INQ-${Math.floor(1000 + Math.random() * 9000)}`);
+        setSubmittedRef(data.refNumber || `INQ-${Math.floor(100000 + Math.random() * 900000)}`);
       } else {
-        const fallbackRef = `INQ-${Math.floor(1000 + Math.random() * 9000)}`;
+        const fallbackRef = `INQ-${Math.floor(100000 + Math.random() * 900000)}`;
         setSubmittedRef(fallbackRef);
       }
     } catch (err) {
       console.error('Inquiry submission error:', err);
-      const fallbackRef = `INQ-${Math.floor(1000 + Math.random() * 9000)}`;
+      const fallbackRef = `INQ-${Math.floor(100000 + Math.random() * 900000)}`;
       setSubmittedRef(fallbackRef);
     } finally {
       setIsSubmitting(false);

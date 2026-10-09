@@ -120,6 +120,7 @@ export interface AdminDispatchViewProps {
 export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchViewProps) {
   const [pin, setPin] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const hasBootstrappedAdminSession = useRef(false);
 
@@ -330,6 +331,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
       console.error('Fetch admin orders error:', err);
       if (showError) setAuthError('Connection error to server. Please try again.');
     } finally {
+      setIsCheckingAuth(false);
       if (showLoading) setIsLoading(false);
     }
   };
@@ -1217,6 +1219,28 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
   };
 
   // If not authenticated, show PIN login
+  if (isCheckingAuth) {
+    return (
+     <main className={styles.adminContainer}>
+        <div className={styles.adminTopBarMobile}>
+          <div className={styles.brandWrap}>
+            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+              <img src="/logo.png" alt="Good Fills" style={{ height: '42px', width: 'auto', display: 'block' }} />
+            </Link>
+            <span className={styles.badgeAdmin}>Dispatch Cockpit</span>
+          </div>
+          <Link href="/" className={styles.viewStoreBtn}>
+            <span>Back to Store</span>
+            <ArrowRight size={13} />
+          </Link>
+        </div>
+          <div className={styles.consoleAuthBufferCenter} aria-hidden="true">
+            <div className={styles.consoleAuthBufferSpinner} />
+          </div>
+      </main>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <main className={styles.adminContainer}>

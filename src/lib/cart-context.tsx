@@ -12,7 +12,7 @@ export interface AddedToastData {
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, quantity?: number, options?: { openDrawer?: boolean }) => void;
+  addItem: (product: Product, quantity?: number, options?: { openDrawer?: boolean; suppressToast?: boolean }) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   removeItem: (productId: string) => void;
   clearCart: () => void;
@@ -66,7 +66,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const [lastAddedItem, setLastAddedItem] = useState<AddedToastData | null>(null);
 
-  const addItem = (product: Product, quantity = 1, options?: { openDrawer?: boolean }) => {
+  const addItem = (product: Product, quantity = 1, options?: { openDrawer?: boolean; suppressToast?: boolean }) => {
     setItems((currentItems) => {
       const existingIndex = currentItems.findIndex((i) => i.product.id === product.id);
       if (existingIndex > -1) {
@@ -77,11 +77,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return [...currentItems, { product, quantity }];
     });
 
-    setLastAddedItem({
-      product,
-      quantity,
-      timestamp: Date.now(),
-    });
+    if (!options?.suppressToast) {
+      setLastAddedItem({
+        product,
+        quantity,
+        timestamp: Date.now(),
+      });
+    }
 
     // Only force open full drawer if caller explicitly requests it (e.g. from buy now / reorder)
     if (options?.openDrawer) {

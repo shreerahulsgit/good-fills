@@ -60,7 +60,7 @@ export async function createInquiry(data: {
   orderId?: string;
   message: string;
 }): Promise<Inquiry> {
-  const id = `INQ-${Date.now().toString(36).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+  const id = `INQ-${Math.floor(100000 + Math.random() * 900000)}`;
   const { data: created, error } = await createSupabaseAdminClient()
     .from('inquiries')
     .insert({

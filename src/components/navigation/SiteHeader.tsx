@@ -437,17 +437,6 @@ export function SiteHeader() {
                             <span>Saved Addresses</span>
                           </span>
                         </Link>
-
-                        <Link
-                          href="/track-order"
-                          onClick={() => setIsAccountDropdownOpen(false)}
-                          className={styles.patronDropdownItem}
-                        >
-                          <span className={styles.patronDropdownItemLeft}>
-                            <Truck size={15} color="var(--accent-terracotta)" />
-                            <span>Track Consignment</span>
-                          </span>
-                        </Link>
                       </div>
 
                       <div className={styles.patronDropdownFooter}>

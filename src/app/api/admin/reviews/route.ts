@@ -6,11 +6,15 @@ import {
   toggleReviewVisibility,
   addFounderReply,
 } from '@/lib/server-reviews';
+import { requireConsoleSession } from '@/lib/require-console-session';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const authError = requireConsoleSession();
+    if (authError) return authError;
+
     const reviews = await getAllReviews();
 
     const totalCount = reviews.length;
@@ -63,6 +67,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const authError = requireConsoleSession();
+    if (authError) return authError;
+
     const body = await req.json();
     const { action, reviewId, message } = body;
 

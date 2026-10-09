@@ -36,7 +36,6 @@ const RATING_DESCRIPTIONS: Record<number, string> = {
 export function ProductReviewsSection({ product, initialSummary }: ProductReviewsSectionProps) {
   const { currentUser, orders } = useCustomerAuth();
   const [summary, setSummary] = useState<ProductReviewSummary | null>(initialSummary || null);
-  const [isLoading, setIsLoading] = useState<boolean>(!initialSummary);
   const [activeFilter, setActiveFilter] = useState<'all' | number>('all');
   const [sortBy, setSortBy] = useState<'helpful' | 'newest' | 'rating'>('helpful');
   const [selectedModalImage, setSelectedModalImage] = useState<{ src: string; author: string } | null>(null);
@@ -99,21 +98,10 @@ export function ProductReviewsSection({ product, initialSummary }: ProductReview
     }
   }, []);
 
-  // Fetch reviews if not provided
+  // Use the review summary fetched by the product detail view.
   useEffect(() => {
-    if (!initialSummary) {
-      setIsLoading(true);
-      fetch(`/api/reviews?productId=${product.id}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success && data.summary) {
-            setSummary(data.summary);
-          }
-        })
-        .catch((err) => console.error('Failed to load reviews:', err))
-        .finally(() => setIsLoading(false));
-    }
-  }, [product.id, initialSummary]);
+    if (initialSummary) setSummary(initialSummary);
+  }, [initialSummary]);
 
   // Handle helpful vote
   const handleVoteHelpful = async (reviewId: string) => {

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Product, ProductCategory } from '@/types';
+import type { ProductReviewSummary } from '@/lib/server-reviews';
 import { CATEGORIES, PRODUCTS } from '@/data/products';
 import { useCart } from '@/lib/cart-context';
 import { calculateDomesticShipping } from '@/lib/shipping';
@@ -26,6 +27,47 @@ import { ProductReviewsSection } from './ProductReviewsSection';
 import styles from './ProductDetailView.module.css';
 
 const luxuryEase = [0.16, 1, 0.3, 1] as const;
+
+let productCatalogRequest: Promise<Product[] | null> | null = null;
+
+function loadProductCatalog(): Promise<Product[] | null> {
+  if (!productCatalogRequest) {
+    productCatalogRequest = fetch('/api/products', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => (Array.isArray(data.products) ? data.products as Product[] : null))
+      .catch((err) => {
+        console.error('Error refreshing related products:', err);
+        return null;
+      })
+      .finally(() => {
+        productCatalogRequest = null;
+      });
+  }
+
+  return productCatalogRequest;
+}
+
+const reviewSummaryRequests = new Map<string, Promise<ProductReviewSummary | null>>();
+
+function loadProductReviewSummary(productId: string): Promise<ProductReviewSummary | null> {
+  const key = productId.toLowerCase();
+  const inFlight = reviewSummaryRequests.get(key);
+  if (inFlight) return inFlight;
+
+  const request = fetch(`/api/reviews?productId=${encodeURIComponent(productId)}`)
+    .then((res) => res.json())
+    .then((data) => (data.success && data.summary ? data.summary as ProductReviewSummary : null))
+    .catch((err) => {
+      console.error('Error fetching review summary:', err);
+      return null;
+    })
+    .finally(() => {
+      reviewSummaryRequests.delete(key);
+    });
+
+  reviewSummaryRequests.set(key, request);
+  return request;
+}
 
 interface ProductDetailViewProps {
   product: Product;
@@ -40,34 +82,20 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
   const [isAdded, setIsAdded] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('ingredients');
   const [catalogList, setCatalogList] = useState<Product[]>(allProducts || PRODUCTS);
-  const [reviewSummary, setReviewSummary] = useState<{
-    averageRating: number;
-    totalCount: number;
-    recommendationPercentage: number;
+  const [reviewSummaryState, setReviewSummary] = useState<{
+    productId: string;
+    summary: ProductReviewSummary;
   } | null>(null);
+  const reviewSummary = reviewSummaryState?.productId === product.id ? reviewSummaryState.summary : null;
 
   useEffect(() => {
-    fetch('/api/products', { cache: 'no-store' })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
-          setCatalogList(data.products);
-        }
-      })
-      .catch((err) => console.error('Error refreshing related products:', err));
+    loadProductCatalog().then((products) => {
+      if (products && products.length > 0) setCatalogList(products);
+    });
 
-    fetch(`/api/reviews?productId=${product.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.summary) {
-          setReviewSummary({
-            averageRating: data.summary.averageRating,
-            totalCount: data.summary.totalCount,
-            recommendationPercentage: data.summary.recommendationPercentage,
-          });
-        }
-      })
-      .catch((err) => console.error('Error fetching review summary for product snippet:', err));
+    loadProductReviewSummary(product.id).then((summary) => {
+      if (summary) setReviewSummary({ productId: product.id, summary });
+    });
   }, [product.id]);
 
   const categoryInfo = CATEGORIES.find((c) => c.id === product.category);
@@ -600,7 +628,11 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
         </section>
 
         {/* Authenticated Reviews & Parent Feedback */}
-        <ProductReviewsSection product={product} />
+        <ProductReviewsSection
+          key={product.id}
+          product={product}
+          initialSummary={reviewSummary}
+        />
 
         {/* Complementary Creations (Related Products) */}
         {finalRelated.length > 0 && (

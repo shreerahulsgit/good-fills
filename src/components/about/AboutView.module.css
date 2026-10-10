@@ -18,7 +18,7 @@
    ======================================================== */
 .storyHeroSection {
   position: relative;
-  padding: clamp(48px, 6vw, 84px) 0 clamp(56px, 7vw, 96px);
+  padding: var(--space-12) 0 var(--space-16);
   background-color: var(--bg-canvas);
   border-bottom: 1px solid var(--border-hairline);
 }
@@ -27,7 +27,7 @@
   display: grid;
   grid-template-columns: 1fr 1.08fr;
   gap: clamp(36px, 5.5vw, 72px);
-  align-items: center;
+  align-items: start;
 }
 
 @media (max-width: 992px) {
@@ -55,17 +55,16 @@
 
 .sectionHeading {
   font-family: var(--font-serif);
-  font-size: clamp(2.2rem, 3.8vw, 3.2rem);
+  font-size: clamp(2.2rem, 4.5vw, 3.6rem);
   font-weight: 400;
   line-height: 1.18;
   color: var(--text-primary);
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
   margin-bottom: var(--space-2);
   letter-spacing: -0.015em;
 }
 
 .narrativeLead {
-  font-family: var(--font-sans);
   font-size: 1.05rem;
   line-height: 1.85;
   color: var(--text-secondary);
@@ -228,7 +227,7 @@
    SECTION 3: THE 4 SACRED RITUALS (SPOTLIGHT + CAROUSEL)
    ======================================================== */
 .ritualsSection {
-  padding: var(--space-24) 0;
+  padding: var(--space-16) 0;
   background-color: var(--bg-cream);
   border-bottom: 1px solid var(--border-hairline);
   position: relative;
@@ -563,7 +562,7 @@
    SECTION 4: THE TRANSPARENCY LEDGER (FACTORY VS ATELIER)
    ======================================================== */
 .comparisonSection {
-  padding: var(--space-24) 0;
+  padding: var(--space-16) 0;
   border-bottom: 1px solid var(--border-hairline);
 }
 
@@ -678,7 +677,7 @@
    SECTION 5: INGREDIENT SANCTUARY (SQUARE PHOTOS)
    ======================================================== */
 .ingredientSection {
-  padding: var(--space-24) 0;
+  padding: var(--space-16) 0;
   background-color: var(--bg-cream);
   border-bottom: 1px solid var(--border-hairline);
 }

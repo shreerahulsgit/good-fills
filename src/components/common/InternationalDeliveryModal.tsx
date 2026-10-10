@@ -145,7 +145,7 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
         <div className={styles.cardHeader}>
           <span className={styles.badge}>
             <Globe size={10} />
-            Worldwide Delivery
+            International Delivery
           </span>
 
           <button

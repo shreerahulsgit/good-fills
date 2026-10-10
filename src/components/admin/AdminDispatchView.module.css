@@ -2225,7 +2225,7 @@
   border-radius: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .inquiryCardNew {
@@ -2390,19 +2390,21 @@
 
 .inquirySearchInput {
   width: 100%;
-  padding: 10px 36px 10px 36px;
-  background-color: #FFFFFF;
-  border: 1px solid #E5E7EB;
-  border-radius: 0;
+  font-family: var(--font-sans);
+  padding: 8px 10px 8px 32px;
   font-size: 0.82rem;
-  color: #111827;
+  font-weight: 600;
+  color: var(--text-primary);
+  border: 1px solid #D1D5DB;
+  background-color: #F9FAFB;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
 }
 
 .inquirySearchInput:focus {
-  border-color: #111827;
-  box-shadow: 0 0 0 1px #111827;
+  border-color: var(--accent-terracotta);
+  background-color: #FFFFFF;
 }
 
 .inquirySearchClearBtn {
@@ -2437,6 +2439,7 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  margin-bottom: 8px;
 }
 
 .inquiryRefBadgeBtn {
@@ -2469,8 +2472,8 @@
   background-color: #FEF2F2;
   border: 1px solid #FECACA;
   color: #DC2626;
-  padding: 6px 11px;
-  font-size: 0.74rem;
+  padding: 8px 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   border-radius: 0;
@@ -2495,8 +2498,8 @@
   background-color: #DC2626;
   border: 1px solid #DC2626;
   color: #FFFFFF;
-  padding: 6px 10px;
-  font-size: 0.74rem;
+  padding: 8px 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
   border-radius: 0;
@@ -2514,7 +2517,7 @@
   background-color: #F3F4F6;
   border: 1px solid #D1D5DB;
   color: #4B5563;
-  padding: 6px 7px;
+  padding: 8.5px 7px;
   cursor: pointer;
   border-radius: 0;
   transition: all 0.15s ease;
@@ -2544,6 +2547,7 @@
   font-weight: 600;
   cursor: pointer;
   border-radius: 0;
+  margin-top: 12px;
   transition: all 0.15s ease;
 }
 
@@ -3044,6 +3048,13 @@
   border: 1px solid #D1D5DB;
   background-color: #F9FAFB;
   box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.creationSearchInput:focus {
+  border-color: var(--accent-terracotta);
+  background-color: #FFFFFF;
 }
 
 .creationSelect {

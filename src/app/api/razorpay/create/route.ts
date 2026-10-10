@@ -1,0 +1,123 @@
+import { NextResponse } from 'next/server';
+import { getRazorpayClient, isRazorpayConfigured, isSandboxAllowed, isProduction } from '@/lib/store/razorpay';
+import { createPendingOrder, linkRazorpayOrderId } from '@/lib/store/orders';
+
+export async function POST(request: Request) {
+    try {
+        const body = await request.json();
+        const { items, customer, shippingAddress } = body;
+
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return NextResponse.json(
+                { error: 'Valid cart items are required' },
+                { status: 400 }
+            );
+        }
+
+        if (!customer?.fullName || !customer?.phone || !customer?.email) {
+            return NextResponse.json(
+                { error: 'Valid customer contact details are required' },
+                { status: 400 }
+            );
+        }
+
+        if (!shippingAddress?.addressLine1 || !shippingAddress?.city || !shippingAddress?.pincode) {
+            return NextResponse.json(
+                { error: 'Valid delivery address is required' },
+                { status: 400 }
+            );
+        }
+
+        const { order, authoritativeTotal, totalWeightGrams } = await createPendingOrder({
+            customerName: customer.fullName,
+            customerEmail: customer.email,
+            customerPhone: customer.phone,
+            shippingAddress: {
+                ...shippingAddress,
+                fullName: customer.fullName,
+                phone: customer.phone,
+                email: customer.email,
+                country: 'India',
+            },
+            clientItems: items,
+            paymentMethod: 'UPI',
+        });
+
+        const amountInPaise = Math.round(authoritativeTotal * 100);
+
+        if (isProduction() && !isRazorpayConfigured()) {
+            return NextResponse.json(
+                { error: 'Production payment gateway credentials are not configured.' },
+                { status: 500 }
+            );
+        }
+
+        if (isRazorpayConfigured()) {
+            const razorpay = getRazorpayClient();
+            if (!razorpay) {
+                throw new Error('Razorpay client initialization failed');
+            }
+
+            const rzpOrder = await razorpay.orders.create({
+                amount: amountInPaise,
+                currency: 'INR',
+                receipt: order.id,
+                notes: {
+                    goodFillsOrderId: order.id,
+                    customerName: order.customerName.slice(0, 100),
+                                                          phone: order.customerPhone.slice(0, 30),
+                                                          email: order.customerEmail.slice(0, 100),
+                                                          addr1: order.shippingAddress.addressLine1.slice(0, 100),
+                                                          addr2: (order.shippingAddress.addressLine2 || '').slice(0, 100),
+                                                          city: order.shippingAddress.city.slice(0, 50),
+                                                          state: order.shippingAddress.state.slice(0, 50),
+                                                          pincode: order.shippingAddress.pincode.slice(0, 10),
+                                                          items: JSON.stringify(items.map((i: any) => ({ id: i.productId, q: i.quantity }))).slice(0, 250),
+                                                          subtotal: String(order.subtotal),
+                                                          shipping: String(order.shippingCost),
+                                                          weight: String(totalWeightGrams),
+                                                          atelier: 'Bengaluru Made to Order',
+                },
+            });
+
+            await linkRazorpayOrderId(order.id, rzpOrder.id);
+
+            return NextResponse.json({
+                success: true,
+                internalOrderId: order.id,
+                razorpayOrderId: rzpOrder.id,
+                amount: rzpOrder.amount,
+                currency: rzpOrder.currency,
+                isMock: false,
+                keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+            });
+        }
+
+        if (isSandboxAllowed()) {
+            const simulatedOrderId = `order_sim_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
+            await linkRazorpayOrderId(order.id, simulatedOrderId);
+
+            return NextResponse.json({
+                success: true,
+                internalOrderId: order.id,
+                razorpayOrderId: simulatedOrderId,
+                amount: amountInPaise,
+                currency: 'INR',
+                isMock: true,
+                keyId: 'rzp_test_simulated',
+                message: 'Atelier Test Sandbox active [DEVELOPMENT ONLY]',
+            });
+        }
+
+        return NextResponse.json(
+            { error: 'Payment gateway configuration is missing or inactive.' },
+            { status: 500 }
+        );
+    } catch (error: any) {
+        console.error('Error creating Razorpay order:', error);
+        return NextResponse.json(
+            { error: error.message || 'Failed to create payment order' },
+            { status: 500 }
+        );
+    }
+}

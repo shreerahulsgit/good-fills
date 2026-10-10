@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (pathname.startsWith('/api/admin/') && !pathname.startsWith('/api/admin/auth/')) {
+  if (pathname.startsWith('/api/console/') && !pathname.startsWith('/api/console/auth/')) {
     if (!request.cookies.get(CONSOLE_SESSION_COOKIE)?.value) {
       return NextResponse.json({ error: 'Console authentication required.' }, { status: 401 });
     }
@@ -44,5 +44,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/console/:path*', '/api/admin/:path*', '/api/account/:path*'],
+  matcher: ['/console/:path*', '/api/console/:path*', '/api/account/:path*'],
 };

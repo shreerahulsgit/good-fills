@@ -1,28 +1,28 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = 'https://goodfills.in';
+    const baseUrl = 'https://thegoodfills.com';
 
-  return {
-    rules: [
-      {
-        userAgent: '*',
-        allow: '/',
-        disallow: [
-          '/admin',
-          '/admin/*',
-          '/console',
-          '/console/*',
-          '/api/',
-          '/api/*',
-          '/account',
-          '/account/*',
-          '/order-confirmation',
-          '/order-confirmation/*',
-          '/checkout',
+    return {
+        rules: [
+            {
+                userAgent: '*',
+                allow: '/',
+                disallow: [
+                    '/admin',
+                    '/admin/*',
+                    '/console',
+                    '/console/*',
+                    '/api/',
+                    '/api/*',
+                    '/account',
+                    '/account/*',
+                    '/checkout',
+                    '/order',
+                    '/order/*',
+                ],
+            },
         ],
-      },
-    ],
-    sitemap: `${baseUrl}/sitemap.xml`,
-  };
+        sitemap: `${baseUrl}/sitemap.xml`,
+    };
 }

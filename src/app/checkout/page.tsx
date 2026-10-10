@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
-import { CheckoutView } from '@/components/checkout/CheckoutView';
+import { CheckoutView } from '@/components/checkout/checkout-view';
 
 export const metadata: Metadata = {
-  title: 'Secure Checkout • Good Fills Atelier',
-  description:
+    title: 'Secure Checkout • Good Fills Atelier',
+    description:
     'Complete your order for freshly prepared homemade nutrition, food, and skincare. Direct UPI payment and fast, tracked doorstep delivery across India.',
-  robots: {
-    index: false,
-    follow: false,
-  },
+    robots: {
+        index: false,
+        follow: false,
+    },
 };
 
 export default function CheckoutPage() {
-  return <CheckoutView />;
+    return <CheckoutView />;
 }

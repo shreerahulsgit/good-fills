@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  manifest: '/console/manifest.json',
+    manifest: '/console/manifest.json',
 };
 
 export default function ConsoleLayout({
-  children,
+    children,
 }: {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }) {
-  return children;
+    return children;
 }

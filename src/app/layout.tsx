@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import '@/styles/globals.css';
-import { CartProvider } from '@/lib/cart-context';
-import { SiteHeader } from '@/components/navigation/SiteHeader';
-import { SiteFooter } from '@/components/navigation/SiteFooter';
-import { Preloader } from '@/components/common/Preloader';
+import { CartProvider } from '@/components/context/cart-context';
+import { SiteHeader } from '@/components/navigation/site-header';
+import { SiteFooter } from '@/components/navigation/site-footer';
+import { Preloader } from '@/components/navigation/site-preloader';
+import '@/styles/global.css';
 
 export const metadata: Metadata = {
   title: 'Good Fills — Homemade Traditional Care, Prepared with Care',
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     'made to order food India'
   ],
   authors: [{ name: 'Good Fills' }],
-  metadataBase: new URL('https://goodfills.in'),
+  metadataBase: new URL('https://thegoodfills.com'),
   icons: {
     icon: [
       { url: '/icons/icon-16x16.png', sizes: '16x16', type: 'image/png' },
@@ -47,8 +47,8 @@ export const metadata: Metadata = {
   }
 };
 
-import { PreloaderProvider } from '@/lib/preloader-context';
-import { CustomerAuthProvider } from '@/lib/customer-auth-context';
+import { PreloaderProvider } from '@/components/context/preloader-context';
+import { CustomerAuthProvider } from '@/components/context/auth-context';
 
 export default function RootLayout({
   children,

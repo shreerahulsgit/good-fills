@@ -23,26 +23,21 @@ export default function NotFound() {
   return (
     <main className={styles.pageWrapper}>
       <div className={styles.container}>
-        {/* Eyebrow Pill */}
         <div className={styles.eyebrowTag}>
           <span className={styles.dot} />
           <span>Atelier Directory · Error 404</span>
         </div>
 
-        {/* Big subtle numerals */}
         <div className={styles.bigCode}>404</div>
 
-        {/* Heading */}
         <h1 className={styles.title}>
           This Creation <em>Could Not Be Found.</em>
         </h1>
 
-        {/* Description */}
         <p className={styles.description}>
           The recipe or page you are looking for may have been moved, renamed, or is currently being prepared fresh in our Bengaluru workshop.
         </p>
 
-        {/* Primary Navigation Actions */}
         <div className={styles.actionRow}>
           <Link href="/shop" className={styles.primaryBtn}>
             <span>Explore All Creations</span>
@@ -55,7 +50,6 @@ export default function NotFound() {
           </Link>
         </div>
 
-        {/* Category Portals Section */}
         <div className={styles.divider}>
           <span className={styles.dividerLine} />
           <span className={styles.dividerLabel}>Or Browse By Category</span>
@@ -88,7 +82,6 @@ export default function NotFound() {
           </Link>
         </div>
 
-        {/* Direct WhatsApp Concierge Assistance */}
         <div className={styles.supportFooter}>
           <span>Looking for a bespoke batch or custom recipe?</span>
           <a

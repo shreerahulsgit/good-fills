@@ -1,0 +1,125 @@
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { CATEGORIES, PRODUCTS } from '@/lib/data/shop';
+import { Product } from '@/types';
+
+const luxuryEase = [0.16, 1, 0.3, 1] as const;
+
+interface CategoryPortalsProps {
+  initialProducts?: Product[];
+}
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: luxuryEase,
+    },
+  },
+};
+
+export function CategoryPortals({ initialProducts }: CategoryPortalsProps) {
+  const [productsList, setProductsList] = useState<Product[]>(initialProducts || PRODUCTS);
+
+  const categoriesWithCounts = useMemo(() => {
+    return CATEGORIES.map((cat, idx) => {
+      const count = productsList.filter((p) => p.category === cat.id).length;
+      return {
+        ...cat,
+        num: `0${idx + 1}`,
+        count,
+      };
+    });
+  }, [productsList]);
+  return (
+    <section className="portals-section">
+      <div className="container">
+        <div className="portals-header">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.8, ease: luxuryEase }}
+          >
+            <span className="eyebrow">Explore by Family</span>
+            <h2 className="portals-title">Four Families of Wholesome Care.</h2>
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.8, ease: luxuryEase, delay: 0.12 }}
+            className="portals-subtitle"
+          >
+            From sprouted weaning cereals to raw forest honey — explore our small-batch recipes by daily routine.
+          </motion.p>
+        </div>
+
+        <motion.div
+          className="portals-grid"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
+        >
+          {categoriesWithCounts.map((cat) => (
+            <motion.div
+              key={cat.id}
+              className="portal-card group"
+              variants={cardVariants}
+              whileHover={{ y: -6 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 22 }}
+            >
+              <Link href={`/shop/${cat.id}`} className="portal-link">
+                <div className="portal-img-wrap">
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="portal-img"
+                  />
+                  
+                  <div className="portal-veil" />
+
+                  <span className="portal-num">{cat.num}</span>
+
+                  <span className="portal-pill">
+                    {cat.count} {cat.count === 1 ? 'Product' : 'Products'}
+                  </span>
+                </div>
+
+                <div className="portal-body">
+                  <h3 className="portal-name">{cat.name}</h3>
+                  <p className="portal-tagline">{cat.tagline}</p>
+                  
+                  <div className="portal-action">
+                    <span className="portal-action-text">Explore Collection</span>
+                    <ArrowRight size={14} className="portal-arrow" />
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}

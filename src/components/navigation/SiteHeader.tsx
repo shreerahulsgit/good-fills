@@ -195,7 +195,7 @@ export function SiteHeader() {
                   </Link>
                 </span>
                 <span className={styles.announcementMobile}>
-                  ✈️ <strong>Worldwide Delivery</strong> —{' '}
+                  ✈️ <strong>International Delivery</strong> —{' '}
                   <Link
                     href="/shipping-policy#international"
                     className={styles.announcementLink}

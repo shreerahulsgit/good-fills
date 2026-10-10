@@ -218,7 +218,7 @@ export function AboutView() {
               <div className={styles.newspaperCard}>
                 <div className={styles.newspaperHeaderBar}>
                   <span className={styles.newspaperHeaderTag}>REGIONAL PRESS ARCHIVE</span>
-                  <span className={styles.newspaperHeaderMeta}>BENGALURU • EST. 2016</span>
+                  <span className={styles.newspaperHeaderMeta}>BENGALURU</span>
                 </div>
                 <div className={styles.newspaperImageWrapper}>
                   <img
@@ -228,7 +228,7 @@ export function AboutView() {
                   />
                 </div>
                 <p className={styles.newspaperCaption}>
-                  Original regional press article featuring founder Alankrutha and Good Fills&apos; homemade philosophy.
+                  Original regional press article featuring founder Alankrutha and<br></br>Good Fills&apos; homemade philosophy.
                 </p>
               </div>
             </motion.div>

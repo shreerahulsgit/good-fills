@@ -1340,17 +1340,16 @@ button {
   overflow: hidden;
 }
 
-.product-price-row {
+.product-price-block {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border-hairline);
-  margin-top: auto;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 3px;
+  margin-bottom: var(--space-2);
 }
 
 .product-price-wrap {
-  display: flex;
+  display: inline-flex;
   align-items: baseline;
   gap: 2px;
 }
@@ -1368,6 +1367,31 @@ button {
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
+}
+
+.product-weight-sub {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.product-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-hairline);
+  margin-top: auto;
+}
+
+.product-card-actions {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border-hairline);
 }
 
 .product-add-btn {
@@ -1438,6 +1462,36 @@ button {
   align-items: center;
   border-left: 1px solid rgba(151, 65, 29, 0.2);
   border-right: 1px solid rgba(151, 65, 29, 0.2);
+}
+
+/* ========================================================
+   MOBILE CARD OPTIMIZATION (FLIPKART STYLE)
+   - On screens <= 640px:
+     - Remove "Add to Bag" button & inline stepper (prevents cut-off buttons)
+     - Display pricing prominently on the top layer
+     - Card is clean, clickable to view details
+   ======================================================== */
+@media (max-width: 640px) {
+  .product-card-actions {
+    display: none !important;
+  }
+  .product-add-btn,
+  .product-inline-stepper {
+    display: none !important;
+  }
+  .product-price-row {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+  }
+  .product-price-block {
+    margin-top: 3px;
+    margin-bottom: 6px;
+  }
+  .product-amount {
+    font-size: 1.28rem;
+    font-weight: 800;
+  }
 }
 
 /* ========================================================

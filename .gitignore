@@ -29,6 +29,7 @@ rzp-key.csv
 *.key
 *.cert
 *.pfx
+client_secret*.json
 
 # Next.js Build Output
 /.next/

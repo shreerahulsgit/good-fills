@@ -163,15 +163,20 @@ export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
                       </span>
                     </div>
                     <h3 className="product-name">{product.name}</h3>
-                    <p className="product-desc">{product.shortDescription}</p>
 
-                    {/* Price & Action Row */}
-                    <div className="product-price-row">
+                    {/* Top Layer Pricing (Flipkart Style) */}
+                    <div className="product-price-block">
                       <div className="product-price-wrap">
                         <span className="product-currency">₹</span>
                         <span className="product-amount">{product.price}</span>
                       </div>
+                      <span className="product-weight-sub">per {product.packSize}</span>
+                    </div>
 
+                    <p className="product-desc">{product.shortDescription}</p>
+
+                    {/* Desktop Action Row (Hidden on mobile) */}
+                    <div className="product-card-actions">
                       {/* Tactile Quick-Add Button (Stock aware) */}
                       {product.availability && product.availability !== 'available' ? (
                         <button

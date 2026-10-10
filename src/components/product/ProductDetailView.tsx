@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import {
   ShoppingBag,
@@ -87,6 +87,7 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
     summary: ProductReviewSummary;
   } | null>(null);
   const reviewSummary = reviewSummaryState?.productId === product.id ? reviewSummaryState.summary : null;
+
 
   useEffect(() => {
     loadProductCatalog().then((products) => {
@@ -663,13 +664,19 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
                         {rel.category.replace('-', ' & ')}
                       </span>
                       <h3 className="product-name">{rel.name}</h3>
-                      <p className="product-desc">{rel.shortDescription}</p>
 
-                      <div className="product-price-row">
+                      {/* Top Layer Pricing (Flipkart Style) */}
+                      <div className="product-price-block">
                         <div className="product-price-wrap">
                           <span className="product-currency">₹</span>
                           <span className="product-amount">{rel.price}</span>
                         </div>
+                        <span className="product-weight-sub">per {rel.packSize}</span>
+                      </div>
+
+                      <p className="product-desc">{rel.shortDescription}</p>
+
+                      <div className="product-card-actions">
                         <span className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '6px 14px' }}>
                           View Details
                         </span>
@@ -681,6 +688,102 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
             </div>
           </section>
         )}
+      </div>
+
+      {/* App-like Mobile Sticky "Add to Bag" Bottom Bar — Permanently pinned on mobile (Flipkart style) */}
+      <div className={styles.mobileStickyBar}>
+            <div className={styles.stickyBarInner}>
+              <div className={styles.stickyProductInfo}>
+                <div className={styles.stickyThumbWrap}>
+                  <img
+                    src={product.images.primary}
+                    alt={product.name}
+                    className={styles.stickyThumb}
+                  />
+                </div>
+                <div className={styles.stickyMeta}>
+                  <div className={styles.stickyTitle}>{product.name}</div>
+                  <div className={styles.stickyPriceRow}>
+                    <span className={styles.stickyPrice}>₹{product.price * quantity}</span>
+                    <span className={styles.stickyPack}>({product.packSize})</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.stickyActions}>
+                {product.availability === 'sold-out' ? (
+                  <button
+                    type="button"
+                    disabled
+                    className={styles.stickyAddBtn}
+                    style={{ opacity: 0.6, cursor: 'not-allowed', backgroundColor: '#9CA3AF' }}
+                  >
+                    <span>Sold Out</span>
+                  </button>
+                ) : product.availability === 'coming-soon' ? (
+                  <button
+                    type="button"
+                    disabled
+                    className={styles.stickyAddBtn}
+                    style={{ opacity: 0.6, cursor: 'not-allowed', backgroundColor: '#9CA3AF' }}
+                  >
+                    <span>Coming Soon</span>
+                  </button>
+                ) : product.availability === 'temporarily-unavailable' ? (
+                  <button
+                    type="button"
+                    disabled
+                    className={styles.stickyAddBtn}
+                    style={{ opacity: 0.6, cursor: 'not-allowed', backgroundColor: '#9CA3AF' }}
+                  >
+                    <span>Unavailable</span>
+                  </button>
+                ) : (
+                  <div className={styles.stickyButtonGroup}>
+                    <div className={styles.stickyStepper}>
+                      <button
+                        type="button"
+                        onClick={() => handleQuantityChange(-1)}
+                        disabled={quantity <= 1}
+                        className={styles.stickyStepperBtn}
+                        aria-label="Decrease quantity"
+                      >
+                        <Minus size={13} />
+                      </button>
+                      <span className={styles.stickyQuantityCount}>{quantity}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleQuantityChange(1)}
+                        disabled={quantity >= 20}
+                        className={styles.stickyStepperBtn}
+                        aria-label="Increase quantity"
+                      >
+                        <Plus size={13} />
+                      </button>
+                    </div>
+
+                    <motion.button
+                      type="button"
+                      onClick={handleAddToCart}
+                      className={`${styles.stickyAddBtn} ${isAdded ? styles.isAdded : ''}`}
+                      whileTap={{ scale: 0.94 }}
+                    >
+                      {isAdded ? (
+                        <>
+                          <Check size={16} strokeWidth={2.5} />
+                          <span>Added</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingBag size={15} strokeWidth={2.2} />
+                          <span>Add to Bag</span>
+                        </>
+                      )}
+                    </motion.button>
+                  </div>
+                )}
+              </div>
+            </div>
       </div>
     </div>
   );

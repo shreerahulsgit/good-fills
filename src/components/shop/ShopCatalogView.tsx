@@ -336,6 +336,15 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
 
                       <h3 className="product-name">{product.name}</h3>
 
+                      {/* Top Layer Pricing (Flipkart Style) */}
+                      <div className="product-price-block">
+                        <div className="product-price-wrap">
+                          <span className="product-currency">₹</span>
+                          <span className="product-amount">{product.price}</span>
+                        </div>
+                        <span className="product-weight-sub">per {product.packSize}</span>
+                      </div>
+
                       <p className="product-desc">{product.shortDescription}</p>
 
                       {/* Ingredient Preview Strip */}
@@ -346,16 +355,8 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
                         </div>
                       )}
 
-                      {/* Price & Action Row */}
-                      <div className="product-price-row">
-                        <div className="product-price-block">
-                          <div className="product-price-wrap">
-                            <span className="product-currency">₹</span>
-                            <span className="product-amount">{product.price}</span>
-                          </div>
-                          <span className="product-weight-sub">per {product.packSize}</span>
-                        </div>
-
+                      {/* Desktop Action Row (Hidden on mobile) */}
+                      <div className="product-card-actions">
                         {/* Action Button: Live stock aware */}
                         {product.availability && product.availability !== 'available' ? (
                           <button

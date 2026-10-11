@@ -71,7 +71,7 @@ export function InternationalDeliveryModal({ isOpen: propIsOpen, onClose: propOn
     if (isVisible) {
       autoHideTimerRef.current = setTimeout(() => {
         handleDismiss();
-      }, 8000);
+      }, 6000);
 
       return () => {
         if (autoHideTimerRef.current) clearTimeout(autoHideTimerRef.current);

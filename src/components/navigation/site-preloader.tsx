@@ -93,7 +93,7 @@ export function Preloader() {
           transition={{ duration: 1.0, delay: 0.2 }}
           className="preloader-eyebrow"
         >
-          BENGALURU • EST. 2020
+          BENGALURU<span className="preloader-location-separator"> • </span><br className="preloader-mobile-break" />EST. 2020
         </motion.span>
         <motion.span 
           initial={{ opacity: 0, y: -10 }}
@@ -101,7 +101,7 @@ export function Preloader() {
           transition={{ duration: 1.0, delay: 0.3 }}
           className="preloader-eyebrow"
         >
-          HANDCRAFTED TO ORDER
+          HANDCRAFTED<br className="preloader-mobile-break" /> TO ORDER
         </motion.span>
       </div>
 
@@ -116,7 +116,7 @@ export function Preloader() {
             src="/logo.png" 
             alt="Good Fills Homemade Products" 
             style={{
-              height: 'clamp(56px, 8vw, 76px)',
+              height: 'clamp(64px, 8vw, 76px)',
               width: 'auto',
               maxWidth: '300px',
               objectFit: 'contain',

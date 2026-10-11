@@ -1,0 +1,353 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(26, 24, 22, 0.6);
+  backdrop-filter: blur(6px);
+  z-index: 90;
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.drawer {
+  width: 100%;
+  max-width: 480px;
+  height: 100%;
+  background-color: var(--bg-surface);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -12px 0 36px rgba(26, 24, 22, 0.15);
+  border-left: 1px solid var(--border-hairline);
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header {
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--border-hairline);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.headerIcon {
+  color: var(--accent-terracotta);
+}
+
+.title {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.closeButton {
+  padding: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: var(--radius-xs);
+  transition: color var(--transition-fast);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  color: var(--text-primary);
+}
+
+.weightBar {
+  padding: var(--space-3) var(--space-6);
+  background-color: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-hairline);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.weightMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.weightIcon {
+  color: var(--accent-terracotta);
+}
+
+.weightBadge {
+  font-size: 0.72rem;
+  background-color: #ffffff;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-8) 0;
+}
+
+.emptyIconWrap {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+  color: var(--text-muted);
+}
+
+.emptyTitle {
+  margin-bottom: var(--space-2);
+}
+
+.emptyText {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  max-width: 280px;
+  margin-bottom: var(--space-6);
+}
+
+.itemCard {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-hairline);
+}
+
+.itemImage {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-hairline);
+}
+
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.itemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.itemTitle {
+  font-weight: 500;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.itemRemoveButton {
+  color: var(--text-muted);
+  padding: 2px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.itemRemoveButton:hover {
+  color: #b91c1c;
+}
+
+.itemMeta {
+  display: flex;
+  gap: var(--space-2);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.itemFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-3);
+}
+
+.quantityControl {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-xs);
+  background-color: var(--bg-canvas);
+}
+
+.quantityButton {
+  padding: 4px 8px;
+  color: var(--text-secondary);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantityValue {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0 8px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.itemTotal {
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.summary {
+  padding: var(--space-6);
+  border-top: 1px solid var(--border-hairline);
+  background-color: var(--bg-cream);
+}
+
+.summaryList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  font-size: 0.9rem;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+.summaryLabel {
+  color: var(--text-secondary);
+}
+
+.summaryValue {
+  color: var(--text-primary);
+}
+
+.shippingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shippingLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.shippingText {
+  color: var(--text-secondary);
+}
+
+.shippingNote {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.shippingValue {
+  color: var(--accent-terracotta);
+  font-weight: 600;
+}
+
+.internationalNote {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: -2px;
+}
+
+.internationalLink {
+  color: #128c7e;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.phoneLink {
+  color: var(--accent-terracotta);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.checkoutButton {
+  width: 100%;
+  text-align: center;
+  padding: 0.95rem;
+}
+
+.checkoutButtonDisabled {
+  opacity: 0.7;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(18px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    padding: var(--space-4);
+  }
+  .title {
+    font-size: 1rem;
+  }
+  .headerIcon {
+    height: 19px;
+    width: 19px
+  }
+  .emptyText {
+    max-width: 320px;
+  }
+  .checkoutButton {
+    padding: 0.90rem;
+  }
+}

@@ -142,7 +142,7 @@
   background: transparent;
   border: 1px solid var(--border-medium);
   color: var(--text-secondary);
-  padding: 7px 10px;
+  padding: 9px 10px;
   font-size: 0.76rem;
   font-weight: 600;
   cursor: pointer;
@@ -161,7 +161,7 @@
   background-color: var(--accent-terracotta);
   color: var(--text-light);
   border: 1px solid var(--accent-terracotta);
-  padding: 7px 10px;
+  padding: 9px 10px;
   font-size: 0.76rem;
   font-weight: 600;
   letter-spacing: 0.04em;

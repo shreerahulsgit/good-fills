@@ -705,12 +705,12 @@
 
 @media (max-width: 640px) {
   .contactPageWrapper {
-    padding-top: calc(var(--header-height) + var(--space-4));
+    padding-top: var(--space-6);
     padding-bottom: var(--space-12);
   }
 
   .contactContainer {
-    padding: 0 var(--space-4);
+    padding: 0 var(--space-5);
   }
 
   .minimalHeader {
@@ -893,8 +893,8 @@
 
   .trustStrip {
     margin-top: var(--space-10);
-    padding-top: var(--space-8);
-    gap: 10px;
+    padding-top: var(--space-12);
+    gap: 8px;
   }
 
   .trustPillar {
@@ -926,8 +926,8 @@
   }
 
   .categoryBtn {
-    font-size: 0.72rem;
-    padding: 8px 6px;
+    font-size: 0.75rem;
+    padding: 6px;
   }
 
   .coordinatesTitle {

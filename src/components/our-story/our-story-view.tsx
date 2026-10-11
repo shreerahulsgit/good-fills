@@ -220,7 +220,7 @@ export function AboutView() {
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        <div className="container">
+        <div className="container canvas">
           <div className={styles.centerHeader}>
             <span className={styles.sectionEyebrow}>HOW WE MAKE OUR PRODUCTS</span>
             <h2 className={styles.sectionHeading}>Our 4 Traditional Kitchen Steps</h2>
@@ -339,7 +339,7 @@ export function AboutView() {
       </section>
 
       <section className={styles.comparisonSection}>
-        <div className="container">
+        <div className="container canvas">
           <div className={styles.centerHeader}>
             <span className={styles.sectionEyebrow}>THE HONEST DIFFERENCE</span>
             <h2 className={styles.sectionHeading}>Supermarket Brands vs. Good Fills Homemade</h2>
@@ -439,7 +439,7 @@ export function AboutView() {
       </section>
 
       <section className={styles.ingredientSection}>
-        <div className="container">
+        <div className="container canvas">
           <div className={styles.centerHeader}>
             <span className={styles.sectionEyebrow}>100% PURE &amp; NATURAL</span>
             <h2 className={styles.sectionHeading}>Our Natural Ingredients</h2>

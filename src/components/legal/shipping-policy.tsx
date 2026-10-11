@@ -35,7 +35,7 @@ export function ShippingPolicyContent() {
       <section id="domestic">
         <div className={styles.sectionBadgeRow}>
           <span className={styles.sectionBadge}>Section 1 · Domestic</span>
-          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+          <span className={styles.sectionMetaText}>
             Pan-India Express Doorstep Logistics
           </span>
         </div>
@@ -204,7 +204,7 @@ export function ShippingPolicyContent() {
       <div className={styles.sectionDividerBlock}>
         <div className={styles.sectionBadgeRow}>
           <span className={styles.sectionBadge}>Section 2 · International</span>
-          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+          <span className={styles.sectionMetaText}>
             Worldwide Express Air Cargo
           </span>
         </div>

@@ -1128,8 +1128,18 @@
 }
 
 @media (max-width: 600px) {
+  .accountContainer {
+    padding: var(--space-6) var(--space-5) var(--space-12)
+  }
+
+  .loginContainer {
+    margin: 0;
+    padding: var(--space-8) var(--space-6);
+  }
+
   .accountLayout {
-    padding: 0 var(--space-4);
+    padding: 0;
+    margin: 0;
   }
 
   .contentPanel {
@@ -1138,5 +1148,36 @@
 
   .formGrid2Col {
     grid-template-columns: 1fr;
+  }
+
+  .sidebarLogoutBtn {
+    width: 100%;
+    text-align: left;
+  }
+
+  .orderCardTop, .orderCardBody {
+    padding: 16px 15px;
+  }
+
+  .orderCardTop {
+    gap: 8px;
+  }
+
+  .orderCardBody {
+    gap: var(--space-4)
+  }
+
+  .orderSummaryCol {
+    padding: 16px;
+  }
+
+  .supportBox {
+    gap: var(--space-4);
+  }
+
+  .addressesHeaderRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
   }
 }

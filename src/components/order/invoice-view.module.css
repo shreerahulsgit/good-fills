@@ -539,3 +539,37 @@
     display: none !important;
   }
 }
+
+@media (max-width: 640px) {
+  .pageCanvas {
+    padding: 24px 20px 48px;
+  }
+  .invoiceSheet {
+    padding: 24px 20px;
+  }
+  .invoiceHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .metaCol, .stampCol {
+    text-align: right;
+    min-width: auto;
+    align-self: flex-end;
+  }
+  .partySection {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px 0;
+  }
+  .summarySection {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px 0;
+  }
+  .bottomSection {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+}

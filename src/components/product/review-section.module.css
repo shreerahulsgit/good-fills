@@ -950,3 +950,27 @@
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
+
+@media (max-width: 640px) {
+  .reviewsSection {
+    margin-top: var(--space-12);
+    padding-top: var(--space-12);
+  }
+
+  .sectionHeader {
+    margin-bottom: var(--space-8);
+  }
+
+  .scorecard {
+    padding: 20px;
+    margin-bottom: var(--space-8);
+  }
+
+  .bigRatingNumber {
+    font-size: 3.4rem;
+  }
+
+  .reviewCard {
+    padding: var(--space-6) var(--space-5);
+  }
+}

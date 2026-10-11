@@ -1,0 +1,30 @@
+name: Sync Order Status
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync-tracking:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run status sync
+        env:
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+          CONSOLE_PASSCODE: ${{ secrets.CONSOLE_PASSCODE }}
+        run: npx tsx scripts/order-status.ts

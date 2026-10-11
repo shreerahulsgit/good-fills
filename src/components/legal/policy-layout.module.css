@@ -39,7 +39,7 @@
 .policyArticle {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-medium);
-  padding: clamp(24px, 4vw, 48px);
+  padding: clamp(20px, 4vw, 48px);
   margin-bottom: 40px;
 }
 
@@ -185,14 +185,6 @@
   gap: 24px;
 }
 
-@media (max-width: 768px) {
-  .supportCard {
-    padding: 24px 20px;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
 .supportLeft {
   max-width: 520px;
 }
@@ -310,6 +302,11 @@
   margin-bottom: 12px;
 }
 
+.sectionMetaText {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
 .sectionBadge {
   background-color: #faf3ec;
   border: 1px solid rgba(151, 65, 29, 0.25);
@@ -351,4 +348,42 @@
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .policyPageWrapper {
+    padding: 24px var(--space-5) 48px;
+  }
+  .heroBlock {
+    margin-bottom: 32px;
+  }
+  .sectionMetaText {
+    display: none;
+  }
+  .sectionPill {
+    width: 100%;
+    padding: 10px 12px;
+  }
+  .policyArticle {
+    padding: 20px;
+  }
+  .policyArticle h2 {
+    margin: 30px 0 12px;
+  }
+  .intlSupportCard {
+    padding: 20px 24px;
+    margin: 30px 0 12px 0;
+  }
+  .whatsappBtn, .contactPageBtn {
+    width: 100%;
+    justify-content: center;
+  }
+  .supportCard {
+    padding: 20px 24px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .supportTitle {
+    margin-bottom: 8px;
+  }
 }

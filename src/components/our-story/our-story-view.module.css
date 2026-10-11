@@ -717,7 +717,7 @@
 
 @media (max-width: 640px) {
   .storyHeroSection {
-    padding: var(--space-8) 0 var(--space-12);
+    padding: var(--space-6) 0 var(--space-12);
   }
 
   .sectionHeading {

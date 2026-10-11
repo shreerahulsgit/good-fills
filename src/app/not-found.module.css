@@ -213,6 +213,10 @@
 }
 
 @media (max-width: 768px) {
+    .pageWrapper {
+        padding: 60px 20px 48px;
+    }
+
     .categoryGrid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -225,5 +229,9 @@
     .primaryBtn, .secondaryBtn {
         width: 100%;
         justify-content: center;
+    }
+    
+    .supportFooter {
+        padding-top: 48px;
     }
 }

@@ -1001,11 +1001,11 @@
 
 @media (max-width: 640px) {
   .trackContainer {
-    padding-bottom: calc(var(--space-12) + 82px);
+    padding: var(--space-6) var(--space-5) var(--space-12);
   }
 
   .consoleHero {
-    padding: var(--space-6) var(--space-4) var(--space-6);
+    padding: 0;
   }
 
   .heroTitle {
@@ -1344,10 +1344,6 @@
 }
 
 @media (max-width: 480px) {
-  .consoleHero {
-    padding: var(--space-5) 12px var(--space-5);
-  }
-
   .heroTitle {
     font-size: 1.85rem;
   }
@@ -1358,9 +1354,10 @@
   }
 
   .dashboardGrid {
-    padding: 0 12px;
+    padding: 0;
     gap: 14px;
     margin-top: 14px;
+    margin-bottom: 0;
   }
 
   .statusHeadlineBody {
@@ -1419,6 +1416,7 @@
 
   .awaitingConsole {
     padding: 24px 12px;
+    margin-bottom: 0;
   }
 }
 

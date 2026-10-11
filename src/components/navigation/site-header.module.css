@@ -88,6 +88,7 @@
 
 @media (max-width: 640px) {
   .announcementBar {
+    display: none;
     padding: 6px 36px 6px 12px;
     font-size: 0.69rem;
   }
@@ -564,7 +565,7 @@
   position: relative;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  padding: 7.5px;
   color: var(--text-primary);
   background: none;
   border: 1px solid transparent;
@@ -611,7 +612,6 @@
   padding: 8px;
   color: var(--text-primary);
   background: none;
-  border: 1px solid var(--border-subtle);
   border-radius: 0px;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -653,9 +653,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-3) var(--space-5);
   border-bottom: 1px solid var(--border-hairline);
   background-color: var(--bg-canvas);
+  min-height: 64px;
 }
 
 .drawerCloseBtn {
@@ -665,7 +666,6 @@
   align-items: center;
   justify-content: center;
   background: none;
-  border: 1px solid var(--border-subtle);
   color: var(--text-primary);
   cursor: pointer;
   border-radius: 0px;
@@ -689,6 +689,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding-bottom: var(--space-5);
 }
 
 .drawerCleanLink {
@@ -762,7 +763,7 @@
 }
 
 .drawerFooter {
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-5);
   border-top: 1px solid var(--border-hairline);
   background-color: var(--bg-canvas);
   display: flex;
@@ -860,7 +861,7 @@
   }
 
   .headerContainer {
-    height: 64px;
+    height: 68px;
     padding: 0 16px;
   }
 
@@ -875,24 +876,24 @@
   }
 
   .brandLogo {
-    height: 34px;
+    height: 38px;
     max-width: 155px;
   }
 }
 
 @media (max-width: 640px) {
   .headerContainer {
-    height: 60px;
+    height: 64px;
     padding: 0 12px;
   }
 
   .brandLogo {
-    height: 30px;
+    height: 34px;
     max-width: 130px;
   }
 
   .actionsRow {
-    gap: 4px;
+    gap: 3px;
   }
 
   .hamburgerBtn {

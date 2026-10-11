@@ -233,3 +233,15 @@
   background-color: var(--bg-cream);
   border-color: var(--text-primary);
 }
+
+@media (max-width: 600px) {
+  .resetContainer {
+    padding: var(--space-6) var(--space-5) var(--space-12);
+    align-items: top;
+    justify-content: flex-start;
+  }
+
+  .resetCard {
+    padding: var(--space-8) var(--space-6);
+  }
+}

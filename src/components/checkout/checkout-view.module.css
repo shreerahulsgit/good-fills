@@ -1159,7 +1159,29 @@
 
 @media (max-width: 640px) {
   .checkoutContainer {
-    padding: var(--space-4) 0 var(--space-10);
+    padding: var(--space-6) 0 var(--space-12);
+    box-sizing: border-box;
+  }
+
+  .summaryDeck {
+    padding: 20px;
+  }
+
+  .checkoutGrid,
+  .formColumn,
+  .summaryColumn,
+  .summaryDeck,
+  .sectionCard,
+  .checkoutStepper,
+  .stepSummaryRecap {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .checkoutGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
   }
 
   .sectionCard {
@@ -1268,6 +1290,14 @@
   color: var(--text-secondary);
   line-height: 1.2;
   white-space: nowrap;
+}
+
+.stepperStepTitleDesktop {
+  display: inline;
+}
+
+.stepperStepTitleMobile {
+  display: none;
 }
 
 .stepperTabActive .stepperStepTitle {
@@ -1438,11 +1468,14 @@
   .checkoutStepper {
     padding: 10px 12px;
     gap: 4px;
+    flex-wrap: wrap;
   }
 
   .stepperTab {
     gap: 6px;
     padding: 4px;
+    min-width: 0;
+    flex: 1 1 1;
   }
 
   .stepperBadge {
@@ -1459,6 +1492,14 @@
     font-size: 0.75rem;
   }
 
+  .stepperStepTitleDesktop {
+    display: none;
+  }
+
+  .stepperStepTitleMobile {
+    display: inline;
+  }
+
   .stepperConnector {
     margin: 0 6px;
   }
@@ -1471,6 +1512,18 @@
   .stepBtnRow .nextStepBtn {
     width: 100%;
     justify-content: center;
+  }
+
+  .backStepBtn {
+    display: none;
+  }
+
+  .upiGatewayCard {
+    padding: var(--space-4);
+  }
+
+  .upiSupportedBox {
+    padding: var(--space-4);
   }
 }
 

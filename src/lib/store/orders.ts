@@ -412,7 +412,7 @@ export async function updateOrderAdmin({
         orderStatus: nextOrderStatus,
         shipmentStatus: nextShipmentStatus,
         trackingNumber: trackingNumber === undefined ? order.trackingNumber : trackingNumber.trim(),
-        dispatchDate: (nextShipmentStatus === 'Handed Over' || nextShipmentStatus === 'In Transit')
+        dispatchDate: (nextShipmentStatus === 'Handed Over')
         ? (order.dispatchDate || now)
         : order.dispatchDate,
         deliveredDate: nextShipmentStatus === 'Delivered' ? (order.deliveredDate || now) : order.deliveredDate,

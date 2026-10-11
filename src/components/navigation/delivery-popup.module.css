@@ -233,10 +233,10 @@
 @media (max-width: 640px) {
   .floatingContainer {
     bottom: max(16px, env(safe-area-inset-bottom, 16px));
-    right: 14px;
-    left: 14px;
+    right: 12px;
+    left: 12px;
     width: auto;
-    max-width: 360px;
+    max-width: 350px;
     margin-left: auto;
   }
 

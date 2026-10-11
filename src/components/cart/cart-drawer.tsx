@@ -6,22 +6,23 @@ import { useCart } from '@/components/context/cart-context';
 import { formatCurrency } from '@/lib/dispatch/shipping';
 import { X, Trash2, Plus, Minus, ArrowRight, ShoppingBag, Truck } from 'lucide-react';
 import Link from 'next/link';
+import styles from '@/components/cart/cart-drawer.module.css';
 
 export function CartDrawer() {
   const pathname = usePathname();
   const router = useRouter();
-  const { 
-    isCartOpen, 
-    closeCart, 
-    items, 
-    updateQuantity, 
-    removeItem, 
-    subtotal, 
-    shipping, 
+  const {
+    isCartOpen,
+    closeCart,
+    items,
+    updateQuantity,
+    removeItem,
+    subtotal,
+    shipping,
     grandTotal,
     totalWeightGrams,
-      totalItems,
-      refreshProducts
+    totalItems,
+    refreshProducts,
   } = useCart();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -55,221 +56,99 @@ export function CartDrawer() {
   if (!isCartOpen || pathname === '/checkout') return null;
 
   return (
-    <div 
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(26, 24, 22, 0.6)',
-        backdropFilter: 'blur(6px)',
-        zIndex: 90,
-        display: 'flex',
-        justifyContent: 'flex-end',
-        animation: 'fadeIn 0.25s ease-out'
-      }}
+    <div
+      className={styles.backdrop}
       onClick={(e) => {
         if (e.target === e.currentTarget) closeCart();
       }}
     >
-      <div 
-        style={{
-          width: '100%',
-          maxWidth: '480px',
-          height: '100%',
-          backgroundColor: 'var(--bg-surface)',
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: '-12px 0 36px rgba(26, 24, 22, 0.15)',
-          borderLeft: '1px solid var(--border-hairline)',
-          animation: 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-        }}
-      >
-        <div 
-          style={{
-            padding: 'var(--space-5) var(--space-6)',
-            borderBottom: '1px solid var(--border-hairline)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-            <ShoppingBag size={20} style={{ color: 'var(--accent-terracotta)' }} />
-            <h3 style={{ fontSize: '1.15rem', margin: 0 }}>
-              Your Bag ({totalItems})
-            </h3>
+      <div className={styles.drawer}>
+        <div className={styles.header}>
+          <div className={styles.headerTitleWrap}>
+            <ShoppingBag size={20} className={styles.headerIcon} />
+            <h3 className={styles.title}>Your Bag ({totalItems})</h3>
           </div>
-          <button 
-            onClick={closeCart}
-            aria-label="Close cart"
-            style={{ 
-              padding: '6px', 
-              color: 'var(--text-muted)', 
-              borderRadius: 'var(--radius-xs)',
-              transition: 'color var(--transition-fast)'
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
-          >
+          <button type="button" onClick={closeCart} aria-label="Close cart" className={styles.closeButton}>
             <X size={20} />
           </button>
         </div>
 
         {items.length > 0 && (
-          <div 
-            style={{
-              padding: 'var(--space-3) var(--space-6)',
-              backgroundColor: 'var(--bg-subtle)',
-              borderBottom: '1px solid var(--border-hairline)',
-              fontSize: '0.8rem',
-              color: 'var(--text-secondary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Truck size={14} style={{ color: 'var(--accent-terracotta)' }} />
-              <span>Weight: <strong>{totalWeightGrams}g</strong> ({shipping.totalWeightKg}kg)</span>
+          <div className={styles.weightBar}>
+            <div className={styles.weightMeta}>
+              <Truck size={14} className={styles.weightIcon} />
+              <span>
+                Weight: <strong>{totalWeightGrams}g</strong> ({shipping.totalWeightKg}kg)
+              </span>
             </div>
-            <span className="badge" style={{ fontSize: '0.72rem', backgroundColor: '#FFFFFF' }}>
-              {shipping.slabDescription}
-            </span>
+            <span className={`badge ${styles.weightBadge}`}>{shipping.slabDescription}</span>
           </div>
         )}
 
-        <div 
-          style={{ 
-            flex: 1, 
-            overflowY: 'auto', 
-            padding: 'var(--space-6)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--space-4)'
-          }}
-        >
+        <div className={styles.content}>
           {items.length === 0 ? (
-            <div 
-              style={{ 
-                flex: 1, 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                textAlign: 'center',
-                padding: 'var(--space-8) 0'
-              }}
-            >
-              <div 
-                style={{
-                  width: '64px',
-                  height: '64px',
-                  borderRadius: 'var(--radius-full)',
-                  backgroundColor: 'var(--bg-subtle)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: 'var(--space-4)',
-                  color: 'var(--text-muted)'
-                }}
-              >
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIconWrap}>
                 <ShoppingBag size={28} />
               </div>
-              <h4 style={{ marginBottom: 'var(--space-2)' }}>Your bag is empty</h4>
-              <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', maxWidth: '280px', marginBottom: 'var(--space-6)' }}>
+              <h4 className={styles.emptyTitle}>Your bag is empty</h4>
+              <p className={styles.emptyText}>
                 Our homemade products are prepared fresh to order. Explore our offerings to get started.
               </p>
-              <Link 
-                href="/shop" 
-                onClick={closeCart}
-                className="btn btn-primary"
-              >
+              <Link href="/shop" onClick={closeCart} className="btn btn-primary empty-btn">
                 Explore Products <ArrowRight size={14} />
               </Link>
             </div>
           ) : (
-            items.map(item => (
-              <div 
-                key={item.product.id}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '72px 1fr',
-                  gap: 'var(--space-4)',
-                  paddingBottom: 'var(--space-4)',
-                  borderBottom: '1px solid var(--border-hairline)'
-                }}
-              >
-                <img 
-                  src={item.product.images.primary} 
-                  alt={item.product.name}
-                  style={{
-                    width: '72px',
-                    height: '72px',
-                    objectFit: 'cover',
-                    borderRadius: 'var(--radius-xs)',
-                    border: '1px solid var(--border-hairline)'
-                  }}
-                />
+            items.map((item) => (
+              <div key={item.product.id} className={styles.itemCard}>
+                <img src={item.product.images.primary} alt={item.product.name} className={styles.itemImage} />
 
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div className={styles.itemInfo}>
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <Link 
-                        href={`/product/${item.product.slug}`} 
-                        onClick={closeCart}
-                        style={{ fontWeight: 500, fontSize: '0.92rem', color: 'var(--text-primary)' }}
-                      >
+                    <div className={styles.itemHeader}>
+                      <Link href={`/product/${item.product.slug}`} onClick={closeCart} className={styles.itemTitle}>
                         {item.product.name}
                       </Link>
-                      <button 
+                      <button
+                        type="button"
                         onClick={() => removeItem(item.product.id)}
                         aria-label="Remove item"
-                        style={{ color: 'var(--text-muted)', padding: '2px' }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = '#B91C1C')}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                        className={styles.itemRemoveButton}
                       >
                         <Trash2 size={15} />
                       </button>
                     </div>
 
-                    <div style={{ display: 'flex', gap: 'var(--space-2)', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    <div className={styles.itemMeta}>
                       <span>Pack: {item.product.packSize}</span>
                       <span>•</span>
                       <span>{formatCurrency(item.product.price)} each</span>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-3)' }}>
-                    <div 
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        border: '1px solid var(--border-hairline)',
-                        borderRadius: 'var(--radius-xs)',
-                        backgroundColor: 'var(--bg-canvas)'
-                      }}
-                    >
-                      <button 
+                  <div className={styles.itemFooter}>
+                    <div className={styles.quantityControl}>
+                      <button
+                        type="button"
                         onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                        style={{ padding: '4px 8px', color: 'var(--text-secondary)' }}
+                        className={styles.quantityButton}
                         aria-label="Decrease quantity"
                       >
                         <Minus size={13} />
                       </button>
-                      <span style={{ fontSize: '0.82rem', fontWeight: 600, padding: '0 8px', minWidth: '24px', textAlign: 'center' }}>
-                        {item.quantity}
-                      </span>
-                      <button 
+                      <span className={styles.quantityValue}>{item.quantity}</span>
+                      <button
+                        type="button"
                         onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                        style={{ padding: '4px 8px', color: 'var(--text-secondary)' }}
+                        className={styles.quantityButton}
                         aria-label="Increase quantity"
                       >
                         <Plus size={13} />
                       </button>
                     </div>
 
-                    <strong style={{ fontSize: '0.92rem', color: 'var(--text-primary)' }}>
-                      {formatCurrency(item.product.price * item.quantity)}
-                    </strong>
+                    <strong className={styles.itemTotal}>{formatCurrency(item.product.price * item.quantity)}</strong>
                   </div>
                 </div>
               </div>
@@ -278,26 +157,20 @@ export function CartDrawer() {
         </div>
 
         {items.length > 0 && (
-          <div 
-            style={{
-              padding: 'var(--space-6)',
-              borderTop: '1px solid var(--border-hairline)',
-              backgroundColor: 'var(--bg-cream)'
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginBottom: 'var(--space-4)', fontSize: '0.9rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Product Subtotal</span>
+          <div className={styles.summary}>
+            <div className={styles.summaryList}>
+              <div className={styles.summaryRow}>
+                <span className={styles.summaryLabel}>Product Subtotal</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Shipping Charges</span>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>({shipping.slabDescription})</span>
+              <div className={styles.shippingRow}>
+                <div className={styles.shippingLabel}>
+                  <span className={styles.shippingText}>Shipping Charges</span>
+                  <span className={styles.shippingNote}>({shipping.slabDescription})</span>
                 </div>
-                <strong style={{ color: 'var(--accent-terracotta)' }}>{formatCurrency(shipping.shippingCost)}</strong>
+                <strong className={styles.shippingValue}>{formatCurrency(shipping.shippingCost)}</strong>
               </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '-2px' }}>
+              <div className={styles.internationalNote}>
                 Delivery outside India?{' '}
                 <a
                   href={`https://wa.me/919742068899?text=${encodeURIComponent(
@@ -307,31 +180,30 @@ export function CartDrawer() {
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: '#128C7E', fontWeight: 600, textDecoration: 'none' }}
+                  className={styles.internationalLink}
                 >
                   WhatsApp Us
                 </a>{' '}
                 or call{' '}
-                <a href="tel:+919742068899" style={{ color: 'var(--accent-terracotta)', fontWeight: 600, textDecoration: 'none' }}>
+                <a href="tel:+919742068899" className={styles.phoneLink}>
                   +91 97420 68899
                 </a>
               </div>
               <div className="hairline-divider" style={{ margin: 'var(--space-2) 0' }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.05rem', fontWeight: 600 }}>
+              <div className={styles.totalRow}>
                 <span>Total Amount</span>
                 <span>{formatCurrency(grandTotal)}</span>
               </div>
             </div>
 
-              <button
-                type="button"
-                onClick={handleProceedToCheckout}
-                disabled={isRefreshing}
-              className="btn btn-primary"
-                style={{ width: '100%', textAlign: 'center', padding: '0.95rem', opacity: isRefreshing ? 0.7 : 1 }}
-              >
-                {isRefreshing ? 'Conciling the cart...' : 'Proceed to Checkout'} <ArrowRight size={15} />
-              </button>
+            <button
+              type="button"
+              onClick={handleProceedToCheckout}
+              disabled={isRefreshing}
+              className={`btn btn-primary ${styles.checkoutButton} ${isRefreshing ? styles.checkoutButtonDisabled : ''}`}
+            >
+              {isRefreshing ? 'Conciling the cart...' : 'Proceed to Checkout'} <ArrowRight size={15} />
+            </button>
           </div>
         )}
       </div>

@@ -452,7 +452,7 @@ export function SiteHeader() {
               className={styles.mobileUserBtn}
             >
               {currentUser ? (
-                <span className={styles.patronAvatar} style={{ width: 16, height: 16, fontSize: '0.68rem' }}>
+                <span className={styles.patronAvatar} style={{ width: 18, height: 18, fontSize: '0.68rem' }}>
                   {getInitials(currentUser.name)}
                 </span>
               ) : (
@@ -505,7 +505,7 @@ export function SiteHeader() {
               }
               className={`${styles.mobileCartBtn} ${isCheckoutPage ? styles.mobileCartBtnOnCheckout : ''}`}
             >
-              <ShoppingBag size={20} />
+              <ShoppingBag size={18} />
               {totalItems > 0 && (
                 <motion.span
                   key={totalItems}
@@ -543,7 +543,7 @@ export function SiteHeader() {
                   <img
                     src="/logo.png"
                     alt="Good Fills Homemade Products"
-                    style={{ height: '32px', width: 'auto', maxWidth: '140px', objectFit: 'contain' }}
+                    style={{ height: '34px', width: 'auto', maxWidth: '140px', objectFit: 'contain' }}
                   />
                 </Link>
 
@@ -604,8 +604,6 @@ export function SiteHeader() {
                   </Link>
                 </div>
 
-                <div className={styles.drawerDivider} />
-
                 <a
                   href="https://wa.me/919742068899?text=Hello%20Good%20Fills!%20I%20have%20an%20inquiry%20regarding%20your%20homemade%20products."
                   target="_blank"
@@ -633,11 +631,11 @@ export function SiteHeader() {
                     }
                   }}
                   className={styles.drawerConciergeCard}
-                  style={{ marginTop: '8px', border: '1px solid rgba(151, 65, 29, 0.2)', backgroundColor: '#FAF6F0' }}
+                  style={{ border: '1px solid rgba(151, 65, 29, 0.2)', backgroundColor: '#FAF6F0' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Globe size={18} color="var(--accent-terracotta)" style={{ flexShrink: 0 }} />
-                    <div style={{ textAlign: 'left' }}>
+                    <Globe size={20} color="var(--accent-terracotta)" style={{ flexShrink: 0 }} />
+                    <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '5px' }}>
                       <div className={styles.drawerConciergeTitle} style={{ color: 'var(--text-primary)' }}>
                         International Delivery
                       </div>
@@ -673,10 +671,6 @@ export function SiteHeader() {
                     <span>My Account</span>
                   </Link>
                 )}
-
-                <div className={styles.drawerTrustNote}>
-                  100% Traditional Homemade · Made Fresh in Bengaluru
-                </div>
               </div>
             </motion.div>
           </div>

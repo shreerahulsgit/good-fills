@@ -40,7 +40,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-8);
-  margin-bottom: var(--space-16);
+  margin-bottom: var(--space-12);
 }
 
 @media (min-width: 960px) {
@@ -986,6 +986,28 @@
 .stickyAddBtn.isAdded {
   background-color: #15803d;
   color: #FFFFFF;
+}
+
+@media (max-width: 640px) {
+  .pageWrapper {
+    padding-bottom: var(--space-12);
+  }
+
+  .specificationsSection {
+    padding-top: var(--space-8);
+  }
+
+  .tabContentPanel {
+    padding: var(--space-6);
+  }
+
+  .tabBenefitsList {
+    gap: 8px;
+  }
+
+  .relatedGrid {
+    gap: var(--space-5)
+  }
 }
 
 @media (max-width: 400px) {

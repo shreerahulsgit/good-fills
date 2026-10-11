@@ -363,6 +363,10 @@
 }
 
 @media (max-width: 640px) {
+  .pageWrapper {
+    padding: var(--space-6) 0 var(--space-12)
+  }
+
   .detailsGrid {
     grid-template-columns: 1fr;
     gap: var(--space-4);

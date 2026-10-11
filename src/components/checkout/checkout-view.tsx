@@ -625,7 +625,8 @@ export function CheckoutView() {
                 </div>
                 <div className={styles.stepperMeta}>
                   <span className={styles.stepperStepNum}>Step 01</span>
-                  <span className={styles.stepperStepTitle}>Delivery Address</span>
+                  <span className={`${styles.stepperStepTitle} ${styles.stepperStepTitleDesktop}`}>Delivery Address</span>
+                  <span className={`${styles.stepperStepTitle} ${styles.stepperStepTitleMobile}`}>Address</span>
                 </div>
               </button>
 
@@ -643,7 +644,8 @@ export function CheckoutView() {
                 </div>
                 <div className={styles.stepperMeta}>
                   <span className={styles.stepperStepNum}>Step 02</span>
-                  <span className={styles.stepperStepTitle}>Courier Method</span>
+                  <span className={`${styles.stepperStepTitle} ${styles.stepperStepTitleDesktop}`}>Courier Method</span>
+                  <span className={`${styles.stepperStepTitle} ${styles.stepperStepTitleMobile}`}>Courier</span>
                 </div>
               </button>
 

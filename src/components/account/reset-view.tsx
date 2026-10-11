@@ -140,7 +140,7 @@ export function ResetPasswordView() {
             </div>
             <h2 className={styles.cardTitle}>No Reset Code Provided</h2>
             <p className={styles.cardSubtitle} style={{ marginBottom: '24px' }}>
-              To reset your password, please click the secure link sent to your registered email address, or enter your email on the sign-in page to request a fresh link.
+              To reset your password, please click the secure link sent to your registered email, or enter your email on the sign-in page to request a new link.
             </p>
             <Link href="/account" className={styles.actionBtnOutline}>
               <span>Go to Sign In Page</span>

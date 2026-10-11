@@ -47,7 +47,7 @@
 
     --max-width: 1320px;
     --max-width-narrow: 920px;
-    --header-height: 76px;
+    --header-height: 72px;
 
     --radius-xs: 2px;
     --radius-sm: 4px;
@@ -58,6 +58,18 @@
     --transition-fast: 160ms cubic-bezier(0.16, 1, 0.3, 1);
     --transition-smooth: 320ms cubic-bezier(0.16, 1, 0.3, 1);
     --transition-slow: 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (max-width: 1040px) {
+    :root {
+        --header-height: 68px;
+    }
+}
+
+@media (max-width: 640px) {
+    :root {
+        --header-height: 64px;
+    }
 }
 
 *, *::before, *::after {
@@ -141,6 +153,13 @@ button {
     max-width: var(--max-width);
     margin: 0 auto;
     padding: 0 var(--space-6);
+}
+
+@media (max-width: 767px) {
+    .container {
+        padding-right: var(--space-5);
+        padding-left: var(--space-5);
+    }
 }
 
 @media (min-width: 1024px) {
@@ -250,7 +269,7 @@ button {
 .hero-minimal-section {
     position: relative;
     width: 100%;
-    min-height: calc(100vh - var(--header-height));
+    min-height: calc(100dvh - var(--header-height));
     display: flex;
     align-items: center;
     overflow: hidden;
@@ -302,7 +321,7 @@ button {
 
 .hero-minimal-subtitle {
     font-family: var(--font-sans);
-    font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+    font-size: clamp(1.025rem, 1.8vw, 1.25rem);
     line-height: 1.7;
     color: var(--text-secondary);
     margin-top: var(--space-8);
@@ -313,7 +332,7 @@ button {
 
 .hero-minimal-actions {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--space-3);
     width: 100%;
 }
@@ -427,10 +446,24 @@ button {
 }
 
 @media (max-width: 767px) {
+    .hero-minimal-subtitle {
+        padding: var(--space-3) var(--space-4);
+        background-color: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+    }
+
     .hero-minimal-btn {
         min-height: 46px;
         padding: 0.72rem 1.35rem;
         font-size: 0.88rem;
+    }
+
+    .btn-outline.hero-minimal-btn {
+        background-color: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
     }
 }
 
@@ -438,7 +471,7 @@ button {
     position: fixed;
     inset: 0;
     width: 100vw;
-    height: 100vh;
+    height: 100dvh;
     background-color: var(--bg-canvas);
     color: var(--text-primary);
     z-index: 99999;
@@ -475,6 +508,10 @@ button {
     letter-spacing: 0.22em;
     color: var(--text-muted);
     text-transform: uppercase;
+}
+
+.preloader-mobile-break {
+    display: none;
 }
 
 .preloader-center-stage {
@@ -514,7 +551,7 @@ button {
 
 .preloader-phrase {
     font-family: var(--font-serif);
-    font-size: clamp(1.25rem, 2.8vw, 1.65rem);
+    font-size: clamp(1.1rem, 2.8vw, 1.65rem);
     font-style: italic;
     font-weight: 400;
     color: var(--text-secondary);
@@ -612,6 +649,41 @@ button {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-8);
+}
+
+@media (max-width: 767px) {
+    .values-grid {
+        gap: var(--space-1);
+    }
+
+    .luxury-preloader-canvas {
+        padding: var(--space-6);
+    }
+
+    .preloader-top-bar .preloader-eyebrow:last-child {
+        flex: 1;
+        text-align: right;
+    }
+
+    .preloader-location-separator {
+        display: none;
+    }
+
+    .preloader-mobile-break {
+        display: block;
+    }
+
+    .preloader-sub-tag {
+        margin-top: var(--space-1);
+    }
+
+    .preloader-phrase-wrapper {
+        margin-top: var(--space-4);
+    }
+
+    .preloader-counter-digits {
+        font-size: 1.6rem;
+    }
 }
 
 @media (min-width: 640px) {
@@ -738,7 +810,7 @@ button {
     width: 100%;
     background-color: var(--bg-canvas);
     border-top: 1px solid var(--border-hairline);
-    padding: var(--space-16) 0;
+    padding: var(--space-12) 0;
     position: relative;
     z-index: 5;
 }
@@ -798,18 +870,26 @@ button {
 .featured-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-6);
+    gap: var(--space-4);
     width: 100%;
 }
 
 @media (min-width: 640px) {
+    .featured-section {
+        padding: var(--space-16) 0;
+    }
     .featured-grid {
+        gap: var(--space-6);
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (min-width: 1024px) {
+    .featured-section {
+        padding: var(--space-16) 0;
+    }
     .featured-grid {
+        gap: var(--space-6);
         grid-template-columns: repeat(3, 1fr);
     }
 }
@@ -1099,6 +1179,13 @@ button {
         font-size: 1.28rem;
         font-weight: 800;
     }
+    .empty-btn {
+        padding: 0.72rem 1.35rem;
+    }
+    .canvas {
+        padding-top: var(--space-12);
+        padding-bottom: var(--space-12);
+    }
 }
 
 .portals-section {
@@ -1110,12 +1197,18 @@ button {
     z-index: 5;
 }
 
+@media (max-width: 767px) {
+    .portals-section {
+        padding: var(--space-12) 0;
+    }
+}
+
 .portals-header {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: var(--space-12);
+    margin-bottom: var(--space-10);
     gap: var(--space-3);
 }
 
@@ -1146,17 +1239,19 @@ button {
 .portals-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-6);
+    gap: var(--space-4);
 }
 
 @media (min-width: 640px) {
     .portals-grid {
+        gap: var(--space-6);
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (min-width: 1024px) {
     .portals-grid {
+        gap: var(--space-6);
         grid-template-columns: repeat(4, 1fr);
     }
 }
@@ -1323,6 +1418,12 @@ button {
     scroll-margin-top: 110px;
 }
 
+@media (max-width: 767px) {
+    .process-section {
+        padding: var(--space-12) 0;
+    }
+}
+
 .process-header {
     display: flex;
     flex-direction: column;
@@ -1447,6 +1548,12 @@ button {
     padding: var(--space-2) 0;
 }
 
+@media (max-width: 767px) {
+    .process-stage-content {
+        padding: 0;
+    }
+}
+
 @media (min-width: 1024px) {
     .process-stage-content {
         grid-template-columns: 1.4fr 0.8fr;
@@ -1544,6 +1651,12 @@ button {
     margin-top: var(--space-1);
 }
 
+@media (max-width: 767px) {
+    .process-stat-label {
+        margin-top: var(--space-2);
+    }
+}
+
 .process-nav-controls {
     display: flex;
     align-items: center;
@@ -1629,14 +1742,15 @@ button {
     text-align: center;
     margin-bottom: var(--space-10);
     box-shadow: 0 20px 50px -15px rgba(18, 13, 11, 0.35);
-    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    display: none;
 }
 
 @media (min-width: 640px) {
     .footer-cta-card {
+        display: flex;
         border-radius: 24px;
         padding: var(--space-12) var(--space-6);
     }
@@ -1644,6 +1758,7 @@ button {
 
 @media (min-width: 1024px) {
     .footer-cta-card {
+        display: flex;
         border-radius: 28px;
         padding: clamp(3.5rem, 6vw, 4.5rem) var(--space-8);
         margin-bottom: var(--space-10);
@@ -1734,7 +1849,7 @@ button {
     background-color: var(--bg-surface);
     border: 1px solid var(--border-hairline);
     border-radius: 20px;
-    padding: var(--space-6) var(--space-5);
+    padding: var(--space-5);
     box-shadow: 0 10px 40px -10px rgba(34, 24, 19, 0.05);
     position: relative;
     z-index: 2;
@@ -1963,6 +2078,22 @@ button {
     font-size: 0.75rem;
     color: var(--text-muted);
     font-weight: 500;
+}
+
+@media (max-width: 640px) {
+    .footer-bottom-trust-notes {
+        display: none;
+    }
+    .footer-card-top {
+        gap: var(--space-6);
+        margin-bottom: var(--space-5);
+    }
+    .footer-links-col:nth-child(-n + 2) {
+        margin-bottom: var(--space-5);
+    }
+    .footer-nav-list li:has(> .footer-nav-link.highlight) {
+        display: none;
+    }
 }
 
 .footer-dot-sep {
@@ -2368,72 +2499,11 @@ button {
         aspect-ratio: 1 / 1;
     }
 
-    .product-badge-size {
-        top: 6px;
-        right: 6px;
-        padding: 2px 6px;
-        font-size: 0.62rem;
-        border-radius: 0px;
-    }
-
-    .product-badge-made {
-        bottom: 6px;
-        left: 6px;
-        padding: 2px 6px;
-        font-size: 0.56rem;
-        letter-spacing: 0.06em;
-        border-radius: 0px;
-    }
-
-    .badge-made-dot {
-        width: 4px;
-        height: 4px;
-        margin-right: 3px;
-    }
-
-    .product-info {
-        padding: 10px 8px 12px;
-    }
-
-    .product-category-label {
-        font-size: 0.58rem;
-        letter-spacing: 0.08em;
-        margin-bottom: 2px;
-    }
-
-    .product-name {
-        font-size: 0.95rem;
-        line-height: 1.25;
-        margin-bottom: 4px;
-        display: -webkit-box;
-        line-clamp: 2;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        min-height: 2.4em;
-    }
-
-    .product-desc {
-        display: none;
-    }
-
     .product-ingredients-preview {
         font-size: 0.62rem;
         padding: 2px 5px;
         margin-bottom: 6px;
         border-radius: 0px;
-    }
-
-    .product-currency {
-        font-size: 0.78rem;
-    }
-
-    .product-amount {
-        font-size: 1.05rem;
-    }
-
-    .product-weight-sub {
-        font-size: 0.6rem;
     }
 
     .product-add-btn {
@@ -2642,4 +2712,43 @@ button {
     background-color: #faf7f4 !important;
     border-top: 1px solid #ebe5df !important;
     color: #887d72 !important;
+}
+
+@media (max-width: 640px) {
+    .shop-editorial-header {
+        margin-bottom: var(--space-8);
+    }
+
+    .shop-products-grid {
+        gap: var(--space-1);
+    }
+
+    .product-rating-pill, .product-ingredients-preview {
+        display: none;
+    }
+
+    .shop-product {
+        font-size: 1rem;
+    }
+
+    .shop-category {
+        font-size: 0.64rem;
+    }
+
+    .manifesto-right {
+        display: none;
+    }
+
+    .shop-grid {
+        padding: 0 var(--space-4);
+    }
+
+    .shop-bottom-trust {
+        padding: var(--space-8) var(--space-6);
+        gap: var(--space-5);
+    }
+
+    .shop-page-wrapper {
+        padding: var(--space-6) 0 var(--space-12);
+    }
 }

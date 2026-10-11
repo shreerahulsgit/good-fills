@@ -158,7 +158,7 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
       </div>
 
       <div className="shop-sticky-bar">
-        <div className="container">
+        <div className="container shop-grid">
           <div className="shop-toolbar-inner">
             <div className="shop-tabs-scroll-area">
               <div className="shop-tabs-pill-track">
@@ -190,7 +190,7 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
         </div>
       </div>
 
-      <div className="container">
+      <div className="container shop-grid">
         <AnimatePresence mode="wait">
           {activeCategoryInfo && (
             <motion.div
@@ -302,7 +302,7 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
 
                     <div className="product-info">
                       <div className="product-meta-row">
-                        <span className="product-category-label">
+                        <span className="product-category-label shop-category">
                           {product.category.replace('-', ' & ')}
                         </span>
                         <span className="product-rating-pill" title="Verified Customer Rating">
@@ -311,7 +311,7 @@ export function ShopCatalogView({ initialCategory = 'all', initialProducts }: Sh
                         </span>
                       </div>
 
-                      <h3 className="product-name">{product.name}</h3>
+                      <h3 className="product-name shop-product">{product.name}</h3>
 
                       <div className="product-price-block">
                         <div className="product-price-wrap">

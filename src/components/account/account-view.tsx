@@ -135,7 +135,7 @@ export function AccountView() {
 
     setIsSubmittingReview(true);
     try {
-      const res = await fetch('/api/reviews', {
+      const res = await fetch('/api/reviews/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

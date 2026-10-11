@@ -51,7 +51,7 @@ function loadProductReviewSummary(productId: string): Promise<ProductReviewSumma
   const inFlight = reviewSummaryRequests.get(key);
   if (inFlight) return inFlight;
 
-  const request = fetch(`/api/reviews?productId=${encodeURIComponent(productId)}`)
+  const request = fetch(`/api/reviews?productId=${encodeURIComponent(productId)}`, { cache: 'no-store' })
     .then((res) => res.json())
     .then((data) => (data.success && data.summary ? data.summary as ProductReviewSummary : null))
     .catch((err) => {

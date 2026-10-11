@@ -24,11 +24,14 @@ export async function GET(request: Request) {
                 {
                     error: `No consignment record located for query "${query.trim()}". Please verify your Order ID or mobile number.`,
                 },
-                { status: 404 }
+                { status: 404, headers: { 'Cache-Control': 'no-store' } }
             );
         }
 
-        return NextResponse.json({ success: true, tracking: trackingData });
+        return NextResponse.json(
+            { success: true, tracking: trackingData },
+            { headers: { 'Cache-Control': 'no-store' } }
+        );
     } catch (error) {
         console.error('Error fetching live order tracking:', error);
         return NextResponse.json(

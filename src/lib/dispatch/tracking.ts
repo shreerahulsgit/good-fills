@@ -161,7 +161,14 @@ export async function searchTrackingOrder(query: string): Promise<TrackingTeleme
     if (!rawQuery) return null;
     const cleanQuery = rawQuery.toUpperCase();
 
-    const orders = await getAllServerOrdersAsync();
+    const orders = (await getAllServerOrdersAsync()).filter((order) => {
+        const failedStatuses = ['failed'];
+        return ![
+            order.orderStatus,
+            order.paymentStatus,
+            order.shipmentStatus,
+        ].some((status) => failedStatuses.includes(String(status || '').trim().toLowerCase()));
+    });
 
     const findMatch = (list: Order[]) => {
         const idDigits = cleanQuery.replace(/\D/g, '');

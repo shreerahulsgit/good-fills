@@ -14,12 +14,22 @@ export async function POST(
         }
 
         const helpfulCount = await voteReviewHelpful(id);
-        return NextResponse.json({ success: true, helpfulCount });
+        if (helpfulCount === null) {
+            return NextResponse.json(
+                { success: false, error: 'Review not found' },
+                { status: 404, headers: { 'Cache-Control': 'no-store' } }
+            );
+        }
+
+        return NextResponse.json(
+            { success: true, helpfulCount },
+            { headers: { 'Cache-Control': 'no-store' } }
+        );
     } catch (error: any) {
         console.error('Error voting review helpful:', error);
         return NextResponse.json(
             { success: false, error: error.message || 'Failed to update helpful vote.' },
-            { status: 500 }
+            { status: 500, headers: { 'Cache-Control': 'no-store' } }
         );
     }
 }

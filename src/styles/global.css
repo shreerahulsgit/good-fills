@@ -262,7 +262,7 @@ button {
     inset: 0;
     background-image:
     linear-gradient(180deg, rgba(250, 249, 245, 0.82) 0%, rgba(250, 249, 245, 0.55) 45%, rgba(250, 249, 245, 0.15) 80%, transparent 100%),
-    url(/hero-bg.png');
+    url('/hero-bg.png');
     background-size: cover;
     background-position: 80% center;
     background-repeat: no-repeat;

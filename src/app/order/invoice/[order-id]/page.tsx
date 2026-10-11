@@ -7,9 +7,9 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({
     params,
 }: {
-    params: { orderId: string };
+    params: { 'order-id': string };
 }): Promise<Metadata> {
-    const orderId = params?.orderId || 'Order';
+    const orderId = params?.['order-id'] || 'Order';
     return {
         title: `Tax Invoice ${orderId} • Good Fills Atelier`,
         description: `Official Tax Invoice and Cash Receipt for Good Fills Order ${orderId}.`,
@@ -23,7 +23,7 @@ export async function generateMetadata({
 export default function DirectInvoicePage({
     params,
 }: {
-    params: { orderId: string };
+    params: { 'order-id': string };
 }) {
-    return <InvoiceDocumentView orderId={params.orderId} />;
+    return <InvoiceDocumentView orderId={params['order-id']} />;
 }

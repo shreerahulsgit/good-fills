@@ -259,22 +259,37 @@ export async function addCustomerReview(data: {
   return fromReviewRow(created as ReviewRow);
 }
 
-export async function voteReviewHelpful(reviewId: string): Promise<number> {
-  const { data: review, error: loadError } = await createSupabaseAdminClient()
-    .from('reviews')
-    .select('helpful_count')
-    .eq('id', reviewId)
-    .maybeSingle();
-  if (loadError) throw new Error(`Failed to load review in Supabase: ${loadError.message}`);
-  if (!review) return 0;
+export async function voteReviewHelpful(reviewId: string): Promise<number | null> {
+  const supabase = createSupabaseAdminClient();
 
-  const helpfulCount = Number(review.helpful_count || 0) + 1;
-  const { error } = await createSupabaseAdminClient()
-    .from('reviews')
-    .update({ helpful_count: helpfulCount })
-    .eq('id', reviewId);
-  if (error) throw new Error(`Failed to update review helpful count: ${error.message}`);
-  return helpfulCount;
+  // Compare-and-set prevents concurrent votes from overwriting each other.
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const { data: review, error: loadError } = await supabase
+      .from('reviews')
+      .select('helpful_count')
+      .eq('id', reviewId)
+      .maybeSingle();
+    if (loadError) throw new Error(`Failed to load review in Supabase: ${loadError.message}`);
+    if (!review) return null;
+
+    const previousCount = review.helpful_count;
+    const helpfulCount = Number(previousCount || 0) + 1;
+    let updateQuery = supabase
+      .from('reviews')
+      .update({ helpful_count: helpfulCount })
+      .eq('id', reviewId);
+    updateQuery = previousCount == null
+      ? updateQuery.is('helpful_count', null)
+      : updateQuery.eq('helpful_count', previousCount);
+
+    const { data: updated, error: updateError } = await updateQuery
+      .select('helpful_count')
+      .maybeSingle();
+    if (updateError) throw new Error(`Failed to update review helpful count: ${updateError.message}`);
+    if (updated) return Number(updated.helpful_count || 0);
+  }
+
+  throw new Error('Could not save helpful vote after repeated concurrent updates.');
 }
 
 export async function deleteReview(reviewId: string): Promise<boolean> {

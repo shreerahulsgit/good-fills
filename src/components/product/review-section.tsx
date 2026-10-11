@@ -56,6 +56,7 @@ export function ProductReviewsSection({ product, initialSummary }: ProductReview
   }, [orders, product.id, product.slug]);
 
   const [votedIds, setVotedIds] = useState<Set<string>>(new Set());
+  const [pendingVoteIds, setPendingVoteIds] = useState<Set<string>>(new Set());
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -96,28 +97,38 @@ export function ProductReviewsSection({ product, initialSummary }: ProductReview
   }, [initialSummary]);
 
   const handleVoteHelpful = async (reviewId: string) => {
-    if (votedIds.has(reviewId)) return;
-
-    const updatedVoted = new Set(votedIds).add(reviewId);
-    setVotedIds(updatedVoted);
+    if (votedIds.has(reviewId) || pendingVoteIds.has(reviewId)) return;
+    setPendingVoteIds((previous) => new Set(previous).add(reviewId));
     try {
-      localStorage.setItem('gf_helpful_reviews', JSON.stringify(Array.from(updatedVoted)));
-    } catch {
-    }
-
-    if (summary) {
-      setSummary({
-        ...summary,
-        reviews: summary.reviews.map((r) =>
-          r.id === reviewId ? { ...r, helpfulCount: (r.helpfulCount || 0) + 1 } : r
-        ),
+      const response = await fetch(`/api/reviews/${reviewId}`, {
+        method: 'POST',
+        cache: 'no-store',
       });
-    }
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to record helpful vote.');
+      }
 
-    try {
-      await fetch(`/api/reviews/${reviewId}`, { method: 'POST' });
+      setVotedIds((previous) => new Set(previous).add(reviewId));
+      try {
+        const saved = JSON.parse(localStorage.getItem('gf_helpful_reviews') || '[]') as string[];
+        localStorage.setItem('gf_helpful_reviews', JSON.stringify(Array.from(new Set([...saved, reviewId]))));
+      } catch {
+      }
+      setSummary((previous) => previous ? {
+        ...previous,
+        reviews: previous.reviews.map((review) =>
+          review.id === reviewId ? { ...review, helpfulCount: result.helpfulCount } : review
+        ),
+      } : previous);
     } catch (err) {
       console.error('Error recording helpful vote:', err);
+    } finally {
+      setPendingVoteIds((previous) => {
+        const next = new Set(previous);
+        next.delete(reviewId);
+        return next;
+      });
     }
   };
 
@@ -395,6 +406,7 @@ export function ProductReviewsSection({ product, initialSummary }: ProductReview
         ) : (
           filteredAndSortedReviews.map((review) => {
             const hasVoted = votedIds.has(review.id);
+            const isVotePending = pendingVoteIds.has(review.id);
             const formattedDate = new Date(review.createdAt).toLocaleDateString('en-IN', {
               day: 'numeric',
               month: 'long',
@@ -488,9 +500,9 @@ export function ProductReviewsSection({ product, initialSummary }: ProductReview
                     <button
                       type="button"
                       onClick={() => handleVoteHelpful(review.id)}
-                      disabled={hasVoted}
+                      disabled={hasVoted || isVotePending}
                       className={styles.helpfulBtn}
-                      title={hasVoted ? 'You marked this as helpful' : 'Mark as helpful'}
+                      title={hasVoted ? 'You marked this as helpful' : isVotePending ? 'Saving your vote...' : 'Mark as helpful'}
                     >
                       {hasVoted ? (
                         <>

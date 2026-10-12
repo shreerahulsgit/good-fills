@@ -8,7 +8,7 @@
 
 @media (max-width: 768px) {
   .container {
-    padding: var(--space-4);
+    padding: var(--space-4) var(--space-3) 60px;
     gap: var(--space-5);
   }
 }
@@ -755,5 +755,41 @@
     font-weight: bold;
     text-transform: uppercase;
     font-size: 9pt;
+  }
+}
+
+@media (max-width: 768px) {
+  .toolbar,
+  .filtersGroup,
+  .filterItem {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .toolbar,
+  .filtersGroup {
+    align-items: stretch;
+  }
+
+  .filtersGroup {
+    gap: 14px;
+  }
+  .metricsGrid {
+    gap: var(--space-2);
+  }
+  .printBtn, .advanceAllBtn {
+    text-align: left;
+    padding: 9px 16px;
+  }
+  .filterSelect {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .filterItem {
+    flex-direction: column;
+  }
+  .filterLabel {
+    text-align: left;
+    width: 100%;
   }
 }

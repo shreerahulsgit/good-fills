@@ -9,7 +9,7 @@
 
 @media (max-width: 768px) {
   .container {
-    padding: var(--space-4);
+    padding: var(--space-4) var(--space-3) 60px;
     gap: var(--space-5);
   }
 }
@@ -513,4 +513,17 @@
   border-radius: 0px !important;
   padding: var(--space-12) var(--space-6);
   text-align: center;
+}
+
+@media (max-width: 640px) {
+  .metricsGrid {
+    gap: var(--space-3)
+  }
+  .searchBox {
+    min-width: 100%;
+  }
+  .filterSelect {
+    min-width: 48.5%;
+    max-width: 48.5%;
+  }
 }

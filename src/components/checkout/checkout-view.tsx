@@ -590,7 +590,7 @@ export function CheckoutView() {
             <p className={styles.emptyText}>
               Add our freshly prepared, made-to-order creations to your bag before proceeding to checkout.
             </p>
-            <Link href="/shop" className="btn btn-primary">
+            <Link href="/shop" className="btn btn-primary empty-btn">
               Browse Atelier Creations <ArrowRight size={15} />
             </Link>
           </div>

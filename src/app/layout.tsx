@@ -6,8 +6,8 @@ import { Preloader } from '@/components/navigation/site-preloader';
 import '@/styles/global.css';
 
 export const metadata: Metadata = {
-  title: 'Good Fills — Homemade Traditional Care, Prepared with Care',
-  description: 'Artisanal homemade food, nutrition, skincare and bath products prepared with care and made to order in Bengaluru, India. Fast, reliable delivery across India.',
+  title: 'Homemade Food & Natural Care | Good Fills',
+  description: 'Explore small-batch food, nutrition, skincare and bath essentials made to order in Bengaluru. Shop the collection with delivery across India.',
   keywords: [
     'Good Fills',
     'homemade products Bengaluru',
@@ -31,8 +31,8 @@ export const metadata: Metadata = {
     apple: '/icons/apple-touch-icon.png',
   },
   openGraph: {
-    title: 'Good Fills — Traditional Care, Made for Everyday Life',
-    description: 'Artisanal homemade food, nutrition, skincare and bath products prepared with care and made to order in Bengaluru.',
+    title: 'Homemade Food & Natural Care | Good Fills',
+    description: 'Explore small-batch food, nutrition, skincare and bath essentials made to order in Bengaluru. Shop the collection with delivery across India.',
     siteName: 'Good Fills',
     locale: 'en_IN',
     type: 'website',
@@ -58,6 +58,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>

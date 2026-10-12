@@ -3,9 +3,8 @@ import { PolicyLayout } from '@/components/legal/policy-layout';
 import { PrivacyPolicyContent } from '@/components/legal/privacy-policy';
 
 export const metadata: Metadata = {
-    title: 'Privacy Policy • Good Fills Bengaluru Atelier',
-    description:
-    'Our commitment to your privacy, IT Act and DPDP Act compliance, zero storage of financial/UPI data, and responsible handling of shipping information.',
+    title: 'Privacy Policy',
+    description: 'Read how Good Fills collects, uses and protects personal information related to your account, orders, payments and delivery.',
 };
 
 export default function PrivacyPolicyPage() {

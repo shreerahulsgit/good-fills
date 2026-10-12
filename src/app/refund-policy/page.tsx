@@ -3,9 +3,8 @@ import { PolicyLayout } from '@/components/legal/policy-layout';
 import { RefundPolicyContent } from '@/components/legal/refund-policy';
 
 export const metadata: Metadata = {
-    title: 'Returns & Replacement Policy • Good Fills Bengaluru Atelier',
-    description:
-    'Our strictly non-returnable and non-cancellable policy for fresh artisanal foods, infant nutrition powders, and botanical care, plus our 24-hour transit damage replacement guarantee.',
+    title: 'Returns & Replacement Policy',
+    description: 'Review the Good Fills cancellation, return and replacement terms, including how to report an item damaged during delivery.',
 };
 
 export default function RefundPolicyPage() {

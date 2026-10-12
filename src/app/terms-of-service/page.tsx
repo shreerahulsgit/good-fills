@@ -3,9 +3,8 @@ import { PolicyLayout } from '@/components/legal/policy-layout';
 import { TermsPolicyContent } from '@/components/legal/terms-policy';
 
 export const metadata: Metadata = {
-    title: 'Terms of Service • Good Fills Bengaluru Atelier',
-    description:
-    'Terms of service, made-to-order conditions, artisanal food guidelines, allergen disclaimers, and legal jurisdiction for Good Fills.',
+    title: 'Terms of Service',
+    description: 'Review the terms that apply to Good Fills website use, orders, payments, product information and customer responsibilities.',
 };
 
 export default function TermsOfServicePage() {

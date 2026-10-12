@@ -23,16 +23,19 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
     if (!product) {
         return {
-            title: 'Product Not Found — Good Fills',
+            title: 'Product Not Found',
+            description: 'This product could not be found. Browse the Good Fills collection to discover food, nutrition, skincare and bath essentials.',
         };
     }
 
+    const description = `${product.name} (${product.packSize}), made to order in Bengaluru. View product details and delivery information from Good Fills.`;
+
     return {
-        title: `${product.name} (${product.packSize}) — Good Fills Atelier`,
-        description: `${product.shortDescription} Handmade to order in Bengaluru, India. 100% natural traditional care. Fast, tracked delivery across India.`,
+        title: `${product.name} - ${product.packSize}`,
+        description,
         openGraph: {
-            title: `${product.name} — Handcrafted by Good Fills`,
-            description: product.shortDescription,
+            title: `${product.name} - ${product.packSize}`,
+            description,
             images: [
                 {
                     url: product.images?.primary || '/logo.png',

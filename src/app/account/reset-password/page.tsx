@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import { ResetPasswordView } from '@/components/account/reset-view';
 
 export const metadata: Metadata = {
-    title: 'Reset Password • Good Fills Bengaluru Atelier',
-    description: 'Create a new secure password for your Good Fills customer account.',
+    title: 'Reset Your Password',
+    description: 'Set a new password to regain access to your Good Fills account and manage your orders and delivery details.',
 };
 
 export default function ResetPasswordPage() {

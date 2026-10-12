@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { AdminDispatchView } from '@/components/console/dispatch-view';
 
 export const metadata: Metadata = {
-    title: 'Orders Management • Good Fills Console',
-    description: 'Manage Good Fills customer orders, 1-click status progression, and consignment fulfillment.',
+    title: 'Order Management',
+    description: 'Review customer orders, update fulfillment status and coordinate dispatch from the Good Fills console.',
 };
 
 export default function ConsoleOrdersPage() {

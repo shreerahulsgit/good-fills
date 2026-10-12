@@ -11,8 +11,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
     const orderId = params?.['order-id'] || 'Order';
     return {
-        title: `Tax Invoice ${orderId} • Good Fills Atelier`,
-        description: `Official Tax Invoice and Cash Receipt for Good Fills Order ${orderId}.`,
+        title: `Invoice for Order ${orderId}`,
+        description: `View or print the invoice for Good Fills order ${orderId}, including the recorded order and payment details.`,
         robots: {
             index: false,
             follow: false,

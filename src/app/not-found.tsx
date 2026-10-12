@@ -14,9 +14,8 @@ import {
 import styles from './not-found.module.css';
 
 export const metadata: Metadata = {
-  title: 'Page Not Found — Good Fills Atelier Bengaluru',
-  description:
-    'The requested artisanal recipe or page could not be found. Explore our fresh homemade porridge, bath powders, honey, and filter coffee.',
+  title: 'Page Not Found',
+  description: 'The page you requested could not be found. Browse the Good Fills collection or return to the homepage to continue.',
 };
 
 export default function NotFound() {

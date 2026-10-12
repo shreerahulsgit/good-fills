@@ -25,16 +25,25 @@ export function generateMetadata({ params }: CategoryPageProps): Metadata {
 
     if (!catInfo) {
         return {
-            title: 'Shop — Good Fills',
+            title: 'Shop Products',
+            description: 'Browse small-batch food, nutrition, skincare and bath products made to order in Bengaluru, with delivery available across India.',
         };
     }
 
+    const categoryDescriptions: Record<ProductCategory, string> = {
+        'baby-kids': 'Explore thoughtfully prepared food and bath essentials for babies and children, made in small batches in Bengaluru.',
+        'nutrition-wellness': 'Browse small-batch nutrition blends and pantry essentials prepared with care in Bengaluru for everyday use.',
+        'skin-bath': 'Discover traditional bath and skincare essentials made in small batches with carefully selected botanical ingredients.',
+        'pantry-beverages': 'Shop pantry staples and beverages prepared in small batches, with products made to order in Bengaluru.',
+    };
+    const description = categoryDescriptions[catInfo.id];
+
     return {
-        title: `${catInfo.name} — Handcrafted to Order | Good Fills`,
-        description: catInfo.description,
+        title: `${catInfo.name} Products`,
+        description,
         openGraph: {
-            title: `${catInfo.name} — Good Fills`,
-            description: catInfo.description,
+            title: `${catInfo.name} Products`,
+            description,
         },
     };
 }

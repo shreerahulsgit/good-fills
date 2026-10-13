@@ -2,9 +2,8 @@ import type { Metadata } from 'next';
 import { ContactView } from '@/components/contact-us/contact-view';
 
 export const metadata: Metadata = {
-    title: 'Contact Our Kitchen Atelier • Good Fills Bengaluru',
-    description:
-    'Connect directly with the Good Fills Bengaluru kitchen team. Inquire about infant weaning nutrition, custom milled porridge ratios, live order tracking, or wholesale hampers.',
+    title: 'Contact & Customer Support',
+    description: 'Contact the Good Fills team in Bengaluru for product questions, order assistance, delivery updates or wholesale inquiries. We are ready to help.',
 };
 
 export default function ContactUsPage() {

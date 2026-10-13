@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { AdminDispatchView } from '@/components/console/dispatch-view';
 
 export const metadata: Metadata = {
-    title: 'Inquiries & Concierge Desk • Good Fills Console',
-    description: 'Review customer inquiries, contact requests, and custom batch messages.',
+    title: 'Customer Inquiries',
+    description: 'Review and manage customer questions, contact requests and product inquiries in the Good Fills console.',
 };
 
 export default function ConsoleInquiriesPage() {

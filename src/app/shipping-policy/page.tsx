@@ -3,9 +3,8 @@ import { PolicyLayout } from '@/components/legal/policy-layout';
 import { ShippingPolicyContent } from '@/components/legal/shipping-policy';
 
 export const metadata: Metadata = {
-    title: 'Shipping Policy & International Delivery • Good Fills Bengaluru Atelier',
-    description:
-    'Learn about our fresh made-to-order kitchen dispatch, domestic express logistics, pan-India delivery timelines, and worldwide air cargo services.',
+    title: 'Shipping & Delivery Policy',
+    description: 'Find information about order preparation, shipping methods, delivery timelines and tracking for Good Fills orders in India and internationally.',
 };
 
 export default function ShippingPolicyPage() {

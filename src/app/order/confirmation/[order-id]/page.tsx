@@ -13,9 +13,8 @@ interface OrderConfirmationPageProps {
 
 export function generateMetadata({ params }: OrderConfirmationPageProps): Metadata {
     return {
-        title: `Order ${params['order-id']} Confirmed • Good Fills Atelier`,
-        description:
-        'Your Good Fills handcrafted made-to-order preparation is confirmed. Fresh traditional care dispatched with fast, tracked doorstep delivery.',
+        title: `Order ${params['order-id']} Confirmation`,
+        description: `Order ${params['order-id']} has been received by Good Fills. View your confirmation and check the latest order details and delivery status.`,
         robots: {
             index: false,
             follow: false,

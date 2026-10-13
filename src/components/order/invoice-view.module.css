@@ -542,7 +542,7 @@
 
 @media (max-width: 640px) {
   .pageCanvas {
-    padding: 24px 20px 48px;
+    padding: 24px 16px 48px;
   }
   .invoiceSheet {
     padding: 24px 20px;

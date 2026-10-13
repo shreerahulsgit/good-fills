@@ -3,9 +3,8 @@ import type { Metadata } from 'next';
 import { AccountView } from '@/components/account/account-view';
 
 export const metadata: Metadata = {
-    title: 'My Account & Orders • Good Fills Bengaluru',
-    description:
-    'View your Good Fills order history, track live shipments, inspect receipts, and manage saved delivery addresses.',
+    title: 'Account and Orders',
+    description: 'Review your order history, check shipment updates, access receipts and manage your saved delivery addresses in your Good Fills account.',
 };
 
 export default function AccountPage() {

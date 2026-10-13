@@ -117,6 +117,33 @@
   }
 }
 
+@media (max-width: 640px) {
+  .adminTopBarMobile {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 64px;
+    padding: 12px 16px;
+    box-sizing: border-box;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .brandWrap {
+    min-width: 0;
+    gap: 12px;
+  }
+
+  .loginCenterCanvas {
+    padding: 0px 20px 64px;
+    max-height: 100dvh;
+  }
+
+  .badgeAdmin {
+    display: none;
+  }
+}
+
 .loginCardAccentLine {
   position: absolute;
   top: 0;
@@ -258,7 +285,7 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   max-height: 100vh;
   position: relative;
   overflow-y: auto;
@@ -2574,10 +2601,6 @@
   .statNumberRef {
     font-size: 1.15rem;
   }
-
-  .donutLegendGrid {
-    grid-template-columns: 1fr;
-  }
 }
 
 
@@ -3183,3 +3206,52 @@
   }
 }
 
+@media (max-width: 640px) {
+  .dashboardContainer {
+    gap: 20px;
+  }
+  .statsCardsGrid {
+    gap: 8px;
+  }
+  .panelHeaderRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .chartPanel, .recentOrdersPanel, .topCreationsPanel, .donutPanel {
+    padding: 20px;
+  }
+  .chartAndRecentRow, .productsAndDonutRow {
+    gap: 16px;
+  }
+  .shippingAddressColumn {
+    display: none;
+  }
+  .creationsStatsRow {
+    gap: 8px;
+  }
+  .featuredFilterToggle {
+    display: none;
+  }
+  .creationSearchWrap {
+    max-width: 100%;
+  }
+  .creationSelect {
+    width: 100%;
+  }
+  .creationsGrid {
+    gap: 16px;
+  }
+  .sidebar {
+    width: 280px;
+  }
+  .sidebarInner {
+    padding: 20px 16px;
+  }
+  .sidebarBrand {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+  }
+}

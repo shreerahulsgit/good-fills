@@ -1457,14 +1457,10 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
             >
               <Menu size={20} />
             </button>
-            <img src="/logo.png" alt="Good Fills" style={{ height: '24px', width: 'auto' }} />
+            <img src="/logo.png" alt="Good Fills" style={{ height: '32px', width: 'auto' }} />
           </div>
 
           <div className={styles.mobileTopRight}>
-            <div className={styles.liveIndicatorDot}>
-              <span className={styles.pulseDot} />
-              <span>Live</span>
-            </div>
             <button onClick={handleLogout} className={styles.mobileLockBtn} title="Lock">
               <LogOut size={14} />
             </button>
@@ -1864,7 +1860,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                         <th>Order</th>
                         <th>Customer</th>
                         <th>Status</th>
-                        <th>Shipping Address</th>
+                        <th className={styles.shippingAddressColumn}>Shipping Address</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1910,7 +1906,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                                     {getUnifiedStatusLabel(o.orderStatus, o.shipmentStatus, o.paymentStatus)}
                                   </span>
                                 </td>
-                                <td>
+                                <td className={styles.shippingAddressColumn}>
                                   <div style={{ fontSize: '0.72rem', color: '#475569', lineHeight: 1.45 }}>
                                     <div>
                                       {o.shippingAddress?.addressLine1}
@@ -2397,7 +2393,9 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                           </div>
 
                           <div className={styles.mobileAddressLine}>
-                            {o.shippingAddress?.addressLine1}, {o.shippingAddress?.pincode} • Phone: <strong>{o.customerPhone}</strong>
+                            {o.shippingAddress?.addressLine1}, {o.shippingAddress?.addressLine2}<br></br>
+                            {o.shippingAddress?.city}, {o.shippingAddress?.state}, {o.shippingAddress?.country} - {o.shippingAddress?.pincode}<br></br>
+                            Phone: <strong>{o.customerPhone}</strong>
                           </div>
 
                           <div className={styles.mobileItemsList}>
@@ -2407,40 +2405,6 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
                                 <span>{it.product.name}</span>
                               </div>
                             ))}
-                          </div>
-
-                          <div className={styles.cardPipelineStepperMobile}>
-                            {['Confirmed', 'Packed', 'In Transit', 'Delivered'].map((stepName, idx) => {
-                              const isDone = currentStageIndex >= idx;
-                              const isCurrent = currentStageIndex === idx;
-                              return (
-                                <div
-                                  key={stepName}
-                                  className={`${styles.miniStepNode} ${isDone ? styles.stepDone : ''} ${isCurrent ? styles.stepActive : ''}`}
-                                >
-                                  <div className={styles.miniStepCircle}>
-                                    {isDone && !isCurrent ? <Check size={9} /> : idx + 1}
-                                  </div>
-                                  <span className={styles.miniStepLabel}>{stepName}</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                            <div className={styles.mobileAdvanceSection}>
-                              {uStatus === 'Pending' ? (
-                              <div className={styles.unpaidAlertBadgeMobile}>
-                                <span>Awaiting Payment — Do Not Pack</span>
-                              </div>
-                            ) : uStatus === 'Cancelled' ? (
-                              <div className={styles.cancelledBadgeMobile}>
-                                <span>Order Cancelled / Failed</span>
-                              </div>
-                            ) : (
-                              <div className={styles.fulfilledCompleteBadgeMobile}>
-                                <span>Order Delivered &amp; Closed</span>
-                              </div>
-                            )}
                           </div>
 
                           <div className={styles.mobileCardActionsSection}>

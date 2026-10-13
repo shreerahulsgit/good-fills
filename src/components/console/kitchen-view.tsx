@@ -558,7 +558,7 @@ export function AdminKitchenManifestView({
         <div className={styles.sectionBlockHeader}>
           <div>
             <h2 className={styles.sectionBlockTitle}>
-              Customer Orders Packing Manifest ({relevantOrders.length} Orders)
+              Customer Orders Packing ({relevantOrders.length} Orders)
             </h2>
             <span className={styles.sectionBlockCount}>
               Pack each customer&apos;s parcel with their freshly prepared items and mark them ready for dispatch

@@ -6,13 +6,11 @@ import { ProductCategory } from '@/types';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'Shop All Handcrafted Creations — Good Fills',
-    description:
-    'Browse our complete catalog of homemade food, nutrition, skincare, and bath products crafted to order in Bengaluru. 100% natural, fast doorstep delivery across India.',
+    title: 'Shop Handmade Products | Good Fills',
+    description: 'Browse small-batch food, nutrition, skincare and bath products made to order in Bengaluru. Find everyday essentials with delivery across India.',
     openGraph: {
-        title: 'Shop All Handcrafted Creations — Good Fills',
-        description:
-        'Browse our complete catalog of homemade food, nutrition, skincare, and bath products crafted to order in Bengaluru.',
+        title: 'Shop Handmade Products | Good Fills',
+        description: 'Browse small-batch food, nutrition, skincare and bath products made to order in Bengaluru. Find everyday essentials with delivery across India.',
     },
 };
 

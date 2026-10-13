@@ -1145,6 +1145,32 @@
   margin-bottom: var(--space-6);
 }
 
+@media (max-width: 640px) {
+  .emptyState {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: var(--space-12) var(--space-4);
+  }
+
+  .emptyTitle {
+    font-size: clamp(1.75rem, 8vw, 2.2rem);
+    margin: var(--space-4) 0 var(--space-6);
+  }
+
+  .emptyText {
+    font-size: 0.9rem;
+  }
+
+  .emptyState a {
+    max-width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+    flex-wrap: wrap;
+    text-align: center;
+  }
+}
+
 @media (max-width: 960px) {
   .checkoutGrid {
     grid-template-columns: 1fr;

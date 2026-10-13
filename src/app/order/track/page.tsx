@@ -3,9 +3,8 @@ import { Suspense } from 'react';
 import { TrackView } from '@/components/order/track-view';
 
 export const metadata: Metadata = {
-    title: 'Live Order Tracking • Good Fills Express Delivery',
-    description:
-    'Track your freshly milled sprouted porridge and organic flour consignments in real time. Kitchen preparation milestones and live tracking updates.',
+    title: 'Order Tracking & Updates',
+    description: 'Check your Good Fills order status, kitchen preparation progress and available courier tracking updates in one place.',
 };
 
 export default function TrackOrderPage() {

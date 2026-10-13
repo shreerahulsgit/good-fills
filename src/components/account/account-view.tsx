@@ -1441,7 +1441,6 @@ export function AccountView() {
                     type="button"
                     onClick={() => setReviewModalOrder(null)}
                     disabled={isSubmittingReview}
-                    className={styles.secondaryActionsGroup}
                     style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-medium)', cursor: 'pointer' }}
                   >
                     Cancel
@@ -1452,7 +1451,7 @@ export function AccountView() {
                     className={styles.primaryBtn}
                     style={{ width: 'auto', padding: '9px 20px' }}
                   >
-                    {isSubmittingReview ? 'Submitting...' : 'Submit Verified Review'}
+                    {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
                   </button>
                 </div>
               </form>

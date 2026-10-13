@@ -63,7 +63,7 @@ export const PRODUCTS: Product[] = [
     {
         id: 'prod-02',
         slug: 'ragi-porridge-mix',
-        name: 'Ragi Porridge Mix',
+        name: 'Ragi Porridge Mix - 48 Ingredients Enriched',
         category: 'baby-kids',
         price: 400,
         packSize: '250g',

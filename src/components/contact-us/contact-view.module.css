@@ -98,9 +98,13 @@
 }
 
 .headerSocialBtn {
-  padding: 10px 12px;
+  padding: 13px 15px;
   min-width: 40px;
   justify-content: center;
+}
+
+.headerSocialLabel {
+  display: none;
 }
 
 .headerSocialBtn:hover {
@@ -948,6 +952,14 @@
 
   .faqsHeading {
     font-size: 1.02rem;
+  }
+
+  .headerSocialBtn {
+    padding: 10px 8px;
+  }
+
+  .headerSocialLabel {
+    display: inline;
   }
 }
 

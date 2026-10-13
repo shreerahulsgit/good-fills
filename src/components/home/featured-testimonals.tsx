@@ -247,6 +247,10 @@ export function FeaturedTestimonials({ initialReviews = [] }: FeaturedTestimonia
             }}
           >
             {displayedReviews.map((review, idx) => {
+              const productSlug = review.productName
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '');
               const initials = review.authorName
                 .split(' ')
                 .map((n) => n[0])
@@ -297,7 +301,7 @@ export function FeaturedTestimonials({ initialReviews = [] }: FeaturedTestimonia
                           </span>
                         </div>
                         <Link
-                          href={`/product/${review.productId}`}
+                          href={`/product/${productSlug}`}
                           className={styles.imageCardProductLink}
                           title={`View ${review.productName}`}
                         >
@@ -341,7 +345,7 @@ export function FeaturedTestimonials({ initialReviews = [] }: FeaturedTestimonia
 
                         <div className={styles.productTagWrapper}>
                           <Link
-                            href={`/product/${review.productId}`}
+                            href={`/product/${productSlug}`}
                             className={styles.productTag}
                             title={`View ${review.productName}`}
                           >

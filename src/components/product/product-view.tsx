@@ -73,8 +73,9 @@ interface ProductDetailViewProps {
 
 type TabType = 'ingredients' | 'preparation' | 'storage' | 'shipping';
 
-export function ProductDetailView({ product, allProducts }: ProductDetailViewProps) {
+export function ProductDetailView({ product: initialProduct, allProducts }: ProductDetailViewProps) {
   const { addItem, openCart } = useCart();
+  const [product, setProduct] = useState(initialProduct);
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('ingredients');
@@ -87,14 +88,23 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
 
 
   useEffect(() => {
+    setProduct(initialProduct);
+    setCatalogList(allProducts || PRODUCTS);
+
     loadProductCatalog().then((products) => {
-      if (products && products.length > 0) setCatalogList(products);
+      if (!products || products.length === 0) return;
+
+      setCatalogList(products);
+      const refreshedProduct = products.find((item) =>
+        item.id === initialProduct.id || item.slug === initialProduct.slug
+      );
+      if (refreshedProduct) setProduct(refreshedProduct);
     });
 
-    loadProductReviewSummary(product.id).then((summary) => {
-      if (summary) setReviewSummary({ productId: product.id, summary });
+    loadProductReviewSummary(initialProduct.id).then((summary) => {
+      if (summary) setReviewSummary({ productId: initialProduct.id, summary });
     });
-  }, [product.id]);
+  }, [initialProduct, allProducts]);
 
   const categoryInfo = CATEGORIES.find((c) => c.id === product.category);
   const shippingInfo = calculateDomesticShipping(product.productWeightGrams * quantity);
@@ -489,11 +499,7 @@ export function ProductDetailView({ product, allProducts }: ProductDetailViewPro
                         </div>
                       )}
                     </div>
-                  ) : (
-                    <div className={styles.contentNoticeBox}>
-                      <strong>[CONTENT REQUIRED FROM GOOD FILLS]</strong> Detailed grain breakdown and recipe ratios are currently pending final verification from the kitchen. All ingredients are guaranteed 100% natural, vegetarian, and prepared without artificial preservatives.
-                    </div>
-                  )}
+                  ) : null}
 
                   {product.benefits && product.benefits.length > 0 && (
                     <div className={styles.tabBenefitsSection}>

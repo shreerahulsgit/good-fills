@@ -309,6 +309,7 @@ export function ContactView() {
               aria-label="Instagram @goodfills2020"
             >
               <InstagramIcon size={15} />
+              <span className={styles.headerSocialLabel}>Instagram Page</span>
             </motion.a>
 
             <motion.a
@@ -323,6 +324,7 @@ export function ContactView() {
               aria-label="Facebook Good Fills"
             >
               <FacebookIcon size={15} />
+              <span className={styles.headerSocialLabel}>Facebook Page</span>
             </motion.a>
           </motion.div>
         </motion.header>

@@ -505,12 +505,13 @@ export interface ReviewStats {
 }
 
 export interface AnnouncementConfig {
+  id: string;
   enabled: boolean;
-  imageUrl: string;
-  title?: string;
-  linkUrl?: string;
-  showButton?: boolean;
-  buttonText?: string;
-  showOncePerSession: boolean;
-  updatedAt?: string;
+  image_url: string;
+  title: string;
+  link_url: string;
+  show_button: boolean;
+  button_text: string;
+  show_once: boolean;
+  updated_at: string;
 }

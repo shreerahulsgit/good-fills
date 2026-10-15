@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight } from 'lucide-react';
 import { usePreloader } from '@/components/context/preloader-context';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { AnnouncementConfig } from '@/types';
 import styles from '@/components/navigation/announcement.module.css';
 
@@ -17,42 +18,40 @@ export function AnnouncementModal() {
   const [config, setConfig] = useState<AnnouncementConfig | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
+  const hasStartedFetch = useRef(false);
 
-  // Fetch announcement config once on mount
   useEffect(() => {
-    let isCancelled = false;
+    if (pathname?.startsWith('/admin') || pathname?.startsWith('/console')) return;
+    if (hasStartedFetch.current) return;
+
+    hasStartedFetch.current = true;
 
     async function fetchConfig() {
       try {
-        const res = await fetch('/api/announcement', { cache: 'no-store' });
-        if (res.ok) {
-          const data = await res.json();
-          if (!isCancelled && data?.config) {
-            setConfig(data.config);
-          }
-        }
+        const { data, error } = await createSupabaseBrowserClient()
+          .from('configs')
+          .select('*')
+          .eq('id', 'post-0001')
+          .maybeSingle();
+
+        if (error) throw error;
+        if (data) setConfig(data as AnnouncementConfig);
       } catch (err) {
         console.error('Failed to fetch announcement config:', err);
       } finally {
-        if (!isCancelled) setHasAttemptedFetch(true);
+        setHasAttemptedFetch(true);
       }
     }
 
     fetchConfig();
-    return () => {
-      isCancelled = true;
-    };
-  }, []);
+  }, [pathname]);
 
-  // Evaluate whether to trigger the popup after preloader completes
   useEffect(() => {
-    // Never show on admin or console routes
     if (pathname?.startsWith('/admin') || pathname?.startsWith('/console')) {
       setIsOpen(false);
       return;
     }
 
-    // Must wait until config is fetched, preloader is done lifting
     if (!hasAttemptedFetch || !config || !config.enabled) {
       setIsOpen(false);
       return;
@@ -66,8 +65,7 @@ export function AnnouncementModal() {
 
       const hasSeen = typeof window !== 'undefined' && sessionStorage.getItem(SESSION_KEY);
 
-      if (!hasSeen || isPreview || !config.showOncePerSession) {
-        // Small delay so page reveals first before the modal appears
+      if (!hasSeen || isPreview || !config.show_once) {
         const timer = setTimeout(() => {
           setIsOpen(true);
         }, 500);
@@ -84,11 +82,9 @@ export function AnnouncementModal() {
         sessionStorage.setItem(SESSION_KEY, 'true');
       }
     } catch {
-      // ignore
     }
   }, []);
 
-  // Close on Escape key
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -105,7 +101,7 @@ export function AnnouncementModal() {
   const content = (
     <div className={styles.posterWrapper}>
       <img
-        src={config.imageUrl || '/images/announcement-poster.jpg'}
+        src={config.image_url || '/images/announcement-poster.jpg'}
         alt={config.title || 'Announcement from Good Fills'}
         className={styles.posterImage}
         loading="eager"
@@ -148,9 +144,9 @@ export function AnnouncementModal() {
               <X size={18} strokeWidth={2.4} />
             </button>
 
-            {config.linkUrl ? (
+            {config.link_url ? (
               <Link
-                href={config.linkUrl}
+                href={config.link_url}
                 className={styles.posterLink}
                 onClick={handleClose}
               >
@@ -160,15 +156,15 @@ export function AnnouncementModal() {
               content
             )}
 
-            {config.showButton !== false && (
+            {config.show_button !== false && (
               <div className={styles.modalFooter}>
-                {config.linkUrl ? (
+                {config.link_url ? (
                   <Link
-                    href={config.linkUrl}
+                    href={config.link_url}
                     className={styles.actionButton}
                     onClick={handleClose}
                   >
-                    <span>{config.buttonText || 'Explore Kitchen'}</span>
+                    <span>{config.button_text || 'Explore Products'}</span>
                     <ArrowRight size={14} />
                   </Link>
                 ) : (
@@ -177,7 +173,7 @@ export function AnnouncementModal() {
                     className={styles.actionButton}
                     onClick={handleClose}
                   >
-                    <span>{config.buttonText || 'Continue to Store'}</span>
+                    <span>{config.button_text || 'Continue to Store'}</span>
                   </button>
                 )}
               </div>

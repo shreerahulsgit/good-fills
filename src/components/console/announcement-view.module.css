@@ -327,7 +327,6 @@ input:checked + .slider:before {
   accent-color: var(--accent-terracotta, #97411D);
 }
 
-/* Live Preview Side */
 .previewSticky {
   position: sticky;
   top: 24px;

@@ -129,6 +129,10 @@
 }
 
 @media (max-width: 640px) {
+  .backdrop {
+    z-index: 100000;
+  }
+
   .modalBox {
     max-width: 92vw;
   }

@@ -17,19 +17,21 @@ interface AdminAnnouncementViewProps {
   showToast: (message: string, type: 'success' | 'info' | 'error') => void;
 }
 
-const DEFAULT_DASARA_POSTER = '/images/announcement-poster.jpg';
-const DEFAULT_DASARA_TITLE = 'Happy Dasara! Closed for Orders Till Oct 28th';
-
 export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps) {
   const [config, setConfig] = useState<AnnouncementConfig>({
-    enabled: true,
-    imageUrl: DEFAULT_DASARA_POSTER,
-    title: DEFAULT_DASARA_TITLE,
-    linkUrl: '',
-    showButton: true,
-    buttonText: 'Continue to Store',
-    showOncePerSession: true,
+    id: 'post-0001',
+    enabled: false,
+    image_url: '',
+    title: '',
+    link_url: '',
+    show_button: false,
+    button_text: '',
+    show_once: false,
+    updated_at: '',
   });
+  const updateConfig = (updates: Partial<AnnouncementConfig>) => {
+    setConfig((current) => ({ ...current, ...updates }));
+  };
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -60,14 +62,14 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!config.imageUrl?.trim()) {
+    if (!config.image_url?.trim()) {
       showToast('Please provide an image URL for the announcement poster.', 'error');
       return;
     }
 
     setIsSaving(true);
     try {
-      const res = await fetch('/api/console/announcement', {
+      const res = await fetch('/api/console/announcement/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config),
@@ -146,7 +148,6 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
       <form onSubmit={handleSave}>
         <div className={styles.splitLayout}>
           <div className={styles.formColumn}>
-            {/* Master Toggle Banner */}
             <div className={styles.statusCard}>
               <div className={styles.statusInfo}>
                 <div
@@ -171,14 +172,13 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
                   type="checkbox"
                   checked={config.enabled}
                   onChange={(e) =>
-                    setConfig((prev) => ({ ...prev, enabled: e.target.checked }))
+                    updateConfig({ enabled: e.target.checked })
                   }
                 />
                 <span className={styles.slider} />
               </label>
             </div>
 
-            {/* Poster Details Card */}
             <div className={styles.card}>
               <h2 className={styles.cardTitle}>
                 <ImageIcon size={18} />
@@ -193,9 +193,9 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
                   id="poster-url-input"
                   type="text"
                   className={styles.textInput}
-                  value={config.imageUrl}
+                  value={config.image_url}
                   onChange={(e) => {
-                    setConfig((prev) => ({ ...prev, imageUrl: e.target.value }));
+                    updateConfig({ image_url: e.target.value });
                     setImageError(false);
                   }}
                   placeholder="e.g. /images/announcement-poster.jpg or https://..."
@@ -218,7 +218,7 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
                   className={styles.textInput}
                   value={config.title || ''}
                   onChange={(e) =>
-                    setConfig((prev) => ({ ...prev, title: e.target.value }))
+                    updateConfig({ title: e.target.value })
                   }
                   placeholder="e.g. Happy Dasara! Closed for Orders Till Oct 28th"
                 />
@@ -236,9 +236,9 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
                     id="poster-link-input"
                     type="text"
                     className={styles.textInput}
-                    value={config.linkUrl || ''}
+                    value={config.link_url || ''}
                     onChange={(e) =>
-                      setConfig((prev) => ({ ...prev, linkUrl: e.target.value }))
+                      updateConfig({ link_url: e.target.value })
                     }
                     placeholder="e.g. /shop or /contact-us (Leave empty for pure announcement)"
                   />
@@ -253,26 +253,22 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
                   <input
                     type="checkbox"
                     className={styles.checkboxInput}
-                    checked={config.showOncePerSession}
+                    checked={config.show_once}
                     onChange={(e) =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        showOncePerSession: e.target.checked,
-                      }))
+                      updateConfig({ show_once: e.target.checked })
                     }
                   />
                   <span>
-                    <strong>Show only once per user session</strong>
+                    <strong>Show once</strong>
                     <br />
                     <span style={{ color: '#6B7280', fontSize: '0.76rem' }}>
-                      Prevents annoying the customer on every page click during their active visit.
+                      Shows the announcement only once during each active user session.
                     </span>
                   </span>
                 </label>
               </div>
             </div>
 
-            {/* Action Button Card */}
             <div className={styles.card}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                 <h2 className={styles.cardTitle} style={{ margin: 0 }}>
@@ -283,9 +279,9 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
                 <label className={styles.switch} aria-label="Toggle action button">
                   <input
                     type="checkbox"
-                    checked={config.showButton !== false}
+                    checked={config.show_button !== false}
                     onChange={(e) =>
-                      setConfig((prev) => ({ ...prev, showButton: e.target.checked }))
+                      updateConfig({ show_button: e.target.checked })
                     }
                   />
                   <span className={styles.slider} />
@@ -293,12 +289,12 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
               </div>
 
               <p className={styles.fieldHelp} style={{ margin: '0 0 16px 0' }}>
-                {config.showButton !== false
+                {config.show_button !== false
                   ? 'The action button is currently visible below the poster.'
                   : 'The action button is turned OFF. The modal will display only the announcement poster image.'}
               </p>
 
-              {config.showButton !== false && (
+              {config.show_button !== false && (
                 <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel} htmlFor="button-label-input">
                     Button Label <span className={styles.fieldOptional}>(Optional)</span>
@@ -307,21 +303,20 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
                     id="button-label-input"
                     type="text"
                     className={styles.textInput}
-                    value={config.buttonText || ''}
+                    value={config.button_text || ''}
                     onChange={(e) =>
-                      setConfig((prev) => ({ ...prev, buttonText: e.target.value }))
+                      updateConfig({ button_text: e.target.value })
                     }
                     placeholder="e.g. Continue to Store"
                   />
                   <p className={styles.fieldHelp}>
-                    Defaults to &ldquo;Continue to Store&rdquo; (or &ldquo;Explore Kitchen&rdquo; if a link URL is set).
+                    Defaults to &ldquo;Continue to Store&rdquo; (or &ldquo;Explore Products&rdquo; if a link URL is set).
                   </p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Right Column: Interactive Live Preview */}
           <div className={styles.previewColumn}>
             <div className={styles.previewSticky}>
               <div className={styles.previewHeader}>
@@ -340,9 +335,9 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
                 <div className={styles.previewModalMockup}>
                   <div className={styles.previewCloseMockup}>✕</div>
 
-                  {config.imageUrl && !imageError ? (
+                  {config.image_url && !imageError ? (
                     <img
-                      src={config.imageUrl}
+                      src={config.image_url}
                       alt={config.title || 'Announcement'}
                       className={styles.previewImage}
                       onError={() => setImageError(true)}
@@ -354,10 +349,10 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
                     </div>
                   )}
 
-                  {config.showButton !== false && (
+                  {config.show_button !== false && (
                     <div className={styles.previewFooterMockup}>
                       <div className={styles.previewMockupBtn}>
-                        {config.buttonText || (config.linkUrl ? 'Explore Kitchen →' : 'Continue to Store')}
+                        {config.button_text || (config.link_url ? 'Explore Products →' : 'Continue to Store')}
                       </div>
                     </div>
                   )}

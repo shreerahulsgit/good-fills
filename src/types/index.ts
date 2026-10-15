@@ -503,3 +503,14 @@ export interface ReviewStats {
   verifiedCount: number;
   distribution: Record<number, number>;
 }
+
+export interface AnnouncementConfig {
+  enabled: boolean;
+  imageUrl: string;
+  title?: string;
+  linkUrl?: string;
+  showButton?: boolean;
+  buttonText?: string;
+  showOncePerSession: boolean;
+  updatedAt?: string;
+}

@@ -38,10 +38,11 @@ import { Order, OrderStatus, ShipmentStatus, PaymentStatus, Product, ProductCate
 import { PRODUCTS } from '@/lib/data/shop';
 import { AdminKitchenManifestView } from './kitchen-view';
 import { AdminReviewsModerationView } from './reviews-view';
+import { AdminAnnouncementView } from './announcement-manager';
 import styles from '@/components/console/dispatch-view.module.css';
 
 type DatePreset = 'all' | 'today' | 'yesterday' | '7days' | 'month' | 'custom';
-type SidebarTab = 'dashboard' | 'orders' | 'kitchen' | 'products' | 'reviews' | 'inquiries';
+type SidebarTab = 'dashboard' | 'orders' | 'kitchen' | 'products' | 'reviews' | 'inquiries' | 'announcement';
 type OrderDateTab = 'all' | 'today' | 'yesterday' | 'week' | 'month';
 type ManifestLayout = 'table' | 'cards';
 type SortOption = 'newest' | 'oldest' | 'highest' | 'lowest' | 'name';
@@ -128,7 +129,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
         const path = window.location.pathname.replace(/\/$/, '');
         const segments = path.split('/');
         const last = segments[segments.length - 1];
-        const validTabs: SidebarTab[] = ['dashboard', 'orders', 'kitchen', 'products', 'reviews', 'inquiries'];
+        const validTabs: SidebarTab[] = ['dashboard', 'orders', 'kitchen', 'products', 'reviews', 'inquiries', 'announcement'];
         if (validTabs.includes(last as SidebarTab)) {
           setActiveSidebarTab(last as SidebarTab);
           if (last === 'products') {
@@ -1422,6 +1423,17 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
               )}
               {activeSidebarTab === 'inquiries' && <div className={styles.activePillMarker} />}
             </button>
+
+            <button
+              type="button"
+              className={`${styles.navItem} ${activeSidebarTab === 'announcement' ? styles.navItemActive : ''}`}
+              onClick={() => handleTabChange('announcement')}
+              title="Storefront announcement popup modal & festival posters"
+            >
+              <Sparkles size={18} />
+              <span>Popup Poster</span>
+              {activeSidebarTab === 'announcement' && <div className={styles.activePillMarker} />}
+            </button>
           </nav>
 
           <div className={styles.sidebarFooter}>
@@ -1515,6 +1527,14 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
           >
             <MessageCircle size={14} />
             <span>Inquiries{unseenInquiriesCount > 0 ? ` (${unseenInquiriesCount})` : ''}</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.mobileTabBtn} ${activeSidebarTab === 'announcement' ? styles.mobileTabBtnActive : ''}`}
+            onClick={() => handleTabChange('announcement')}
+          >
+            <Sparkles size={14} />
+            <span>Popup</span>
           </button>
         </div>
 
@@ -2980,6 +3000,10 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
             showToast={showToast}
             onNavigateToOrder={handleNavigateToOrderFromReview}
           />
+        )}
+
+        {activeSidebarTab === 'announcement' && (
+          <AdminAnnouncementView showToast={showToast} />
         )}
       </div>
 

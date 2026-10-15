@@ -49,6 +49,7 @@ export const metadata: Metadata = {
 
 import { PreloaderProvider } from '@/components/context/preloader-context';
 import { CustomerAuthProvider } from '@/components/context/auth-context';
+import { AnnouncementModal } from '@/components/navigation/announcement-modal';
 
 export default function RootLayout({
   children,
@@ -67,6 +68,7 @@ export default function RootLayout({
           <CustomerAuthProvider>
             <CartProvider>
               <Preloader />
+              <AnnouncementModal />
               <SiteHeader />
               {children}
               <SiteFooter />

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight } from 'lucide-react';
 import { usePreloader } from '@/components/context/preloader-context';
 import { AnnouncementConfig } from '@/types';
-import styles from './announcement-modal.module.css';
+import styles from '@/components/navigation/announcement.module.css';
 
 const SESSION_KEY = 'good_fills_announcement_seen';
 

@@ -97,9 +97,11 @@
   gap: 8px;
   background-color: #221813;
   color: #FAF9F5;
-  padding: 10px 24px;
+  min-height: 46px;
+  padding: 10px 22px;
+  box-sizing: border-box;
   font-family: var(--font-sans, sans-serif);
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s ease;

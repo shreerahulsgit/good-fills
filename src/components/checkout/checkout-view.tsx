@@ -54,6 +54,8 @@ const INDIAN_STATES = [
   'Other State / Union Territory'
 ];
 
+const getCheckoutProductName = (name: string) => name.split('-', 1)[0].trim();
+
 export function CheckoutView() {
   const router = useRouter();
   const {
@@ -1347,11 +1349,11 @@ export function CheckoutView() {
                   <div key={item.product.id} className={styles.itemRow}>
                     <img
                       src={item.product.images.primary}
-                      alt={item.product.name}
+                      alt={getCheckoutProductName(item.product.name)}
                       className={styles.itemThumb}
                     />
                     <div className={styles.itemInfo}>
-                      <h4 className={styles.itemName}>{item.product.name}</h4>
+                      <h4 className={styles.itemName}>{getCheckoutProductName(item.product.name)}</h4>
                       <div className={styles.itemMetaRow}>
                         <span className={styles.itemPackTag}>{item.product.packSize}</span>
                         <div className={styles.itemQtyStepper}>
@@ -1359,7 +1361,7 @@ export function CheckoutView() {
                             type="button"
                             onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                             className={styles.qtyStepperBtn}
-                            aria-label={`Decrease quantity of ${item.product.name}`}
+                            aria-label={`Decrease quantity of ${getCheckoutProductName(item.product.name)}`}
                           >
                             <Minus size={11} />
                           </button>
@@ -1368,7 +1370,7 @@ export function CheckoutView() {
                             type="button"
                             onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                             className={styles.qtyStepperBtn}
-                            aria-label={`Increase quantity of ${item.product.name}`}
+                            aria-label={`Increase quantity of ${getCheckoutProductName(item.product.name)}`}
                           >
                             <Plus size={11} />
                           </button>
@@ -1377,7 +1379,7 @@ export function CheckoutView() {
                           type="button"
                           onClick={() => removeItem(item.product.id)}
                           className={styles.itemRemoveBtn}
-                          aria-label={`Remove ${item.product.name} from order`}
+                          aria-label={`Remove ${getCheckoutProductName(item.product.name)} from order`}
                           title="Remove item"
                         >
                           <Trash2 size={12} />

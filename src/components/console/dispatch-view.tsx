@@ -38,7 +38,7 @@ import { Order, OrderStatus, ShipmentStatus, PaymentStatus, Product, ProductCate
 import { PRODUCTS } from '@/lib/data/shop';
 import { AdminKitchenManifestView } from './kitchen-view';
 import { AdminReviewsModerationView } from './reviews-view';
-import { AdminAnnouncementView } from './announcement-manager';
+import { AdminAnnouncementView } from './announcement-view';
 import styles from '@/components/console/dispatch-view.module.css';
 
 type DatePreset = 'all' | 'today' | 'yesterday' | '7days' | 'month' | 'custom';
@@ -1431,7 +1431,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
               title="Storefront announcement popup modal & festival posters"
             >
               <Sparkles size={18} />
-              <span>Popup Poster</span>
+              <span>Announcement</span>
               {activeSidebarTab === 'announcement' && <div className={styles.activePillMarker} />}
             </button>
           </nav>
@@ -1534,7 +1534,7 @@ export function AdminDispatchView({ initialTab = 'dashboard' }: AdminDispatchVie
             onClick={() => handleTabChange('announcement')}
           >
             <Sparkles size={14} />
-            <span>Popup</span>
+            <span>Posters</span>
           </button>
         </div>
 

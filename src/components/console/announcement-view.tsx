@@ -7,13 +7,11 @@ import {
   Check,
   RefreshCw,
   Image as ImageIcon,
-  Link as LinkIcon,
   Eye,
   AlertCircle,
-  HelpCircle,
 } from 'lucide-react';
 import { AnnouncementConfig } from '@/types';
-import styles from './announcement-manager.module.css';
+import styles from '@/components/console/announcement-view.module.css';
 
 interface AdminAnnouncementViewProps {
   showToast: (message: string, type: 'success' | 'info' | 'error') => void;
@@ -96,7 +94,7 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
         <div>
           <h1 className={styles.title}>Announcement Popup &amp; Poster</h1>
           <p className={styles.subtitle}>
-            Display a festival greeting, holiday shutdown notice, or promotional poster over the storefront after the preloader finishes.
+            Show a festival greeting, closure notice, or promotion on your storefront.
           </p>
         </div>
 
@@ -109,7 +107,7 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
             title="Open storefront and force-test the popup modal"
           >
             <Eye size={14} />
-            <span>Test on Storefront</span>
+            <span>Test Modal</span>
             <ExternalLink size={12} />
           </a>
 
@@ -138,7 +136,7 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
             ) : (
               <>
                 <Check size={14} />
-                <span>Save &amp; Publish</span>
+                <span>SAVE &amp; PUBLISH</span>
               </>
             )}
           </button>
@@ -184,7 +182,7 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
             <div className={styles.card}>
               <h2 className={styles.cardTitle}>
                 <ImageIcon size={18} />
-                <span>Poster Image Configuration</span>
+                <span>Poster Configuration</span>
               </h2>
 
               <div className={styles.fieldGroup}>
@@ -279,7 +277,7 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                 <h2 className={styles.cardTitle} style={{ margin: 0 }}>
                   <ExternalLink size={18} />
-                  <span>Action Button (&quot;Continue to Store&quot;)</span>
+                  <span>Action Button</span>
                 </h2>
 
                 <label className={styles.switch} aria-label="Toggle action button">
@@ -367,7 +365,7 @@ export function AdminAnnouncementView({ showToast }: AdminAnnouncementViewProps)
               </div>
 
               <p style={{ margin: '10px 0 0', fontSize: '0.75rem', color: '#6B7280', textAlign: 'center' }}>
-                Shows exactly how the backdrop blur and modal framing render over the website.
+                Shows exactly how the modal framing render over the website.
               </p>
             </div>
           </div>

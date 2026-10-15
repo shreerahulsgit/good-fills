@@ -14,7 +14,7 @@ export const DEFAULT_ANNOUNCEMENT: AnnouncementConfig = {
 };
 
 const DATA_DIR = path.join(process.cwd(), '.data');
-const DATA_FILE = path.join(DATA_DIR, 'store-announcement.json');
+const DATA_FILE = path.join(DATA_DIR, 'announcement.json');
 
 export async function getAnnouncementConfig(): Promise<AnnouncementConfig> {
   try {

@@ -3,10 +3,18 @@ import { CartProvider } from '@/components/context/cart-context';
 import { SiteHeader } from '@/components/navigation/site-header';
 import { SiteFooter } from '@/components/navigation/site-footer';
 import { Preloader } from '@/components/navigation/site-preloader';
+import { PreloaderProvider } from '@/components/context/preloader-context';
+import { CustomerAuthProvider } from '@/components/context/auth-context';
+import { AnnouncementModal } from '@/components/navigation/announcement';
+import { JsonLd } from '@/components/seo/json-ld';
+import { generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/schema';
 import '@/styles/global.css';
 
 export const metadata: Metadata = {
-  title: 'Homemade Food & Natural Care | Good Fills',
+  title: {
+    default: 'Good Fills | Homemade Food & Natural Care',
+    template: '%s | Good Fills',
+  },
   description: 'Explore small-batch food, nutrition, skincare and bath essentials made to order in Bengaluru. Shop the collection with delivery across India.',
   keywords: [
     'Good Fills',
@@ -21,6 +29,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Good Fills' }],
   metadataBase: new URL('https://thegoodfills.com'),
+  alternates: {
+    canonical: 'https://thegoodfills.com',
+  },
   icons: {
     icon: [
       { url: '/icons/icon-16x16.png', sizes: '16x16', type: 'image/png' },
@@ -31,8 +42,9 @@ export const metadata: Metadata = {
     apple: '/icons/apple-touch-icon.png',
   },
   openGraph: {
-    title: 'Homemade Food & Natural Care | Good Fills',
+    title: 'Good Fills | Homemade Food & Natural Care',
     description: 'Explore small-batch food, nutrition, skincare and bath essentials made to order in Bengaluru. Shop the collection with delivery across India.',
+    url: 'https://thegoodfills.com',
     siteName: 'Good Fills',
     locale: 'en_IN',
     type: 'website',
@@ -44,24 +56,41 @@ export const metadata: Metadata = {
         alt: 'Good Fills Homemade Products',
       },
     ],
-  }
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Good Fills | Homemade Food & Natural Care',
+    description: 'Explore small-batch food, nutrition, skincare and bath essentials made to order in Bengaluru. Shop the collection with delivery across India.',
+    images: ['/logo.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
-
-import { PreloaderProvider } from '@/components/context/preloader-context';
-import { CustomerAuthProvider } from '@/components/context/auth-context';
-import { AnnouncementModal } from '@/components/navigation/announcement';
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const organizationSchema = generateOrganizationSchema();
+  const websiteSchema = generateWebSiteSchema();
+
   return (
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <JsonLd data={[organizationSchema, websiteSchema]} />
       </head>
       <body>
         <PreloaderProvider>

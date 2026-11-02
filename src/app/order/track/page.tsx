@@ -4,7 +4,10 @@ import { TrackView } from '@/components/order/track-view';
 
 export const metadata: Metadata = {
     title: 'Order Tracking & Updates',
-    description: 'Check your Good Fills order status, kitchen preparation progress and available courier tracking updates in one place.',
+    description: 'Check your Good Fills order status, kitchen preparation progress and live DTDC courier tracking updates in one place.',
+    alternates: {
+        canonical: 'https://thegoodfills.com/order/track',
+    },
 };
 
 export default function TrackOrderPage() {

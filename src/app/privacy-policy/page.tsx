@@ -5,6 +5,9 @@ import { PrivacyPolicyContent } from '@/components/legal/privacy-policy';
 export const metadata: Metadata = {
     title: 'Privacy Policy',
     description: 'Read how Good Fills collects, uses and protects personal information related to your account, orders, payments and delivery.',
+    alternates: {
+        canonical: 'https://thegoodfills.com/privacy-policy',
+    },
 };
 
 export default function PrivacyPolicyPage() {

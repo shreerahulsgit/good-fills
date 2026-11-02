@@ -5,6 +5,9 @@ import { RefundPolicyContent } from '@/components/legal/refund-policy';
 export const metadata: Metadata = {
     title: 'Returns & Replacement Policy',
     description: 'Review the Good Fills cancellation, return and replacement terms, including how to report an item damaged during delivery.',
+    alternates: {
+        canonical: 'https://thegoodfills.com/refund-policy',
+    },
 };
 
 export default function RefundPolicyPage() {

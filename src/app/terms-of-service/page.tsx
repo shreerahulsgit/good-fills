@@ -5,6 +5,9 @@ import { TermsPolicyContent } from '@/components/legal/terms-policy';
 export const metadata: Metadata = {
     title: 'Terms of Service',
     description: 'Review the terms that apply to Good Fills website use, orders, payments, product information and customer responsibilities.',
+    alternates: {
+        canonical: 'https://thegoodfills.com/terms-of-service',
+    },
 };
 
 export default function TermsOfServicePage() {

@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
         rules: [
             {
                 userAgent: '*',
-                allow: '/',
+                allow: ['/', '/order/track'],
                 disallow: [
                     '/admin',
                     '/admin/*',
@@ -18,8 +18,10 @@ export default function robots(): MetadataRoute.Robots {
                     '/account',
                     '/account/*',
                     '/checkout',
-                    '/order',
-                    '/order/*',
+                    '/order/confirmation',
+                    '/order/confirmation/*',
+                    '/order/invoice',
+                    '/order/invoice/*',
                 ],
             },
         ],

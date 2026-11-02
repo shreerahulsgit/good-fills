@@ -4,6 +4,8 @@ import { CATEGORIES } from '@/lib/data/shop';
 import { ProductCategory, CategoryPageProps } from '@/types';
 import { getAllServerProducts } from '@/lib/store/products';
 import { ShopCatalogView } from '@/components/shop/catalog-view';
+import { JsonLd } from '@/components/seo/json-ld';
+import { generateBreadcrumbSchema } from '@/lib/seo/schema';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,13 +39,32 @@ export function generateMetadata({ params }: CategoryPageProps): Metadata {
         'pantry-beverages': 'Shop pantry staples and beverages prepared in small batches, with products made to order in Bengaluru.',
     };
     const description = categoryDescriptions[catInfo.id];
+    const canonicalUrl = `https://thegoodfills.com/shop/${params.category}`;
 
     return {
         title: `${catInfo.name} Products`,
         description,
+        alternates: {
+            canonical: canonicalUrl,
+        },
         openGraph: {
-            title: `${catInfo.name} Products`,
+            title: `${catInfo.name} Products | Good Fills`,
             description,
+            url: canonicalUrl,
+            images: [
+                {
+                    url: '/logo.png',
+                    width: 1200,
+                    height: 400,
+                    alt: `${catInfo.name} Products`,
+                },
+            ],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `${catInfo.name} Products | Good Fills`,
+            description,
+            images: ['/logo.png'],
         },
     };
 }
@@ -55,11 +76,21 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         notFound();
     }
 
+    const catInfo = CATEGORIES.find((c) => c.id === category);
+    const categoryName = catInfo?.name || 'Category';
+
     const products = await getAllServerProducts();
+
+    const breadcrumbSchema = generateBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Shop', url: '/shop' },
+        { name: categoryName, url: `/shop/${category}` },
+    ]);
 
     return (
         <main>
-        <ShopCatalogView initialCategory={category} initialProducts={products} />
+            <JsonLd data={breadcrumbSchema} />
+            <ShopCatalogView initialCategory={category} initialProducts={products} />
         </main>
     );
 }

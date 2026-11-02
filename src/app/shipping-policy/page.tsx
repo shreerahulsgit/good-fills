@@ -5,6 +5,9 @@ import { ShippingPolicyContent } from '@/components/legal/shipping-policy';
 export const metadata: Metadata = {
     title: 'Shipping & Delivery Policy',
     description: 'Find information about order preparation, shipping methods, delivery timelines and tracking for Good Fills orders in India and internationally.',
+    alternates: {
+        canonical: 'https://thegoodfills.com/shipping-policy',
+    },
 };
 
 export default function ShippingPolicyPage() {

@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getServerProductBySlug, getAllServerProducts } from '@/lib/store/products';
+import { getProductReviewSummary } from '@/lib/store/reviews';
 import { ProductDetailView } from '@/components/product/product-view';
+import { JsonLd } from '@/components/seo/json-ld';
+import { generateProductSchema, generateBreadcrumbSchema } from '@/lib/seo/schema';
+import { CATEGORIES } from '@/lib/data/shop';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,22 +32,34 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
         };
     }
 
-    const description = `${product.name} (${product.packSize}), made to order in Bengaluru. View product details and delivery information from Good Fills.`;
+    const description = `${product.name} (${product.packSize}), made to order in Bengaluru. View ingredients, benefits, and delivery information from Good Fills.`;
+    const canonicalUrl = `https://thegoodfills.com/product/${product.slug}`;
+    const imageUrl = product.images?.primary || '/logo.png';
 
     return {
-        title: `${product.name} - ${product.packSize}`,
+        title: `${product.name} (${product.packSize})`,
         description,
+        alternates: {
+            canonical: canonicalUrl,
+        },
         openGraph: {
-            title: `${product.name} - ${product.packSize}`,
+            title: `${product.name} (${product.packSize}) | Good Fills`,
             description,
+            url: canonicalUrl,
             images: [
                 {
-                    url: product.images?.primary || '/logo.png',
+                    url: imageUrl,
                     width: 800,
                     height: 800,
                     alt: product.name,
                 },
             ],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `${product.name} (${product.packSize}) | Good Fills`,
+            description,
+            images: [imageUrl],
         },
     };
 }
@@ -57,9 +73,28 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
     const allProducts = await getAllServerProducts();
 
+    let reviewSummary = null;
+    try {
+        reviewSummary = await getProductReviewSummary(product.id);
+    } catch (err) {
+        console.warn('Failed to fetch review summary for product schema:', err);
+    }
+
+    const categoryObj = CATEGORIES.find((c) => c.id === product.category);
+    const categoryName = categoryObj?.name || 'Shop';
+
+    const productSchema = generateProductSchema(product, reviewSummary);
+    const breadcrumbSchema = generateBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Shop', url: '/shop' },
+        { name: categoryName, url: `/shop/${product.category}` },
+        { name: `${product.name} (${product.packSize})`, url: `/product/${product.slug}` },
+    ]);
+
     return (
         <main>
-        <ProductDetailView product={product} allProducts={allProducts} />
+            <JsonLd data={[productSchema, breadcrumbSchema]} />
+            <ProductDetailView product={product} allProducts={allProducts} />
         </main>
     );
 }

@@ -5,14 +5,14 @@ import { JsonLd } from '@/components/seo/json-ld';
 import { generateBreadcrumbSchema, generateFAQSchema } from '@/lib/seo/schema';
 
 export const metadata: Metadata = {
-    title: 'Contact Atelier & Concierge',
-    description: 'Contact the Good Fills kitchen team in Bengaluru for product questions, infant weaning advice, order assistance, delivery updates or custom batches.',
+    title: 'Contact & Customer Support',
+    description: 'Contact the Good Fills team in Bengaluru for product questions, order assistance, delivery updates or wholesale inquiries. We are ready to help.',
     alternates: {
         canonical: 'https://thegoodfills.com/contact-us',
     },
     openGraph: {
-        title: 'Contact Atelier & Concierge | Good Fills',
-        description: 'Contact the Good Fills kitchen team in Bengaluru for product questions, infant weaning advice, order assistance, delivery updates or custom batches.',
+        title: 'Contact & Customer Support',
+        description: 'Contact the Good Fills team in Bengaluru for product questions, order assistance, delivery updates or wholesale inquiries. We are ready to help.',
         url: 'https://thegoodfills.com/contact-us',
         images: [
             {
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Contact Atelier & Concierge | Good Fills',
+        title: 'Contact & Customer Support',
         description: 'Direct communication with the Good Fills kitchen in Bengaluru.',
         images: ['/logo.png'],
     },

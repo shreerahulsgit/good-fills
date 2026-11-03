@@ -8,7 +8,7 @@ import { generateBreadcrumbSchema } from '@/lib/seo/schema';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'Shop Handmade Products',
+    title: 'Shop Handmade Products | Good Fills',
     description: 'Browse small-batch food, nutrition, skincare and bath products made to order in Bengaluru. Find everyday essentials with delivery across India.',
     alternates: {
         canonical: 'https://thegoodfills.com/shop',

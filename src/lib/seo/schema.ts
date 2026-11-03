@@ -8,7 +8,6 @@ export function generateOrganizationSchema() {
     '@type': 'LocalBusiness',
     '@id': `${SITE_URL}/#organization`,
     name: 'Good Fills',
-    legalName: 'Good Fills',
     url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
     image: `${SITE_URL}/logo.png`,
@@ -27,14 +26,6 @@ export function generateOrganizationSchema() {
       longitude: '77.5946',
     },
     priceRange: '₹₹',
-    openingHoursSpecification: [
-      {
-        '@type': 'OpeningHoursSpecification',
-        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-        opens: '09:00',
-        closes: '19:00',
-      },
-    ],
     sameAs: [
       'https://www.instagram.com/goodfills2020',
       'https://www.facebook.com/share/1FMwVm7H2b',
@@ -52,14 +43,6 @@ export function generateWebSiteSchema() {
     description: 'Homemade Food, Traditional Nutrition & Botanical Bath Essentials',
     publisher: {
       '@id': `${SITE_URL}/#organization`,
-    },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${SITE_URL}/shop?q={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
     },
   };
 }
@@ -82,7 +65,6 @@ export function generateProductSchema(product: Product, reviewSummary?: ProductR
     description: product.shortDescription || product.description,
     image: images.length > 0 ? images : [`${SITE_URL}/logo.png`],
     sku: product.id,
-    mpn: product.id,
     brand: {
       '@type': 'Brand',
       name: 'Good Fills',
@@ -92,7 +74,6 @@ export function generateProductSchema(product: Product, reviewSummary?: ProductR
       url: `${SITE_URL}/product/${product.slug}`,
       priceCurrency: 'INR',
       price: product.price,
-      priceValidUntil: '2027-12-31',
       itemCondition: 'https://schema.org/NewCondition',
       availability:
         product.availability === 'sold-out'
@@ -115,23 +96,26 @@ export function generateProductSchema(product: Product, reviewSummary?: ProductR
     };
 
     if (reviewSummary.reviews && reviewSummary.reviews.length > 0) {
-      schema.review = reviewSummary.reviews.slice(0, 5).map((r) => ({
-        '@type': 'Review',
-        reviewRating: {
-          '@type': 'Rating',
-          ratingValue: r.rating,
-          bestRating: 5,
-          worstRating: 1,
-        },
-        author: {
-          '@type': 'Person',
-          name: r.authorName || 'Verified Customer',
-        },
-        datePublished: r.createdAt
-          ? new Date(r.createdAt).toISOString().split('T')[0]
-          : '2026-01-01',
-        reviewBody: r.comment || r.title,
-      }));
+      schema.review = reviewSummary.reviews.slice(0, 5).map((r) => {
+        const review = {
+          '@type': 'Review',
+          reviewRating: {
+            '@type': 'Rating',
+            ratingValue: r.rating,
+            bestRating: 5,
+            worstRating: 1,
+          },
+          author: {
+            '@type': 'Person',
+            name: r.authorName || 'Verified Customer',
+          },
+          reviewBody: r.comment || r.title,
+        };
+
+        return r.createdAt
+          ? { ...review, datePublished: new Date(r.createdAt).toISOString().split('T')[0] }
+          : review;
+      });
     }
   }
 
@@ -165,4 +149,3 @@ export function generateFAQSchema(faqs: { question: string; answer: string }[]) 
     })),
   };
 }
-

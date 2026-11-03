@@ -33,22 +33,20 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     }
 
     const description = `${product.name} (${product.packSize}), made to order in Bengaluru. View ingredients, benefits, and delivery information from Good Fills.`;
-    const canonicalUrl = `https://thegoodfills.com/product/${product.slug}`;
-    const imageUrl = product.images?.primary || '/logo.png';
 
     return {
-        title: `${product.name} (${product.packSize})`,
+        title: `${product.name} - ${product.packSize}`,
         description,
         alternates: {
-            canonical: canonicalUrl,
+            canonical: `https://thegoodfills.com/product/${product.slug}`,
         },
         openGraph: {
-            title: `${product.name} (${product.packSize}) | Good Fills`,
+            title: `${product.name} - ${product.packSize}`,
             description,
-            url: canonicalUrl,
+            url: `https://thegoodfills.com/product/${product.slug}`,
             images: [
                 {
-                    url: imageUrl,
+                    url: product.images?.primary || '/logo.png',
                     width: 800,
                     height: 800,
                     alt: product.name,
@@ -57,9 +55,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
         },
         twitter: {
             card: 'summary_large_image',
-            title: `${product.name} (${product.packSize}) | Good Fills`,
+            title: `${product.name} - ${product.packSize}`,
             description,
-            images: [imageUrl],
+            images: [product.images?.primary || '/logo.png'],
         },
     };
 }
@@ -88,7 +86,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         { name: 'Home', url: '/' },
         { name: 'Shop', url: '/shop' },
         { name: categoryName, url: `/shop/${product.category}` },
-        { name: `${product.name} (${product.packSize})`, url: `/product/${product.slug}` },
+        { name: `${product.name} - ${product.packSize}`, url: `/product/${product.slug}` },
     ]);
 
     return (

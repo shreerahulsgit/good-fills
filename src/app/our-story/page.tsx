@@ -4,13 +4,13 @@ import { JsonLd } from '@/components/seo/json-ld';
 import { generateBreadcrumbSchema } from '@/lib/seo/schema';
 
 export const metadata: Metadata = {
-    title: 'Our Story & Traditional Method',
+    title: 'Our Story and Approach',
     description: 'Learn about Good Fills and our approach to preparing small-batch food, nutrition and personal care products in Bengaluru.',
     alternates: {
         canonical: 'https://thegoodfills.com/our-story',
     },
     openGraph: {
-        title: 'Our Story & Traditional Method | Good Fills',
+        title: 'Our Story and Approach',
         description: 'Learn about Good Fills and our approach to preparing small-batch food, nutrition and personal care products in Bengaluru.',
         url: 'https://thegoodfills.com/our-story',
         images: [
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Our Story & Traditional Method | Good Fills',
+        title: 'Our Story and Approach',
         description: 'Small-batch food, nutrition and personal care crafted with care in Bengaluru.',
         images: ['/logo.png'],
     },

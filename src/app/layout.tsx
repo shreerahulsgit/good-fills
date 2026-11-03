@@ -11,10 +11,7 @@ import { generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/sch
 import '@/styles/global.css';
 
 export const metadata: Metadata = {
-  title: {
-    default: 'Good Fills | Homemade Food & Natural Care',
-    template: '%s | Good Fills',
-  },
+  title: 'Homemade Food & Natural Care | Good Fills',
   description: 'Explore small-batch food, nutrition, skincare and bath essentials made to order in Bengaluru. Shop the collection with delivery across India.',
   keywords: [
     'Good Fills',
@@ -42,7 +39,7 @@ export const metadata: Metadata = {
     apple: '/icons/apple-touch-icon.png',
   },
   openGraph: {
-    title: 'Good Fills | Homemade Food & Natural Care',
+    title: 'Homemade Food & Natural Care | Good Fills',
     description: 'Explore small-batch food, nutrition, skincare and bath essentials made to order in Bengaluru. Shop the collection with delivery across India.',
     url: 'https://thegoodfills.com',
     siteName: 'Good Fills',
@@ -59,7 +56,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Good Fills | Homemade Food & Natural Care',
+    title: 'Homemade Food & Natural Care | Good Fills',
     description: 'Explore small-batch food, nutrition, skincare and bath essentials made to order in Bengaluru. Shop the collection with delivery across India.',
     images: ['/logo.png'],
   },

@@ -39,18 +39,17 @@ export function generateMetadata({ params }: CategoryPageProps): Metadata {
         'pantry-beverages': 'Shop pantry staples and beverages prepared in small batches, with products made to order in Bengaluru.',
     };
     const description = categoryDescriptions[catInfo.id];
-    const canonicalUrl = `https://thegoodfills.com/shop/${params.category}`;
 
     return {
         title: `${catInfo.name} Products`,
         description,
         alternates: {
-            canonical: canonicalUrl,
+            canonical: `https://thegoodfills.com/shop/${params.category}`,
         },
         openGraph: {
-            title: `${catInfo.name} Products | Good Fills`,
+            title: `${catInfo.name} Products`,
             description,
-            url: canonicalUrl,
+            url: `https://thegoodfills.com/shop/${params.category}`,
             images: [
                 {
                     url: '/logo.png',
@@ -62,7 +61,7 @@ export function generateMetadata({ params }: CategoryPageProps): Metadata {
         },
         twitter: {
             card: 'summary_large_image',
-            title: `${catInfo.name} Products | Good Fills`,
+            title: `${catInfo.name} Products`,
             description,
             images: ['/logo.png'],
         },
